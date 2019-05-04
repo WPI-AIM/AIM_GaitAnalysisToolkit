@@ -1,0 +1,3 @@
+[submodule "lib/dmp_experiments"]
+	path = lib/dmp_experiments
+	url = http://nagoldfarb@fischerlab2.wpi.edu:7990/scm/exo/dmp_experiments.git
