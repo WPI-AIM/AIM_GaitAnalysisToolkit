@@ -1,11 +1,19 @@
 import csv
-import numpy as np
+
 
 def open_vicon_file(file_path):
-    raw_data = []
-    column_names = []
-    axis = []
-    unit = []
+    """
+    parses the Vicon sensor data into a dictionary
+    :param file_path: file path
+    :return: dictionary of the sensors
+    :rtype: dict
+    """
+    indices = {}
+    data = {}
+    current_name = None
+    last_frame = None
+
+    # open the file and get the column names, axis, and units
     with open(file_path, mode='r') as csv_file:
         reader = csv.reader(csv_file)
         raw_data = list(reader)
@@ -13,12 +21,7 @@ def open_vicon_file(file_path):
         axis = raw_data[5]
         unit = raw_data[6]
 
-    data = {}
-    print len(axis)
-    print len(column_names)
-    print len(unit)
-    current_name = None
-
+    # Build the dict to store everything
     for index, name in enumerate(column_names):
 
         if index <= 1:
@@ -28,14 +31,25 @@ def open_vicon_file(file_path):
                 current_name = name
                 data[current_name] = {}
             dir = axis[index]
+            indices[(current_name, dir)] = index
             data[current_name][dir] = {}
-            data[current_name][dir]["data"] = []
+            data[current_name][dir]["data"] = {}
             data[current_name][dir]["unit"] = unit[index]
 
-    print data["Combined CoP"]
+    # Put all the data in the correct sub dictionary.
 
-def column(matrix, i):
-    return [row[i] for row in matrix]
+    for row in raw_data[7:]:
+        frame = int(row[0])
+
+        for key, value in data.iteritems():
+            for sub_key, sub_value in value.iteritems():
+
+                if frame not in sub_value["data"]:
+                    sub_value["data"][frame] = []
+                index = indices[(key, sub_key)]
+                sub_value["data"][int(frame)].append(float(row[index]))
+    return data
+
 
 def open_exo_file(file_path):
     '''
@@ -59,8 +73,8 @@ def open_exo_file(file_path):
 
 
 if __name__ == '__main__':
-
     # file = "/home/nathaniel/git/exoserver/Main/subject_37_trial_1.csv"
     # print open_exo_file(file)["Pot_Left_Ankle"]
     file = "Walking01.csv"
-    open_vicon_file(file)
+    data = open_vicon_file(file)
+    print data["Imported Delsys Trigno IMU EMG 2.0 #4 - Sensor 8"]["IM EMG8"]
