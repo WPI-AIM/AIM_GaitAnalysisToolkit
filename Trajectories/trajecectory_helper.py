@@ -4,60 +4,60 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+from lib.dmp_experiments.Python import train_rmp, RMP_runner
 from scipy.signal import find_peaks_cwt
 import pandas
 
-def sperate_joints2(file_path):
-    gait_data = {}
-    column = []
-
-    gait_data = pd.read_csv(file_path)
-    knee = np.array(gait_data["LKneeAngles"]).flatten()
-    max_peakind = np.diff(np.sign(np.diff(knee))).flatten()  # the one liner
-    max_peakind = np.pad(max_peakind, (1, 1), 'constant', constant_values=(0, 0))
-    max_peakind = [index for index, value in enumerate(max_peakind) if value == -2 and knee[index] > 40.0 ]
-    searching = True
-    last_index = 0
-    indecies = []
-    starting_index = 0
-    final_index = 0
-    for peak_index in max_peakind:
-
-        #get the starting index
-        last_angle = -1000
-        for index in xrange(starting_index, peak_index):
-            angle = knee[index]
-            if angle > 0 and angle > last_angle:
-                starting_index = index
-                break
-            else:
-                last_angle = angle
-
-        searching = True
-        index = peak_index
-        while searching:
-            if knee[index] < 0:
-                final_index = index-1
-                searching = False
-            elif knee[index] > knee[index-1]:
-                searching = False
-                final_index = index
-            index = index + 1
-
-        indecies.append([starting_index, final_index+1 ])
-        starting_index = final_index-10
-    names = ["LHipAngles", "LKneeAngles", "LAbsAnkleAngle", "RHipAngles", "RKneeAngles", "RAbsAnkleAngle"]
-
-    joints = {}
-    for name in names:
-        joints[name] = []
-        for index in indecies:
-            starting_index = index[0]
-            final_index = index[1]
-            joints[name].append(np.array(gait_data[name][starting_index:final_index]))
-
-    return joints
+# def sperate_joints2(file_path):
+#     gait_data = {}
+#     column = []
+#
+#     gait_data = pd.read_csv(file_path)
+#     knee = np.array(gait_data["LKneeAngles"]).flatten()
+#     max_peakind = np.diff(np.sign(np.diff(knee))).flatten()  # the one liner
+#     max_peakind = np.pad(max_peakind, (1, 1), 'constant', constant_values=(0, 0))
+#     max_peakind = [index for index, value in enumerate(max_peakind) if value == -2 and knee[index] > 40.0 ]
+#     searching = True
+#     last_index = 0
+#     indecies = []
+#     starting_index = 0
+#     final_index = 0
+#     for peak_index in max_peakind:
+#
+#         #get the starting index
+#         last_angle = -1000
+#         for index in xrange(starting_index, peak_index):
+#             angle = knee[index]
+#             if angle > 0 and angle > last_angle:
+#                 starting_index = index
+#                 break
+#             else:
+#                 last_angle = angle
+#
+#         searching = True
+#         index = peak_index
+#         while searching:
+#             if knee[index] < 0:
+#                 final_index = index-1
+#                 searching = False
+#             elif knee[index] > knee[index-1]:
+#                 searching = False
+#                 final_index = index
+#             index = index + 1
+#
+#         indecies.append([starting_index, final_index+1 ])
+#         starting_index = final_index-10
+#     names = ["LHipAngles", "LKneeAngles", "LAbsAnkleAngle", "RHipAngles", "RKneeAngles", "RAbsAnkleAngle"]
+#
+#     joints = {}
+#     for name in names:
+#         joints[name] = []
+#         for index in indecies:
+#             starting_index = index[0]
+#             final_index = index[1]
+#             joints[name].append(np.array(gait_data[name][starting_index:final_index]))
+#
+#     return joints
 
 
 
@@ -112,6 +112,19 @@ def sperate_joints(file_path):
             joints[name].append(np.array(gait_data[name][max_peakind[start]:max_peakind[start+1]+offsets[ii]]))
 
     return joints
+
+
+def generate_dmps(prefixes, data, index):
+
+    train_rmp.train_rmp(prefixes + "_ankle_right.xml", 1000, np.radians(np.array([data["RAbsAnkleAngle"][index]])), 0.01)
+    train_rmp.train_rmp(prefixes + "_knee_right.xml", 1000, np.radians(np.array([data["RKneeAngles"][index]])), 0.01)
+    train_rmp.train_rmp(prefixes + "_hip_right.xml", 1000, np.radians(np.array([data["RHipAngles"][index]])), 0.01)
+
+    train_rmp.train_rmp(prefixes + "_ankle_left.xml", 1000, np.radians(np.array([data["LAbsAnkleAngle"][index]])), 0.01)
+    train_rmp.train_rmp(prefixes + "_knee_left.xml", 1000, np.radians(np.array([data["LKneeAngles"][index]])), 0.01)
+    train_rmp.train_rmp(prefixes + "_hip_left.xml", 1000, np.radians(np.array([data["LHipAngles"][index]])), 0.01)
+
+
 
 
 
