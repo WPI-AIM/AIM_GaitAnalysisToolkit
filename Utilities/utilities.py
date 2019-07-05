@@ -63,7 +63,7 @@ def __extract_values(raw_data, start, end):
 
     # Put all the data in the correct sub dictionary.
 
-    for row in raw_data[start + 5:end - 2]:
+    for row in raw_data[start + 5:end - 1]:
 
         frame = int(row[0])
         for key, value in data.iteritems():
@@ -105,4 +105,4 @@ if __name__ == '__main__':
     # print open_exo_file(file)["Pot_Left_Ankle"]
     file = "Walking01.csv"
     data = open_vicon_file(file)
-    print data["Model Outputs"]["Subject02:LAnkleAngles"]["X"]
+    print data["Devices"]["Imported Delsys Trigno Accelerometers 2.0 #3 - Sensor 1"]["ACCX1"]["data"]
