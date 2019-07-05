@@ -2,7 +2,8 @@ import csv
 
 import time
 
-def open_vicon_file(file_path):
+
+def open_vicon_file(file_path, output_names):
     """
     parses the Vicon sensor data into a dictionary
     :param file_path: file path
@@ -14,19 +15,17 @@ def open_vicon_file(file_path):
         reader = csv.reader(csv_file)
         raw_data = list(reader)
 
-    output_names = ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"]
+    # output_names = ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"]
     data = {}
-    segs = __seperate_csv_sections(raw_data)
+    segs = _seperate_csv_sections(raw_data)
     for index, output in enumerate(output_names):
-        print output
-        data[output] = __extract_values(raw_data, segs[index], segs[index + 1])
+        data[output] = _extract_values(raw_data, segs[index], segs[index + 1])
     return data
 
 
-def __seperate_csv_sections(all_data):
+def _seperate_csv_sections(all_data):
     time.sleep(5)
     col1 = [row[0] for row in all_data]
-    print col1
     devices = col1.index("Devices")
     joints = col1.index("Joints")
     model_output = col1.index("Model Outputs")
@@ -36,7 +35,7 @@ def __seperate_csv_sections(all_data):
     return segs
 
 
-def __extract_values(raw_data, start, end):
+def _extract_values(raw_data, start, end):
     indices = {}
     data = {}
     current_name = None
@@ -58,7 +57,7 @@ def __extract_values(raw_data, start, end):
             dir = axis[index]
             indices[(current_name, dir)] = index
             data[current_name][dir] = {}
-            data[current_name][dir]["data"] = {}
+            data[current_name][dir]["data"] = []
             data[current_name][dir]["unit"] = unit[index]
 
     # Put all the data in the correct sub dictionary.
@@ -69,14 +68,14 @@ def __extract_values(raw_data, start, end):
         for key, value in data.iteritems():
             for sub_key, sub_value in value.iteritems():
 
-                if frame not in sub_value["data"]:
-                    sub_value["data"][frame] = []
+                # if frame not in sub_value["data"]:
+                #     sub_value["data"][frame] = []
                 index = indices[(key, sub_key)]
                 if row[index] is '':
                     val = 0
                 else:
                     val = float(row[index])
-                sub_value["data"][int(frame)].append(val)
+                sub_value["data"].append(val)
     return data
 
 def open_exo_file(file_path):
@@ -104,5 +103,5 @@ if __name__ == '__main__':
     # file = "/home/nathaniel/git/exoserver/Main/subject_37_trial_1.csv"
     # print open_exo_file(file)["Pot_Left_Ankle"]
     file = "Walking01.csv"
-    data = open_vicon_file(file)
+    data = open_vicon_file(file, ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"])
     print data["Devices"]["Imported Delsys Trigno Accelerometers 2.0 #3 - Sensor 1"]["ACCX1"]["data"]
