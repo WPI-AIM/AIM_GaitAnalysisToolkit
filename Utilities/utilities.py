@@ -1,7 +1,5 @@
 import csv
 
-import time
-
 
 def open_vicon_file(file_path, output_names):
     """
@@ -24,7 +22,7 @@ def open_vicon_file(file_path, output_names):
 
 
 def _seperate_csv_sections(all_data):
-    time.sleep(5)
+
     col1 = [row[0] for row in all_data]
     devices = col1.index("Devices")
     joints = col1.index("Joints")
@@ -49,14 +47,14 @@ def _fix_col_names(names):
         elif "AMTI" in name:
 
             if "Force" in name:
-                unit = "_Force"
+                unit = "_Force_"
             elif "Moment" in name:
-                unit = "_Moment"
+                unit = "_Moment_"
             elif "CoP" in name:
-                unit = "_CoP"
+                unit = "_CoP_"
 
             number = name[name.find('#') + 1]
-            fixed = "Force_Plate_" + str(number) + unit
+            fixed = "Force_Plate_" + unit + str(number)
             fixed_names.append(fixed)
 
         elif "Trigno EMG" in name:
@@ -87,7 +85,8 @@ def _extract_values(raw_data, start, end):
 
     column_names = _fix_col_names(raw_data[start + 2])
     # column_names = raw_data[start + 2]
-    axis = raw_data[start + 3]
+    remove_numbers = lambda str: ''.join([i for i in str if not i.isdigit()])
+    axis = map(remove_numbers, raw_data[start + 3])
     unit = raw_data[start + 4]
 
     # Build the dict to store everything
@@ -147,4 +146,3 @@ if __name__ == '__main__':
     file = "Walking01.csv"
     data = open_vicon_file(file, ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"])
     print data["Devices"].keys()
-    print data["Devices"]["Accel_2"].keys()
