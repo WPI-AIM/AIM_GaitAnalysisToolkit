@@ -35,13 +35,58 @@ def _seperate_csv_sections(all_data):
     return segs
 
 
+def _fix_col_names(names):
+    fixed_names = []
+    get_index = lambda x: x.index("Sensor") + 7
+    for name in names:  # type: str
+
+        if "Subject" in name:
+            fixed = ''.join(
+                [i for i in name.replace("Subject", "").replace(":", "").replace("|", "") if not i.isdigit()]).strip()
+            fixed_names.append(fixed)
+            continue
+
+        elif "AMTI" in name:
+
+            if "Force" in name:
+                unit = "_Force"
+            elif "Moment" in name:
+                unit = "_Moment"
+            elif "CoP" in name:
+                unit = "_CoP"
+
+            number = name[name.find('#') + 1]
+            fixed = "Force_Plate_" + str(number) + unit
+            fixed_names.append(fixed)
+
+        elif "Trigno EMG" in name:
+            fixed = "T_EMG_" + name[-1]
+            fixed_names.append(fixed)
+
+        elif "Accelerometers" in name:
+            fixed = "Accel_" + name[get_index(name):]
+            fixed_names.append(fixed)
+
+        elif "IMU AUX" in name:
+            fixed = "IMU_" + name[get_index(name):]
+            fixed_names.append(fixed)
+
+        elif "IMU EMG" in name:
+            fixed = "EMG_" + name[get_index(name):]
+            fixed_names.append(fixed)
+        else:
+            fixed_names.append("")
+
+    return fixed_names
+
 def _extract_values(raw_data, start, end):
     indices = {}
     data = {}
     current_name = None
     last_frame = None
 
-    column_names = raw_data[start + 2]
+    column_names = _fix_col_names(raw_data[start + 2])
+    # column_names = raw_data[start + 2]
     axis = raw_data[start + 3]
     unit = raw_data[start + 4]
 
@@ -67,9 +112,6 @@ def _extract_values(raw_data, start, end):
         frame = int(row[0])
         for key, value in data.iteritems():
             for sub_key, sub_value in value.iteritems():
-
-                # if frame not in sub_value["data"]:
-                #     sub_value["data"][frame] = []
                 index = indices[(key, sub_key)]
                 if row[index] is '':
                     val = 0
@@ -104,4 +146,5 @@ if __name__ == '__main__':
     # print open_exo_file(file)["Pot_Left_Ankle"]
     file = "Walking01.csv"
     data = open_vicon_file(file, ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"])
-    print data["Devices"]["Imported Delsys Trigno Accelerometers 2.0 #3 - Sensor 1"]["ACCX1"]["data"]
+    print data["Devices"].keys()
+    print data["Devices"]["Accel_2"].keys()
