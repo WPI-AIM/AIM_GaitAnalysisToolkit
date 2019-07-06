@@ -17,10 +17,143 @@ class Vicon(object):
         self._IMUs = {}
         self._accel = {}
 
+    @property
+    def accel(self):
+        """
+        Get the Accels dict
+        :return: Accels
+        :type: dict
+        """
+        return self._accel
+
+    @property
+    def force_plate(self):
+        """
+         Get the force plate dict
+         :return: Force plates
+         :type: dict
+        """
+        return self._force_plates
+
+    @property
+    def IMUs(self):
+        """
+         Get the IMU dict
+         :return: IMU
+         :type: dict
+        """
+        return self._IMUs
+
+    @property
+    def T_EMGs(self):
+        """
+         Get the EMG dict
+         :return: T EMG
+         :type: dict
+        """
+        return self._T_EMGs
+
+    @property
+    def EMGs(self):
+        """
+        Get the EMGs dict
+        :return: EMGs
+        :type: dict
+        """
+        return self._EMGs
+
+    def get_model_output(self):
+        """
+        get the model output
+        :return: model outputs
+        :rtype: dict
+        """
+        return self.data_dict["Model Outputs"]
+
+    def get_segments(self):
+        """
+        get the segments
+        :return: model segments
+        :type: dict
+        """
+        return self.data_dict["Segments"]
+
+    def get_markers(self):
+        """
+        get the markers
+        :return: markers
+        :type: dict
+        """
+        return self.data_dict["Trajectories"]
+
+    def get_joints(self):
+        """
+        get the joints
+        :return: model joints
+        :type: dict
+        """
+        return self.data_dict["Joints"]
+
+    def get_imu(self, index):
+        """
+        get the a imu
+        :param index: imu number
+        :return: imu
+        :type: IMU.IMU
+        """
+        return self.IMUs[index]
+
+    def get_accel(self, index):
+        """
+        get the a Accel
+        :param index: Accel number
+        :return: Accel
+        :type: Accel.Accel
+        """
+        return self.accels[index]
+
+    def get_force_plate(self, index):
+        """
+        get the a force plate
+        :param index: force plate number
+        :return: Force plate
+        :type: ForcePlate.ForcePlate
+        """
+        return self.force_plate[index]
+
+    def get_emg(self, index):
+        """
+       Get the EMG values
+       :param index: number of sensor
+       :return: EMG
+       :rtype: EMG.EMG
+        """
+        return self.EMGs[index]
+
+    def get_t_emg(self, index):
+        """
+        Get the T EMG values
+        :param index: number of sensor
+        :return: EMG
+        :rtype: EMG.EMG
+        """
+        return self.T_EMGs[index]
+
     def _filter_dict(self, sensors, substring):
+        """
+        filter the dictionary
+        :param sensors: Dictionary to parse
+        :param substring: substring of the keys to look for in the dict
+        :return: keys that contain the substring
+        :type: list
+        """
         return list(filter(lambda x: substring in x, sensors.keys()))
 
     def _make_force_plates(self):
+        """
+        generate force plate models
+        :return: None
+        """
         sensors = self.data_dict["Devices"]
         keys = self._filter_dict(sensors, 'Force_Plate')  # + ['Combined Moment'] + ['Combined CoP']
         self._force_plates[1] = ForcePlate.ForcePlate("Force_Plate_1", sensors["Force_Plate__Force_1"],
@@ -30,6 +163,10 @@ class Vicon(object):
                                                       sensors["Force_Plate__Moment_2"])
 
     def _make_EMGs(self):
+        """
+        generate EMG models
+        :return: None
+        """
         sensors = self.data_dict["Devices"]
         all_keys = self._filter_dict(sensors, 'EMG')
         T_EMG_keys = self._filter_dict(sensors, 'T_EMG')
@@ -40,51 +177,26 @@ class Vicon(object):
         # return dict([(key, sensors[key]) for key in keys])
 
     def _make_IMUs(self):
+        """
+        generate IMU models
+        :return: None
+        """
         sensors = self.data_dict["Devices"]
         keys = self._filter_dict(sensors, 'IMU')
         for key in keys:
             self._IMUs[int(filter(str.isdigit, key))] = IMU.IMU(key, sensors[key])
 
     def _make_Accelerometers(self):
+        """
+        generate the accel objects
+        :return: None
+        """
         sensors = self.data_dict["Devices"]
         keys = self._filter_dict(sensors, 'Accelerometers')
         for key in keys:
             self._accels[int(filter(str.isdigit, key))] = Accel.Accel(key, sensors[key])
 
-    @property
-    def accel(self):
-        return self._accel
 
-    @property
-    def force_plate(self):
-        return self._force_plates
-
-    @property
-    def IMUs(self):
-        return self._IMUs
-
-    @property
-    def T_EMGs(self):
-        return self._T_EMGs
-
-    @property
-    def EMGs(self):
-        return self._EMGs
-
-    def get_imu(self, index):
-        return self.IMUs[index]
-
-    def get_accel(self, index):
-        return self.accels[index]
-
-    def get_force_plate(self, index):
-        return self.force_plate[index]
-
-    def get_emg(self, index):
-        return self.EMGs[index]
-
-    def get_t_emg(self, index):
-        return self.T_EMGs[index]
 
 
 if __name__ == '__main__':
