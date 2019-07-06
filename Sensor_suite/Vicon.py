@@ -11,16 +11,50 @@ class Vicon(object):
     def __init__(self, file_path):
         self._file_path = file_path
         self.output_names = ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"]
-        self.data_dict = self.open_vicon_file(self._file_path, self.output_names)
+        self._number_of_frames = 0
         self._T_EMGs = {}
         self._EMGs = {}
         self._force_plates = {}
         self._IMUs = {}
         self._accel = {}
+        self.data_dict = self.open_vicon_file(self._file_path, self.output_names)
         self._make_Accelerometers()
         self._make_EMGs()
         self._make_force_plates()
         self._make_IMUs()
+
+    def _find_number_of_frames(self, col):
+        """
+        Finds the number and sets of frames
+        :param col: column to search in
+        :return: None
+        """
+        index = col.index("Frame") + 2
+        current_number = col[index]
+
+        while current_number.isdigit():
+            index += 1
+            current_number = col[index]
+
+        self.number_of_frames = col[index - 1]
+
+    @property
+    def number_of_frames(self):
+        """
+
+        :return: number of frames
+        :rtype: int
+        """
+        return self._number_of_frames
+
+    @number_of_frames.setter
+    def number_of_frames(self, value):
+        """
+
+        :param value:
+        :return:
+        """
+        self._number_of_frames = value
 
     @property
     def accel(self):
@@ -228,6 +262,7 @@ class Vicon(object):
         model_output = col1.index("Model Outputs")
         segments = col1.index("Segments")
         trajs = col1.index("Trajectories")
+        self._find_number_of_frames(col1)
         segs = [devices, joints, model_output, segments, trajs, len(col1)]
         return segs
 
@@ -324,4 +359,4 @@ class Vicon(object):
 if __name__ == '__main__':
     file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
     data = Vicon(file)
-    print data.get_emg(14).name
+    print data.number_of_frames
