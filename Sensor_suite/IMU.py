@@ -1,7 +1,7 @@
 from Sensor_suite import PostSensor
 
 
-class IMU(PostSensor):
+class IMU(PostSensor.PostSensor):
 
     def __init__(self, name, sensor):
         super(IMU, self).__init__(name, sensor, "IMU")

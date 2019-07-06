@@ -1,3 +1,5 @@
+import csv
+
 import Accel
 import EMG
 import ForcePlate
@@ -199,7 +201,7 @@ class Vicon(object):
         for key in keys:
             self._accels[int(filter(str.isdigit, key))] = Accel.Accel(key, sensors[key])
 
-    def open_vicon_file(file_path, output_names):
+    def open_vicon_file(self, file_path, output_names):
         """
         parses the Vicon sensor data into a dictionary
         :param file_path: file path
@@ -322,4 +324,4 @@ class Vicon(object):
 if __name__ == '__main__':
     file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
     data = Vicon(file)
-    print data.get_EMGs().keys()
+    print data.get_emg(14).name

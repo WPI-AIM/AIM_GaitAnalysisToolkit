@@ -3,7 +3,7 @@ class PostSensor(object):
     def __init__(self, name, sensor, type):
         self._name = name
         self._sensor = sensor
-        sensor.type = type
+        self.type = type
 
     @property
     def name(self):
