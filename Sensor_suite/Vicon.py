@@ -16,7 +16,7 @@ class Vicon(object):
         self._EMGs = {}
         self._force_plates = {}
         self._IMUs = {}
-        self._accel = {}
+        self._accels = {}
         self.data_dict = self.open_vicon_file(self._file_path, self.output_names)
         self._make_Accelerometers()
         self._make_EMGs()
@@ -57,13 +57,13 @@ class Vicon(object):
         self._number_of_frames = value
 
     @property
-    def accel(self):
+    def accels(self):
         """
         Get the Accels dict
         :return: Accels
         :type: dict
         """
-        return self._accel
+        return self._accels
 
     @property
     def force_plate(self):
@@ -231,7 +231,8 @@ class Vicon(object):
         :return: None
         """
         sensors = self.data_dict["Devices"]
-        keys = self._filter_dict(sensors, 'Accelerometers')
+        keys = self._filter_dict(sensors, 'Accel')
+        print keys
         for key in keys:
             self._accels[int(filter(str.isdigit, key))] = Accel.Accel(key, sensors[key])
 
@@ -359,4 +360,4 @@ class Vicon(object):
 if __name__ == '__main__':
     file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
     data = Vicon(file)
-    print data.number_of_frames
+    print data.get_accel(1).name
