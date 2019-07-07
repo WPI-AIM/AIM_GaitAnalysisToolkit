@@ -4,6 +4,7 @@ import Accel
 import EMG
 import ForcePlate
 import IMU
+import ModelOutput
 
 
 class Vicon(object):
@@ -11,6 +12,7 @@ class Vicon(object):
     def __init__(self, file_path):
         self._file_path = file_path
         self.output_names = ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"]
+        self.joint_names = ["Ankle", "Knee", "Hip"]
         self._number_of_frames = 0
         self._T_EMGs = {}
         self._EMGs = {}
@@ -22,6 +24,9 @@ class Vicon(object):
         self._make_EMGs()
         self._make_force_plates()
         self._make_IMUs()
+        self._model_output = ModelOutput.ModelOutput(self.data_dict["Model Outputs"], self.joint_names)
+        self.get_model_output()
+
 
     def _find_number_of_frames(self, col):
         """
@@ -105,9 +110,9 @@ class Vicon(object):
         """
         get the model output
         :return: model outputs
-        :rtype: dict
+        :rtype: ModelOutput.ModelOutput
         """
-        return self.data_dict["Model Outputs"]
+        return self._model_output
 
     def get_segments(self):
         """
@@ -232,7 +237,6 @@ class Vicon(object):
         """
         sensors = self.data_dict["Devices"]
         keys = self._filter_dict(sensors, 'Accel')
-        print keys
         for key in keys:
             self._accels[int(filter(str.isdigit, key))] = Accel.Accel(key, sensors[key])
 
@@ -354,10 +358,7 @@ class Vicon(object):
                     sub_value["data"].append(val)
         return data
 
-
-
-
 if __name__ == '__main__':
     file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
     data = Vicon(file)
-    print data.get_accel(1).name
+    print data.get_model_output().get_left_joint("Ankle").force.x

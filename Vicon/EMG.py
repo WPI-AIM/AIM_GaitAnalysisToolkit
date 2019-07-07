@@ -1,7 +1,7 @@
-from Sensor_suite import PostSensor
+import Devices
 
 
-class EMG(PostSensor.PostSensor):
+class EMG(Devices.Devices):
 
     def __init__(self, name, sensor):
         super(EMG, self).__init__(name, sensor, "EMG")
