@@ -1,7 +1,7 @@
-from Sensor_suite import PostSensor
+import Devices
 
 
-class ForcePlate(PostSensor.PostSensor):
+class ForcePlate(Devices.Devices):
 
     def __init__(self, name, forces, moments):
         sensor = {"force": forces, "moment": moments}

@@ -1,7 +1,7 @@
-from Sensor_suite import PostSensor
+import Devices
 
 
-class Accel(PostSensor.PostSensor):
+class Accel(Devices.Devices):
 
     def __init__(self, name, sensor):
         super(Accel, self).__init__(name, sensor, "Accel")

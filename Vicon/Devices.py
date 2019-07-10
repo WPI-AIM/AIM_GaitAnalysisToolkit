@@ -1,4 +1,4 @@
-class PostSensor(object):
+class Devices(object):
 
     def __init__(self, name, sensor, type):
         self._name = name
