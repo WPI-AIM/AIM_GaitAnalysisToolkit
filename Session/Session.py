@@ -14,9 +14,7 @@ class Session(object):
             except yaml.YAMLError as exc:
                 print(exc)
 
-        print self._subject
         self._age = float(self._subject["Age"])
-
         self._mass = float(self._subject["Mass"])
         self._height = float(self._subject["Height"])
         self._subject_number = float(self._subject["subject"])
@@ -100,32 +98,11 @@ class Session(object):
     def collect_frame(self, frame, time_scale=False):
         pass
 
-    def compare_stepping(self, frame):
-        pass
-
-    def plot_CoP(self, frame):
-
-        trial = self.trials[0].exoskeleton
-
-        left = [trial.get_left_leg().fsr.fsr1, trial.get_left_leg().fsr.fsr3, trial.get_left_leg().fsr.fsr3]
-        right = [trial.get_right_leg().fsr.fsr1, trial.get_right_leg().fsr.fsr3, trial.get_right_leg().fsr.fsr3]
-        cop_left = self.calc_CoP(left)
-        cop_right = self.calc_CoP(right)
-
-    def compate_plate_fsr(self, frame):
+    def compare_plate_fsr(self, frame):
         exo = self.trials[0].exoskeleton
         left_CoP = exo.left_leg.calc_CoP(frame)
         left_CoP = exo.right_leg_leg.calc_CoP(frame)
 
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    session = Session("/home/nathaniel/git/exoserver/Main/subject_1234.yaml")
-    print session.mass
+# if __name__ == "__main__":
+#     session = Session("/home/nathaniel/git/exoserver/Main/subject_1234.yaml")
+#     print session.mass
