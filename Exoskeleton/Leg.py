@@ -21,7 +21,7 @@ class Leg(object):
         self._ankle = ankle
         self._CoP = []
 
-    def calc_CoP(self):
+    def calc_CoP(self, frame):
         """
         calculate the CoP of the foot based on the FSR location
         and force
@@ -31,13 +31,12 @@ class Leg(object):
         """
         fsrs = self._ankle.FSRs
 
-        for index in xrange(len(fsrs[0].get_values())):
-            total_force = 0
-            centerX = 0
-            centerY = 0
-            for sensor in fsrs:
-                total_force += sensor.get_values()
-                centerX += sensor.get_values() * sensor.orientation[0]
-                centerY += sensor.get_values() * sensor.orientation[1]
-            cop = [centerX / total_force, centerY / total_force]
-            self._CoP.append(cop)
+        total_force = 0
+        centerX = 0
+        centerY = 0
+        for sensor in fsrs:
+            total_force += sensor.get_values()[frame]
+            centerX += sensor.get_values()[frame] * sensor.orientation[0]
+            centerY += sensor.get_values()[frame] * sensor.orientation[1]
+
+        return [centerX / total_force, centerY / total_force]

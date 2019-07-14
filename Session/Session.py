@@ -5,8 +5,9 @@ import Trial
 
 class Session(object):
 
-    def __init__(self, subject_file):
+    def __init__(self, config_file, subject_file):
 
+        self._config_file = config_file
         with open(subject_file, 'r') as stream:
             try:
                 self._subject = yaml.safe_load(stream)
@@ -83,7 +84,7 @@ class Session(object):
     def seperate_trials(self, trials_names):
         trials = {}
         for key, value in trials_names.iteritems():
-            trials[key] = Trial.Trial(value["output"], value["vicon"], value["dt"], value["notes"])
+            trials[key] = Trial.Trial(self._config_file, value["output"], value["vicon"], value["dt"], value["notes"])
 
         return trials
 
@@ -112,32 +113,10 @@ class Session(object):
         cop_right = self.calc_CoP(right)
 
     def compate_plate_fsr(self, frame):
-        trial = self.trials[0].exoskeleton
-        left = [trial.get_left_leg().fsr.fsr1, trial.get_left_leg().fsr.fsr3, trial.get_left_leg().fsr.fsr3]
-        right = [trial.get_right_leg().fsr.fsr1, trial.get_right_leg().fsr.fsr3, trial.get_right_leg().fsr.fsr3]
-        cop_left = self.calc_CoP(left)
-        cop_right = self.calc_CoP(right)
+        exo = self.trials[0].exoskeleton
+        left_CoP = exo.left_leg.calc_CoP(frame)
+        left_CoP = exo.right_leg_leg.calc_CoP(frame)
 
-    def calc_CoP(self, fsrs):
-        """
-        calculate the CoP of the foot based on the FSR location
-        and force
-        CoP_x = sum_i(F_i * x_i)/sum_i(F_i)
-        CoP_y = sum_i(F_i * y_i)/sum_i(F_i)
-        :return:
-        """
-
-        total_force = 0
-        centerX = 0
-        centerY = 0
-        CoP = []
-
-        for sensor in fsrs:
-            for val in sensor:
-                total_force += sensor
-                centerX += sensor * sensor.orientation[0]
-                centerY += sensor * sensor.orientation[1]
-            CoP.append([centerX / total_force, centerY / total_force])
 
 
 

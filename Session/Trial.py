@@ -4,13 +4,12 @@ from Vicon import Vicon
 
 class Trial(object):
 
-    def __init__(self, exo_file, vicon_file, dt, notes_file=None):
-        self._exo_file = exo_file
-        self._vicon_file = vicon_file
+    def __init__(self, config_file, exo_file, vicon_file, dt, notes_file=None):
+
         self._notes_file = notes_file
         self._dt = dt
-        self._exoskeleton = Exoskeleton.Exoskeleton(self._exo_file)
-        self._vicon = Vicon.Vicon(self._vicon_file)
+        self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
+        self._vicon = Vicon.Vicon(vicon_file)
 
     @property
     def dt(self):
