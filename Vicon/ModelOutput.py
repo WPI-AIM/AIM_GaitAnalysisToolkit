@@ -1,6 +1,5 @@
 from collections import namedtuple
 
-
 class ModelOutput(object):
 
     def __init__(self, data, joint_name):
@@ -49,8 +48,20 @@ class ModelOutput(object):
         :return:
         :rtype: self._Newton
         """
-        return self._right_joints[joint_name]
+        if "Hip" in joint_name:
+            name = 'Hip'
+        elif "Knee" in joint_name:
+            name = "Knee"
+        elif "Ankle" in joint_name:
+            name = "Ankle"
+        return self._right_joints[name]
 
     def get_left_joint(self, joint_name):
 
-        return self._right_joints[joint_name]
+        if "Hip" in joint_name:
+            name = 'Hip'
+        elif "Knee" in joint_name:
+            name = "Knee"
+        elif "Ankle" in joint_name:
+            name = "Ankle"
+        return self._left_joints[name]
