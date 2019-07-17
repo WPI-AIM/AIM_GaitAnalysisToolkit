@@ -4,6 +4,7 @@ class Devices(object):
         self._name = name
         self._sensor = sensor
         self.type = type
+        self.offset = 20
 
     @property
     def name(self):
@@ -15,7 +16,7 @@ class Devices(object):
 
     @property
     def sensor(self):
-        return self._name
+        return self._sensor
 
     @sensor.setter
     def sensor(self, value):
@@ -28,3 +29,6 @@ class Devices(object):
     @type.setter
     def type(self, value):
         self._type = value
+
+    def get_offset_index(self, dx):
+        return dx * self.offset

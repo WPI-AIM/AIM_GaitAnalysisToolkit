@@ -172,7 +172,11 @@ class Vicon(object):
        :return: EMG
        :rtype: EMG.EMG
         """
-        return self.EMGs[index]
+        return self._EMGs[index]
+
+    def get_all_emgs(self):
+
+        return self._EMGs
 
     def get_t_emg(self, index):
         """
@@ -181,7 +185,17 @@ class Vicon(object):
         :return: EMG
         :rtype: EMG.EMG
         """
-        return self.T_EMGs[index]
+        return self._T_EMGs[index]
+
+    def get_all_t_emg(self, index):
+        """
+        Get the T EMG values
+        :param index: number of sensor
+        :return: EMG
+        :rtype: EMG.EMG
+        """
+        return self._T_EMGs
+
 
     def _filter_dict(self, sensors, substring):
         """
@@ -216,9 +230,8 @@ class Vicon(object):
         T_EMG_keys = self._filter_dict(sensors, 'T_EMG')
         EMG_keys = [x for x in all_keys if x not in T_EMG_keys]
         for e_key, t_key in zip(EMG_keys, T_EMG_keys):
-            self._T_EMGs[int(filter(str.isdigit, t_key))] = EMG.EMG(t_key, sensors[t_key])
-            self._EMGs[int(filter(str.isdigit, e_key))] = EMG.EMG(e_key, sensors[e_key])
-        # return dict([(key, sensors[key]) for key in keys])
+            self._T_EMGs[int(filter(str.isdigit, t_key))] = EMG.EMG(t_key, sensors[t_key]["EMG"])
+            self._EMGs[int(filter(str.isdigit, e_key))] = EMG.EMG(e_key, sensors[e_key]["IM EMG"])
 
     def _make_IMUs(self):
         """
@@ -257,6 +270,7 @@ class Vicon(object):
         segs = self._seperate_csv_sections(raw_data)
         for index, output in enumerate(output_names):
             data[output] = self._extract_values(raw_data, segs[index], segs[index + 1])
+
         return data
 
     def _seperate_csv_sections(self, all_data):
@@ -358,7 +372,7 @@ class Vicon(object):
                     sub_value["data"].append(val)
         return data
 
+
 if __name__ == '__main__':
     file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
     data = Vicon(file)
-    print data.get_model_output().get_left_joint("Ankle").force.x

@@ -10,16 +10,19 @@ class Trial(object):
     def __init__(self, vicon_file, config_file=None, exo_file=None, dt=None, notes_file=None):
 
         # self._notes_file = notes_file
+        self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
         self._dt = 100
         # self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
         self._vicon = Vicon.Vicon(vicon_file)
+        self.set_points = {}
         self._joint_trajs = None
         self._black_list = []
+        self.create_index_seperators()
 
+    def create_index_seperators(self):
 
-    def get_index_seperators(self):
-        names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
         offsets = []
+        joints = []
         model = self.vicon.get_model_output()
         hip = model.get_right_joint("RHipAngles").angle.x
 
@@ -37,15 +40,41 @@ class Trial(object):
                     offset = ii
             offsets.append(offset)
 
-        for side in ("R", "L"):
-            for joint_name in names:
-                name = side + joint_name
-                joints[name] = []
-                for ii, start in enumerate(xrange(2, len(max_peakind) - 2)):
-                    data = (max_peakind[start],max_peakind[start + 1] + offsets[ii])
-                    joints[name].append((data, np.linspace(0, self.dt, len(data))))
+        for ii, start in enumerate(xrange(2, len(max_peakind) - 2)):
+            joints.append((max_peakind[start], max_peakind[start + 1] + offsets[ii]))
+
+        self.set_points = joints
 
     def separate_joint_trajectories(self):
+
+        joints = {}
+        model = self.vicon.get_model_output()
+        for fnc, side in zip((model.get_left_joint, model.get_right_joint), ("R", "L")):
+            for joint_name in self.names:
+                name = side + joint_name
+                joints[name] = []
+                for inc in self.set_points:
+                    data = np.array(fnc(name).angle.x[inc[0]:inc[1]])
+                    joints[name].append((data, np.linspace(0, self.dt, len(data))))
+
+        return joints
+
+    def seperate_emg(self):
+
+        joints = {}
+        emgs = self.vicon.get_all_emgs()
+
+        for key, emg in emgs.iteritems():
+            joints[key] = []
+            for inc in self.set_points:
+                start = emg.get_offset_index(inc[0])
+                end = emg.get_offset_index(inc[1])
+                data = np.array(emg.get_values())[start:end]
+                joints[key].append((data, np.linspace(0, self.dt, len(data))))
+
+        return joints
+
+        # def separate_joint_trajectories(self):
 
         joints = {}
         names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
@@ -117,14 +146,18 @@ class Trial(object):
 if __name__ == '__main__':
     file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
     trial = Trial(file)
-    trial.separate_joint_trajectories()
-    joints = trial.joint_trajs
+    joints = trial.separate_joint_trajectories()
+    emg = trial.seperate_emg()
+
     fig, ax = plt.subplots()
-    index = 0
-    print joints
+    fig2, ax2 = plt.subplots()
+
+    for index in emg[1]:
+        ax.plot(index[1], index[0])
+
     for index in xrange(1):
         y = joints["RKneeAngles"][index][0]
         x = joints["RKneeAngles"][index][1]
-        ax.plot(x,y)
+        ax2.plot(x, y)
 
     plt.show()
