@@ -1,15 +1,12 @@
-from collections import namedtuple
-
 import numpy as np
 
 from Vicon import Vicon
+from lib.Exoskeleton.Robot import core
 
 
 class Trial(object):
 
     def __init__(self, vicon_file, config_file=None, exo_file=None, dt=None, notes_file=None):
-        self._Point = namedtuple('Point', 'x y z')
-        self._Newton = namedtuple('Newton', 'angle force moment power')
 
         # self._notes_file = notes_file
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
@@ -75,9 +72,9 @@ class Trial(object):
                 Mx = np.array(plateM.x)[start:end]
                 My = np.array(plateM.y)[start:end]
                 Mz = np.array(plateM.z)[start:end]
-                f = self._Point(Fx, Fy, Fz)
-                m = self._Point(Mx, My, Mz)
-                data = self._Newton(None, f, m, None)
+                f = core.Point(Fx, Fy, Fz)
+                m = core.Point(Mx, My, Mz)
+                data = core.Newton(None, f, m, None)
                 joints[key].append((data, np.linspace(0, self.dt, len(Fx))))
 
         return joints
