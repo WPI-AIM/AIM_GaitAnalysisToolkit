@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+from collections import namedtuple
 
 import numpy as np
 
@@ -8,6 +8,8 @@ from Vicon import Vicon
 class Trial(object):
 
     def __init__(self, vicon_file, config_file=None, exo_file=None, dt=None, notes_file=None):
+        self._Point = namedtuple('Point', 'x y z')
+        self._Newton = namedtuple('Newton', 'angle force moment power')
 
         # self._notes_file = notes_file
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
@@ -45,7 +47,42 @@ class Trial(object):
 
         self.set_points = joints
 
-    def separate_joint_trajectories(self):
+    def seperate_force_plates(self):
+
+        joints = {}
+        plate1 = self.vicon.get_force_plate(1)
+        plate2 = self.vicon.get_force_plate(2)
+        plate1_forces = plate1.get_forces()
+        plate2_forces = plate2.get_forces()
+        plate1_moments = plate1.get_moments()
+        plate2_moments = plate2.get_moments()
+
+        p1 = (1, plate1_forces, plate1_moments)
+        p2 = (2, plate2_forces, plate2_moments)
+        joints[1] = []
+        joints[2] = []
+
+        for p in (p1, p2):
+            key = p[0]
+            plateF = p[1]
+            plateM = p[2]
+            for inc in self.set_points:
+                start = plate1.get_offset_index(inc[0])
+                end = plate1.get_offset_index(inc[1])
+                Fx = np.array(plateF.x)[start:end]
+                Fy = np.array(plateF.y)[start:end]
+                Fz = np.array(plateF.z)[start:end]
+                Mx = np.array(plateM.x)[start:end]
+                My = np.array(plateM.y)[start:end]
+                Mz = np.array(plateM.z)[start:end]
+                f = self._Point(Fx, Fy, Fz)
+                m = self._Point(Mx, My, Mz)
+                data = self._Newton(None, f, m, None)
+                joints[key].append((data, np.linspace(0, self.dt, len(Fx))))
+
+        return joints
+
+    def seperate_joint_trajectories(self):
 
         joints = {}
         model = self.vicon.get_model_output()
@@ -146,18 +183,20 @@ class Trial(object):
 if __name__ == '__main__':
     file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
     trial = Trial(file)
-    joints = trial.separate_joint_trajectories()
-    emg = trial.seperate_emg()
-
-    fig, ax = plt.subplots()
-    fig2, ax2 = plt.subplots()
-
-    for index in emg[1]:
-        ax.plot(index[1], index[0])
-
-    for index in xrange(1):
-        y = joints["RKneeAngles"][index][0]
-        x = joints["RKneeAngles"][index][1]
-        ax2.plot(x, y)
-
-    plt.show()
+    joints = trial.seperate_joint_trajectories()
+    trial.seperate_force_plates()
+    print trial.seperate_force_plates()[1]
+    # emg = trial.seperate_emg()
+    #
+    # fig, ax = plt.subplots()
+    # fig2, ax2 = plt.subplots()
+    #
+    # for index in emg[1]:
+    #     ax.plot(index[1], index[0])
+    #
+    # for index in xrange(1):
+    #     y = joints["RKneeAngles"][index][0]
+    #     x = joints["RKneeAngles"][index][1]
+    #     ax2.plot(x, y)
+    #
+    # plt.show()

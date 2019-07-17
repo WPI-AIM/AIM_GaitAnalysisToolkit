@@ -214,6 +214,7 @@ class Vicon(object):
         """
         sensors = self.data_dict["Devices"]
         keys = self._filter_dict(sensors, 'Force_Plate')  # + ['Combined Moment'] + ['Combined CoP']
+        print sensors["Force_Plate__Force_1"]
         self._force_plates[1] = ForcePlate.ForcePlate("Force_Plate_1", sensors["Force_Plate__Force_1"],
                                                       sensors["Force_Plate__Moment_1"])
 

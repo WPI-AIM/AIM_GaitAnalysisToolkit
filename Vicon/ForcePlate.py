@@ -1,32 +1,20 @@
+from collections import namedtuple
+
 import Devices
 
 
 class ForcePlate(Devices.Devices):
 
     def __init__(self, name, forces, moments):
-        sensor = {"force": forces, "moment": moments}
+        self._Point = namedtuple('Point', 'x y z')
+        self._Newton = namedtuple('Newton', 'angle force moment power')
+        self.force = self._Point(forces["Fx"]["data"], forces["Fy"]["data"], forces["Fz"]["data"])
+        self.moment = self._Point(moments["Mx"]["data"], moments["My"]["data"], moments["Mz"]["data"])
+        sensor = self._Newton(None, self.force, self.moment, None)
         super(ForcePlate, self).__init__(name, sensor, "IMU")
 
-    def forces(self):
-        return self.sensor["forces"]
+    def get_forces(self):
+        return self._sensor.force
 
-    def moments(self):
-        return self.sensor["moments"]
-
-    def get_moment_x(self):
-        return self.moments["Mx"]["data"]
-
-    def get_moment_y(self):
-        return self.moments["My"]["data"]
-
-    def get_moment_z(self):
-        return self.moments["Mz"]["data"]
-
-    def get_force_x(self):
-        return self.forces["Fx"]["data"]
-
-    def get_force_y(self):
-        return self.forces["Fy"]["data"]
-
-    def get_foce_z(self):
-        return self.forces["Fz"]["data"]
+    def get_moments(self):
+        return self._sensor.moment
