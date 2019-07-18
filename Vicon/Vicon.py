@@ -25,7 +25,7 @@ class Vicon(object):
         self._make_force_plates()
         self._make_IMUs()
         self._model_output = ModelOutput.ModelOutput(self.data_dict["Model Outputs"], self.joint_names)
-        self.get_model_output()
+        self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
 
 
     def _find_number_of_frames(self, col):
@@ -42,6 +42,14 @@ class Vicon(object):
             current_number = col[index]
 
         self.number_of_frames = col[index - 1]
+
+    @property
+    def length(self):
+        return self._length
+
+    @length.setter
+    def length(self, value):
+        self._length = value
 
     @property
     def number_of_frames(self):
@@ -371,6 +379,7 @@ class Vicon(object):
                     else:
                         val = float(row[index])
                     sub_value["data"].append(val)
+
         return data
 
 

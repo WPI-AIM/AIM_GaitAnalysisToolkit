@@ -9,7 +9,7 @@ from lib.Exoskeleton.SensorBase import IMUBase
 # TODO alter to preprocess instead of realtime
 class IMU(IMUBase.IMUBase):
 
-    def __init__(self, name, accel, gyro, temp, counter=None, rshal=None):
+    def __init__(self, name, accel, gyro, temp=None, counter=None, rshal=None):
         """
 
         :type accel: Accel
@@ -28,7 +28,7 @@ class IMU(IMUBase.IMUBase):
         self._gyro_angle = np.array([0, 0, 0])
         self.kalman = {}
         self.axis = ["x", "y", "z"]
-        self.setup_kalman()
+        # self.setup_kalman()
 
     # def setup_kalman(self):
     #     """

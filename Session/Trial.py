@@ -1,5 +1,6 @@
 import numpy as np
 
+from Exoskeleton import Exoskeleton
 from Vicon import Vicon
 from lib.Exoskeleton.Robot import core
 
@@ -11,9 +12,9 @@ class Trial(object):
         # self._notes_file = notes_file
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
         self._dt = 100
-        # self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
+        self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
         self._vicon = Vicon.Vicon(vicon_file)
-        self.set_points = {}
+        self.vicon_set_points = {}
         self._joint_trajs = None
         self._black_list = []
         self.create_index_seperators()
@@ -21,7 +22,9 @@ class Trial(object):
     def create_index_seperators(self):
 
         offsets = []
-        joints = []
+        vicon = []
+        exo = []
+        theta = self._vicon.length / self._exoskeleton.length
         model = self.vicon.get_model_output()
         hip = model.get_right_joint("RHipAngles").angle.x
 
@@ -40,9 +43,13 @@ class Trial(object):
             offsets.append(offset)
 
         for ii, start in enumerate(xrange(2, len(max_peakind) - 2)):
-            joints.append((max_peakind[start], max_peakind[start + 1] + offsets[ii]))
+            begin = max_peakind[start]
+            end = max_peakind[start + 1] + offsets[ii]
+            vicon.append((begin, end))
+            exo.append((int(theta * begin), int(theta * end)))
 
-        self.set_points = joints
+        self.vicon_set_points = vicon
+        self.exo_set_points = exo
 
     def seperate_force_plates(self):
 
@@ -63,7 +70,7 @@ class Trial(object):
             key = p[0]
             plateF = p[1]
             plateM = p[2]
-            for inc in self.set_points:
+            for inc in self.vicon_set_points:
                 start = plate1.get_offset_index(inc[0])
                 end = plate1.get_offset_index(inc[1])
                 Fx = np.array(plateF.x)[start:end]
@@ -87,7 +94,7 @@ class Trial(object):
             for joint_name in self.names:
                 name = side + joint_name
                 joints[name] = []
-                for inc in self.set_points:
+                for inc in self.vicon_set_points:
                     data = np.array(fnc(name).angle.x[inc[0]:inc[1]])
                     joints[name].append((data, np.linspace(0, self.dt, len(data))))
 
@@ -100,7 +107,7 @@ class Trial(object):
 
         for key, emg in emgs.iteritems():
             joints[key] = []
-            for inc in self.set_points:
+            for inc in self.vicon_set_points:
                 start = emg.get_offset_index(inc[0])
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
@@ -175,14 +182,14 @@ class Trial(object):
     def joint_trajs(self, value):
         self._joint_trajs = value
 
-
-
 if __name__ == '__main__':
-    file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
-    trial = Trial(file)
+    vicon_file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
+    config_file = "/home/nathaniel/git/exoserver/Config/sensor_list.yaml"
+    exo_file = "/home/nathaniel/git/exoserver/Main/subject_1234_trial_1.csv"
+    trial = Trial(vicon_file, config_file, exo_file)
     joints = trial.seperate_joint_trajectories()
     trial.seperate_force_plates()
-    print trial.seperate_force_plates()[1]
+    print trial.vicon.length
     # emg = trial.seperate_emg()
     #
     # fig, ax = plt.subplots()
