@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from Exoskeleton import Exoskeleton
@@ -24,7 +26,8 @@ class Trial(object):
         offsets = []
         vicon = []
         exo = []
-        theta = self._vicon.length / self._exoskeleton.length
+        theta = float(self._exoskeleton.length) / float(self._vicon.length)
+        print "thtea", theta
         model = self.vicon.get_model_output()
         hip = model.get_right_joint("RHipAngles").angle.x
 
@@ -45,8 +48,9 @@ class Trial(object):
         for ii, start in enumerate(xrange(2, len(max_peakind) - 2)):
             begin = max_peakind[start]
             end = max_peakind[start + 1] + offsets[ii]
+            # TODO need to find out if i need to round up or down
             vicon.append((begin, end))
-            exo.append((int(theta * begin), int(theta * end)))
+            exo.append((math.ceil(theta * begin), math.ceil(theta * end)))
 
         self.vicon_set_points = vicon
         self.exo_set_points = exo
@@ -82,7 +86,8 @@ class Trial(object):
                 f = core.Point(Fx, Fy, Fz)
                 m = core.Point(Mx, My, Mz)
                 data = core.Newton(None, f, m, None)
-                joints[key].append((data, np.linspace(0, self.dt, len(Fx))))
+                time = (len(Fx) / self.vicon.length) * self.dt
+                joints[key].append((data, np.linspace(0, time, len(Fx))))
 
         return joints
 
@@ -96,7 +101,8 @@ class Trial(object):
                 joints[name] = []
                 for inc in self.vicon_set_points:
                     data = np.array(fnc(name).angle.x[inc[0]:inc[1]])
-                    joints[name].append((data, np.linspace(0, self.dt, len(data))))
+                    time = (len(data) / self.vicon.length) * self.dt
+                    joints[name].append((data, np.linspace(0, time, len(data))))
 
         return joints
 
@@ -111,7 +117,8 @@ class Trial(object):
                 start = emg.get_offset_index(inc[0])
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
-                joints[key].append((data, np.linspace(0, self.dt, len(data))))
+                time = (len(data) / self.vicon.length) * self.dt
+                joints[key].append((data, np.linspace(0, time, len(data))))
 
         return joints
 
