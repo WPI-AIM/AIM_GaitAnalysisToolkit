@@ -67,10 +67,12 @@ class Exoskeleton(ExoskeletonBase.ExoskeletonBase):
                 elif sensor_type == "Gyro":
                     self.sensors[name] = Gyro.Gyro(name, side, self._data[name])
                 elif sensor_type == "FSR":
-                    self.sensors[name] = FSR.FSR(name, side, self._data[name])
+                    data = [item for sublist in self._data[name] for item in sublist]
+                    self.sensors[name] = FSR.FSR(name, side, data)
                     self.sensors[name].orientation = orientation
                 elif sensor_type == "Pot":
-                    self.sensors[name] = Pot.Pot(name, side, self._data[name])
+                    data = [item for sublist in self._data[name] for item in sublist]
+                    self.sensors[name] = Pot.Pot(name, side, data)
 
             # set up IMUs
             for name in config:
@@ -96,13 +98,35 @@ class Exoskeleton(ExoskeletonBase.ExoskeletonBase):
         right_knee = Joint.Joint(self._imus["IMU_Right_Knee"], self.sensors["Pot_Right_Knee"])
         fsr = [self.sensors["FSR1_Right"], self.sensors["FSR2_Right"], self.sensors["FSR3_Right"]]
         right_ankle = Joint.Joint(self._imus["IMU_Right_Ankle"], self.sensors["Pot_Right_Ankle"], fsr)
-        self.right_leg = Leg.Leg(right_hip, right_knee, right_ankle)
+        self._right_leg = Leg.Leg(right_hip, right_knee, right_ankle)
         left_hip = Joint.Joint(self._imus["IMU_Left_Hip"], self.sensors["Pot_Left_Hip"])
         left_knee = Joint.Joint(self._imus["IMU_Left_Knee"], self.sensors["Pot_Left_Knee"])
         fsr = [self.sensors["FSR1_Left"], self.sensors["FSR2_Left"], self.sensors["FSR3_Left"]]
         left_ankle = Joint.Joint(self._imus["IMU_Left_Ankle"], self.sensors["Pot_Left_Ankle"], fsr)
-        self.left_leg = Leg.Leg(left_hip, left_knee, left_ankle)
+        self._left_leg = Leg.Leg(left_hip, left_knee, left_ankle)
 
+    @property
+    def left_leg(self):
+        """
+         :rtype Leg.Leg
+         """
+        return self._left_leg
+
+    @left_leg.setter
+    def left_leg(self, value):
+
+        self._left_leg = value
+
+    @property
+    def right_leg(self):
+        """
+         :rtype Leg.Leg
+         """
+        return self._right_leg
+
+    @right_leg.setter
+    def right_leg(self, value):
+        self._right_leg = value
 
 if __name__ == '__main__':
     file = "/home/nathaniel/git/exoserver/Main/subject_1234_trial_0.csv"

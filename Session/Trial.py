@@ -156,6 +156,13 @@ class Trial(object):
 
         self._joint_trajs = joints
 
+    def seperate_FSR(self):
+
+        left_fsr = self.exoskeleton.left_leg.ankle.FSRs
+        right_fsr = self.exoskeleton.right_leg.ankle.FSRs
+        print self.exoskeleton.right_leg.calc_CoP()
+
+
     @property
     def dt(self):
         return self._dt
@@ -196,6 +203,7 @@ if __name__ == '__main__':
     trial = Trial(vicon_file, config_file, exo_file)
     joints = trial.seperate_joint_trajectories()
     trial.seperate_force_plates()
+    trial.seperate_FSR()
     print trial.vicon.length
     # emg = trial.seperate_emg()
     #

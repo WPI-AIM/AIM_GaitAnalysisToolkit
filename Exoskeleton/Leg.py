@@ -1,7 +1,7 @@
-from lib.Exoskeleton.Robot import Joint
+from lib.Exoskeleton.Robot import Joint, Leg
 
 
-class Leg(object):
+class Leg(Leg.Leg):
     """
     A class to handle all the joints of a leg
     """
@@ -19,9 +19,8 @@ class Leg(object):
         self._hip = hip
         self._knee = knee
         self._ankle = ankle
-        self._CoP = []
 
-    def calc_CoP(self, frame):
+    def calc_CoP(self):
         """
         calculate the CoP of the foot based on the FSR location
         and force
@@ -29,14 +28,19 @@ class Leg(object):
         CoP_y = sum_i(F_i * y_i)/sum_i(F_i)
         :return:
         """
+        CoP = []
+
         fsrs = self._ankle.FSRs
 
-        total_force = 0
-        centerX = 0
-        centerY = 0
-        for sensor in fsrs:
-            total_force += sensor.get_values()[frame]
-            centerX += sensor.get_values()[frame] * sensor.orientation[0]
-            centerY += sensor.get_values()[frame] * sensor.orientation[1]
+        for index in xrange(len(fsrs[0].get_values())):
+            total_force = 0
+            centerX = 0
+            centerY = 0
+            for sensor in fsrs:
+                total_force += sensor.get_values()[index]
+                centerX += sensor.get_values()[index] * sensor.orientation[0]
+                centerY += sensor.get_values()[index] * sensor.orientation[1]
 
-        return [centerX / total_force, centerY / total_force]
+            CoP.append([centerX / total_force, centerY / total_force])
+
+        return CoP
