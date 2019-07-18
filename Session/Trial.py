@@ -50,7 +50,7 @@ class Trial(object):
             end = max_peakind[start + 1] + offsets[ii]
             # TODO need to find out if i need to round up or down
             vicon.append((begin, end))
-            exo.append((math.ceil(theta * begin), math.ceil(theta * end)))
+            exo.append((int(math.ceil(theta * begin)), int(math.ceil(theta * end))))
 
         self.vicon_set_points = vicon
         self.exo_set_points = exo
@@ -156,12 +156,48 @@ class Trial(object):
 
         self._joint_trajs = joints
 
+    def seperate_CoP(self):
+
+        left_cop = self.exoskeleton.left_leg.calc_CoP()
+        right_cop = self.exoskeleton.right_leg.calc_CoP()
+
+        left = []
+        right = []
+
+        for inc in self.exo_set_points:
+            left_data = left_cop[inc[0]:inc[1]]
+            right_data = right_cop[inc[0]:inc[1]]
+
+            time = (len(left_data) / self.exoskeleton.length) * self.dt
+            left.append((left_data, np.linspace(0, time, len(left_data))))
+            right.append((right_data, np.linspace(0, time, len(right_data))))
+
+        return (left, right)
+
     def seperate_FSR(self):
 
-        left_fsr = self.exoskeleton.left_leg.ankle.FSRs
+        left_fsr = self.exoskeleton.left_leg
         right_fsr = self.exoskeleton.right_leg.ankle.FSRs
-        print self.exoskeleton.right_leg.calc_CoP()
 
+        left = []
+        right = []
+
+        for inc in self.exo_set_points:
+            left_data = np.array(
+                [[left_fsr[0].get_values()[inc[0]:inc[1]]],
+                 [left_fsr[1].get_values()[inc[0]:inc[1]]],
+                 [left_fsr[2].get_values()[inc[0]:inc[1]]]])
+
+            right_data = np.array(
+                [[right_fsr[0].get_values()[inc[0]:inc[1]]],
+                 [right_fsr[1].get_values()[inc[0]:inc[1]]],
+                 [right_fsr[2].get_values()[inc[0]:inc[1]]]])
+
+            time = (len(left_data) / self.exoskeleton.length) * self.dt
+            left.append((left_data, np.linspace(0, time, len(left_data))))
+            right.append((right_data, np.linspace(0, time, len(right_data))))
+
+        return (left, right)
 
     @property
     def dt(self):
@@ -203,8 +239,8 @@ if __name__ == '__main__':
     trial = Trial(vicon_file, config_file, exo_file)
     joints = trial.seperate_joint_trajectories()
     trial.seperate_force_plates()
-    trial.seperate_FSR()
-    print trial.vicon.length
+    left, right = trial.seperate_CoP()
+    print right[0]
     # emg = trial.seperate_emg()
     #
     # fig, ax = plt.subplots()
