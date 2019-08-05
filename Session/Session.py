@@ -86,22 +86,32 @@ class Session(object):
 
         return trials
 
-    def collect_exo_imu(self, time_scale=False):
+    def collect_exo_accel(self):
+        """
+        collect all the accel from all the trials
+        :return:
+        """
+        trials = {}
+        for key, value in self.trials.iteritems():
+            trials[key] = self.trials[key].seperate_accel()
+        return trials
+
+    def collect_exo_CoP(self):
+        """
+        collect all the accel from all the trials
+        :return:
+        """
+        trials = {}
+        for key, value in self.trials.iteritems():
+            trials[key] = self.trials[key].seperate_CoP()
+        return trials
+
+    def collect_exo_pots(self):
         pass
 
-    def collect_exo_fsr(self, time_scale=False):
+    def collect_frame(self):
         pass
 
-    def collect_exo_pots(self, time_scale=False):
-        pass
-
-    def collect_frame(self, frame, time_scale=False):
-        pass
-
-    def compare_plate_fsr(self, frame):
-        exo = self.trials[0].exoskeleton
-        left_CoP = exo.left_leg.calc_CoP(frame)
-        left_CoP = exo.right_leg_leg.calc_CoP(frame)
 
 # if __name__ == "__main__":
 #     session = Session("/home/nathaniel/git/exoserver/Main/subject_1234.yaml")

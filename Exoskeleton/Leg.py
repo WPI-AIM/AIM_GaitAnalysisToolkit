@@ -26,7 +26,8 @@ class Leg(Leg.Leg):
         and force
         CoP_x = sum_i(F_i * x_i)/sum_i(F_i)
         CoP_y = sum_i(F_i * y_i)/sum_i(F_i)
-        :return:
+        :return: list of the CoP
+        :rtype: list
         """
         CoP = []
 
