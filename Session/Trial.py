@@ -34,7 +34,7 @@ class Trial(object):
         vicon = []
         exo = []
         theta = float(self._exoskeleton.length) / float(self._vicon.length)
-        print "thtea", theta
+
         model = self.vicon.get_model_output()
         hip = model.get_right_joint("RHipAngles").angle.x
         max_peakind = np.diff(np.sign(np.diff(hip))).flatten()  # the one liner
@@ -97,7 +97,8 @@ class Trial(object):
                 m = core.Point(Mx, My, Mz)
                 data = core.Newton(None, f, m, None)
                 time = (len(Fx) / self.vicon.length) * self.dt
-                joints[key].append((data, np.linspace(0, time, len(Fx))))
+                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                joints[key].append(stamp)
 
         return joints
 
@@ -116,7 +117,8 @@ class Trial(object):
                 for inc in self.vicon_set_points:
                     data = np.array(fnc(name).angle.x[inc[0]:inc[1]])
                     time = (len(data) / self.vicon.length) * self.dt
-                    joints[name].append((data, np.linspace(0, time, len(data))))
+                    stamp = core.Data(data, np.linspace(0, time, len(data)))
+                    joints[name].append(stamp)
 
         return joints
 
@@ -136,7 +138,8 @@ class Trial(object):
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
                 time = (len(data) / self.vicon.length) * self.dt
-                joints[key].append((data, np.linspace(0, time, len(data))))
+                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                joints[key].append(stamp)
 
         return joints
 
@@ -146,21 +149,26 @@ class Trial(object):
        :return: CoP data
        :rtype: Dict
         """
-        left_cop = self.exoskeleton.left_leg.calc_CoP()
-        right_cop = self.exoskeleton.right_leg.calc_CoP()
 
         left = []
         right = []
+
+        left_cop = self.exoskeleton.left_leg.calc_CoP()
+        right_cop = self.exoskeleton.right_leg.calc_CoP()
 
         for inc in self.exo_set_points:
             left_data = left_cop[inc[0]:inc[1]]
             right_data = right_cop[inc[0]:inc[1]]
 
             time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
+            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
+            left.append(stamp_left)
+            right.append(stamp_right)
 
-        return left, right
+        side = core.Side(left, right)
+
+        return side
 
     def seperate_FSR(self):
         """
@@ -171,7 +179,6 @@ class Trial(object):
 
         left_fsr = self.exoskeleton.left_leg.ankle.FSRs
         right_fsr = self.exoskeleton.right_leg.ankle.FSRs
-
         left = []
         right = []
 
@@ -187,10 +194,14 @@ class Trial(object):
                  [right_fsr[2].get_values()[inc[0]:inc[1]]]])
 
             time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
+            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
+            left.append(stamp_left)
+            right.append(stamp_right)
 
-        return left, right
+        side = core.Side(left, right)
+
+        return side
 
     def seperate_pots(self):
         """
@@ -200,7 +211,6 @@ class Trial(object):
         """
         left_leg = self.exoskeleton.left_leg
         right_leg = self.exoskeleton.right_leg
-
         left = []
         right = []
 
@@ -216,10 +226,18 @@ class Trial(object):
                  [right_leg.ankle.pot.get_values()[inc[0]:inc[1]]]])
 
             time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
 
-        return left, right
+            stamp_left = core.Data()
+            stamp_right = core.Data()
+            stamp_right.data = right_data
+            stamp_left.data = left_data
+            stamp_left.time = np.linspace(0, time, len(left_data))
+            stamp_right.time = np.linspace(0, time, len(right_data))
+            left.append(stamp_left)
+            right.append(stamp_right)
+
+        side = core.Side(left, right)
+        return side
 
     def seperate_accel(self):
         """
@@ -245,10 +263,15 @@ class Trial(object):
                  [right_leg.ankle.IMU.accel.get_values()[inc[0]:inc[1]]]])
 
             time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
 
-        return left, right
+            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
+            left.append(stamp_left)
+            right.append(stamp_right)
+
+        side = core.Side(left, right)
+
+        return side
 
     def seperate_gyro(self):
         """
@@ -274,10 +297,13 @@ class Trial(object):
                  [right_leg.ankle.IMU.gyro.get_values()[inc[0]:inc[1]]]])
 
             time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
+            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
+            left.append(stamp_left)
+            right.append(stamp_right)
 
-        return left, right
+        side = core.Side(left, right)
+        return side
 
     @property
     def dt(self):
@@ -320,4 +346,4 @@ if __name__ == '__main__':
     joints = trial.seperate_joint_trajectories()
     plate = trial.seperate_force_plates()
     left, right = trial.seperate_CoP()
-
+    emg = trial.seperate_emg()
