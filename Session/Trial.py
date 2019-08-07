@@ -37,14 +37,28 @@ class Trial(object):
 
         model = self.vicon.get_model_output()
         hip = model.get_right_joint("RHipAngles").angle.x
+        N = 10
+        hip = np.convolve(hip, np.ones((N,)) / N, mode='valid')
         max_peakind = np.diff(np.sign(np.diff(hip))).flatten()  # the one liner
         max_peakind = np.pad(max_peakind, (1, 10), 'constant', constant_values=(0, 0))
         max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
 
+        # for start in xrange(2, len(max_peakind) - 2):
+        #     error = 10000000
+        #     offset = 0
+        #     starting_value = model.get_left_joint("LHipAngles").angle.x[max_peakind[start]]
+        #     for ii in xrange(-10, 20):
+        #         temp_error = abs(starting_value - model.get_left_joint("LHipAngles").angle.x[max_peakind[start+1] + ii])
+        #         if temp_error < error:
+        #             error = temp_error
+        #             offset = ii
+        #     offsets.append(offset)
+
         for start in xrange(2, len(max_peakind) - 2):
             error = 10000000
             offset = 0
-            for ii in xrange(0, 25):  # TODO why is this 25??????????????
+            starting_value = model.get_left_joint("LHipAngles").angle.x[max_peakind[start]]
+            for ii in xrange(0, 25):
                 temp_error = model.get_left_joint("LKneeAngles").angle.x[max_peakind[start + 1] + ii]
                 if temp_error < error:
                     error = temp_error
@@ -53,6 +67,7 @@ class Trial(object):
 
         for ii, start in enumerate(xrange(2, len(max_peakind) - 2)):
             begin = max_peakind[start]
+            print "iffset ", offsets[ii]
             end = max_peakind[start + 1] + offsets[ii]
             # TODO need to find out if i need to round up or down
             vicon.append((begin, end))
@@ -96,7 +111,7 @@ class Trial(object):
                 f = core.Point(Fx, Fy, Fz)
                 m = core.Point(Mx, My, Mz)
                 data = core.Newton(None, f, m, None)
-                time = (len(Fx) / self.vicon.length) * self.dt
+                time = (len(Fx) / float(self.vicon.length)) * self.dt
                 stamp = core.Data(data, np.linspace(0, time, len(data)))
                 joints[key].append(stamp)
 
@@ -116,8 +131,9 @@ class Trial(object):
                 joints[name] = []
                 for inc in self.vicon_set_points:
                     data = np.array(fnc(name).angle.x[inc[0]:inc[1]])
-                    time = (len(data) / self.vicon.length) * self.dt
+                    time = (len(data) / float(self.vicon.length)) * self.dt
                     stamp = core.Data(data, np.linspace(0, time, len(data)))
+
                     joints[name].append(stamp)
 
         return joints
@@ -126,7 +142,7 @@ class Trial(object):
         """
        Seperates then EMGs data
        :return: EMGs data
-       :rtype: Dict
+       :rtype: Core.side
         """
         joints = {}
         emgs = self.vicon.get_all_emgs()
@@ -137,7 +153,28 @@ class Trial(object):
                 start = emg.get_offset_index(inc[0])
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
-                time = (len(data) / self.vicon.length) * self.dt
+                time = (len(data) / float(self.vicon.length)) * self.dt
+                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                joints[key].append(stamp)
+
+        return joints
+
+    def seperate_T_emg(self):
+        """
+       Seperates then EMGs data
+       :return: EMGs data
+       :rtype: Core.side
+        """
+        joints = {}
+        emgs = self.vicon.get_all_t_emg()
+
+        for key, emg in emgs.iteritems():
+            joints[key] = []
+            for inc in self.vicon_set_points:
+                start = emg.get_offset_index(inc[0])
+                end = emg.get_offset_index(inc[1])
+                data = np.array(emg.get_values())[start:end]
+                time = (len(data) / float(self.vicon.length)) * self.dt
                 stamp = core.Data(data, np.linspace(0, time, len(data)))
                 joints[key].append(stamp)
 
@@ -160,7 +197,7 @@ class Trial(object):
             left_data = left_cop[inc[0]:inc[1]]
             right_data = right_cop[inc[0]:inc[1]]
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
             left.append(stamp_left)
@@ -193,7 +230,7 @@ class Trial(object):
                  [right_fsr[1].get_values()[inc[0]:inc[1]]],
                  [right_fsr[2].get_values()[inc[0]:inc[1]]]])
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
             left.append(stamp_left)
@@ -225,7 +262,7 @@ class Trial(object):
                  [right_leg.knee.pot.get_values()[inc[0]:inc[1]]],
                  [right_leg.ankle.pot.get_values()[inc[0]:inc[1]]]])
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
 
             stamp_left = core.Data()
             stamp_right = core.Data()
@@ -262,7 +299,7 @@ class Trial(object):
                  [right_leg.knee.IMU.accel.get_values()[inc[0]:inc[1]]],
                  [right_leg.ankle.IMU.accel.get_values()[inc[0]:inc[1]]]])
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
 
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
@@ -296,7 +333,7 @@ class Trial(object):
                  [right_leg.knee.IMU.gyro.get_values()[inc[0]:inc[1]]],
                  [right_leg.ankle.IMU.gyro.get_values()[inc[0]:inc[1]]]])
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
             left.append(stamp_left)

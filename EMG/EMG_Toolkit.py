@@ -17,7 +17,7 @@ def window_rms(a, window_size):
     return np.sqrt(np.convolve(a2, window, 'valid'))
 
 
-def filteremg(time, emg, low_pass=10, sfreq=1000, high_band=20, low_band=450):
+def butterworth(data, sfreq=1000.0, high_band=20.0, low_band=450.0):
     """
     time: Time data
     emg: EMG data
@@ -33,5 +33,9 @@ def filteremg(time, emg, low_pass=10, sfreq=1000, high_band=20, low_band=450):
     # create bandpass filter for EMG
     b1, a1 = sp.signal.butter(4, [high_band, low_band], btype='bandpass')
 
-    # process EMG signal: filter EMG
-    emg_filtered = sp.signal.filtfilt(b1, a1, emg)
+    return sp.signal.filtfilt(b1, a1, data)
+
+def low_pass(data, low_pass=10.0, sfreq=1000.0):
+    low_pass = low_pass / sfreq
+    b2, a2 = sp.signal.butter(4, low_pass, btype='lowpass')
+    return sp.signal.filtfilt(b2, a2, data)

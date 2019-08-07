@@ -195,7 +195,7 @@ class Vicon(object):
         """
         return self._T_EMGs[index]
 
-    def get_all_t_emg(self, index):
+    def get_all_t_emg(self):
         """
         Get the T EMG values
         :param index: number of sensor
@@ -240,6 +240,7 @@ class Vicon(object):
         EMG_keys = [x for x in all_keys if x not in T_EMG_keys]
         for e_key, t_key in zip(EMG_keys, T_EMG_keys):
             self._T_EMGs[int(filter(str.isdigit, t_key))] = EMG.EMG(t_key, sensors[t_key]["EMG"])
+            print sensors[t_key]["EMG"]
             self._EMGs[int(filter(str.isdigit, e_key))] = EMG.EMG(e_key, sensors[e_key]["IM EMG"])
 
     def _make_IMUs(self):
@@ -275,6 +276,7 @@ class Vicon(object):
             raw_data = list(reader)
 
         # output_names = ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"]
+
         data = {}
         segs = self._seperate_csv_sections(raw_data)
         for index, output in enumerate(output_names):
@@ -283,7 +285,7 @@ class Vicon(object):
         return data
 
     def _seperate_csv_sections(self, all_data):
-
+        print len(all_data[0])
         col1 = [row[0] for row in all_data]
         devices = col1.index("Devices")
         joints = col1.index("Joints")
