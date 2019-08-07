@@ -39,22 +39,12 @@ class Trial(object):
         hip = model.get_right_joint("RHipAngles").angle.x
         N = 10
         hip = np.convolve(hip, np.ones((N,)) / N, mode='valid')
+
         max_peakind = np.diff(np.sign(np.diff(hip))).flatten()  # the one liner
         max_peakind = np.pad(max_peakind, (1, 10), 'constant', constant_values=(0, 0))
         max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
 
-        # for start in xrange(2, len(max_peakind) - 2):
-        #     error = 10000000
-        #     offset = 0
-        #     starting_value = model.get_left_joint("LHipAngles").angle.x[max_peakind[start]]
-        #     for ii in xrange(-10, 20):
-        #         temp_error = abs(starting_value - model.get_left_joint("LHipAngles").angle.x[max_peakind[start+1] + ii])
-        #         if temp_error < error:
-        #             error = temp_error
-        #             offset = ii
-        #     offsets.append(offset)
-
-        for start in xrange(2, len(max_peakind) - 2):
+        for start in xrange(0, len(max_peakind) - 2):
             error = 10000000
             offset = 0
             starting_value = model.get_left_joint("LHipAngles").angle.x[max_peakind[start]]
@@ -65,11 +55,9 @@ class Trial(object):
                     offset = ii
             offsets.append(offset)
 
-        for ii, start in enumerate(xrange(2, len(max_peakind) - 2)):
+        for ii, start in enumerate(xrange(0, len(max_peakind) - 2)):
             begin = max_peakind[start]
-            print "iffset ", offsets[ii]
             end = max_peakind[start + 1] + offsets[ii]
-            # TODO need to find out if i need to round up or down
             vicon.append((begin, end))
             exo.append((int(math.ceil(theta * begin)), int(math.ceil(theta * end))))
 
@@ -376,7 +364,7 @@ class Trial(object):
 
 
 if __name__ == '__main__':
-    vicon_file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
+    vicon_file = "/media/nathaniel/Data/LowerLimb_HealthyGait/Subject02/walking/Walking01.csv"
     config_file = "/home/nathaniel/git/exoserver/Config/sensor_list.yaml"
     exo_file = "/home/nathaniel/git/exoserver/Main/subject_1234_trial_1.csv"
     trial = Trial(vicon_file, config_file, exo_file)
