@@ -9,16 +9,17 @@ from lib.Exoskeleton.Robot import core
 
 class Trial(object):
 
-    def __init__(self, vicon_file, config_file=None, exo_file=None, dt=None, notes_file=None):
+    def __init__(self, vicon_file, config_file=None, exo_file=None, dt=100, notes_file=None):
 
         # self._notes_file = notes_file
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
-        self._dt = 100
+        self._dt = dt
         self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
         self._vicon = Vicon.Vicon(vicon_file)
         self.vicon_set_points = {}
         self._joint_trajs = None
         self._black_list = []
+        self._use_black_list = False
         self.create_index_seperators()
 
     def create_index_seperators(self):
@@ -64,7 +65,7 @@ class Trial(object):
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
         self.exo_set_points = exo  # varible that holds the setpoints for the exo
 
-    def get_force_plates(self,use_black_list=False):
+    def get_force_plates(self):
         """
         Seperates then force plate data
         :return: Force plate data
@@ -85,7 +86,7 @@ class Trial(object):
 
         for p in (p1, p2):
             key = p[0]
-            if use_black_list:
+            if self._use_black_list:
                 if key in self._black_list:
                     continue
             plateF = p[1]
@@ -108,7 +109,7 @@ class Trial(object):
 
         return joints
 
-    def get_joint_trajectories(self, use_black_list=False):
+    def get_joint_trajectories(self):
         """
         Seperates then joint trajs data
         :return: joint trajectory data
@@ -125,7 +126,7 @@ class Trial(object):
                     data = np.array(fnc(name).angle.x[inc[0]:inc[1]])
                     time = (len(data) / float(self.vicon.length)) * self.dt
                     stamp = core.Data(data, np.linspace(0, time, len(data)))
-                    if use_black_list:
+                    if self._use_black_list:
                         if count in self._black_list:
                             continue
                     joints[name].append(stamp)
@@ -133,7 +134,7 @@ class Trial(object):
 
         return joints
 
-    def get_emg(self,use_black_list=False):
+    def get_emg(self):
         """
        Seperates then EMGs data
        :return: EMGs data
@@ -151,7 +152,7 @@ class Trial(object):
                 data = np.array(emg.get_values())[start:end]
                 time = (len(data) / float(self.vicon.length)) * self.dt
                 stamp = core.Data(data, np.linspace(0, time, len(data)))
-                if use_black_list:
+                if self._use_black_list:
                     if count in self._black_list:
                         continue
                 joints[key].append(stamp)
@@ -160,7 +161,7 @@ class Trial(object):
 
         return joints
 
-    def get_T_emg(self,use_black_list=False):
+    def get_T_emgs(self):
         """
        Seperates then EMGs data
        :return: EMGs data
@@ -178,7 +179,7 @@ class Trial(object):
                 data = np.array(emg.get_values())[start:end]
                 time = (len(data) / float(self.vicon.length)) * self.dt
                 stamp = core.Data(data, np.linspace(0, time, len(data)))
-                if use_black_list:
+                if self._use_black_list:
                     if count in self._black_list:
                         continue
                 joints[key].append(stamp)
@@ -186,7 +187,7 @@ class Trial(object):
 
         return joints
 
-    def get_CoP(self,use_black_list=False):
+    def get_CoPs(self):
         """
        Seperates then CoP data
        :return: CoP data
@@ -208,7 +209,7 @@ class Trial(object):
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-            if use_black_list:
+            if self._use_black_list:
                 if count in self._black_list:
                     continue
                 else:
@@ -221,7 +222,7 @@ class Trial(object):
 
         return side
 
-    def get_FSR(self, use_black_list=False):
+    def get_FSRs(self):
         """
                Seperates FSR data
                :return: FSR data
@@ -249,7 +250,7 @@ class Trial(object):
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-            if use_black_list:
+            if self._use_black_list:
                 if count in self._black_list:
                     continue
                 else:
@@ -262,7 +263,7 @@ class Trial(object):
 
         return side
 
-    def get_pots(self,use_black_list=False):
+    def get_pots(self):
         """
        Seperates Pot data
        :return: Pot data
@@ -294,7 +295,7 @@ class Trial(object):
             stamp_left.time = np.linspace(0, time, len(left_data))
             stamp_right.time = np.linspace(0, time, len(right_data))
 
-            if use_black_list:
+            if self._use_black_list:
                 if count in self._black_list:
                     continue
                 else:
@@ -305,7 +306,7 @@ class Trial(object):
         side = core.Side(left, right)
         return side
 
-    def get_accel(self, use_black_list=False):
+    def get_accels(self):
         """
                 Seperates then force plate data
                 :return: Force plate data
@@ -333,7 +334,7 @@ class Trial(object):
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-            if use_black_list:
+            if self._use_black_list:
                 if count in self._black_list:
                     continue
                 else:
@@ -345,7 +346,7 @@ class Trial(object):
 
         return side
 
-    def get_gyro(self,use_black_list=False):
+    def get_gyros(self):
         """
                 Seperates then force plate data
                 :return: Force plate data
@@ -373,7 +374,7 @@ class Trial(object):
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-            if use_black_list:
+            if self._use_black_list:
                 if count in self._black_list:
                     continue
                 else:
@@ -417,21 +418,23 @@ class Trial(object):
         self._joint_trajs = value
 
 
-    def add_to_blacklist(self, index):
+    def add_to_blacklist(self, black_indexs):
         """
-        Add a index to the blacklist
+        Add a  blacklist
         :param index: index to add
         :return:
         """
-        self._black_list.append(index)
+        self._use_black_list = True
+        self._black_list = black_indexs
 
-    def remove_from_blacklist(self,index):
+    def remove_from_blacklist(self):
         """
-        Remove a index to the blacklist
+        Remove the blacklist
         :param index: index to add
         :return:
         """
-        self._black_list.remove(index)
+        self._use_black_list = False
+        self._black_list = []
 
 
 if __name__ == '__main__':

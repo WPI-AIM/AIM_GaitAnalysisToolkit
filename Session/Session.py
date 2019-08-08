@@ -21,6 +21,7 @@ class Session(object):
         self._leg_length = float(self._subject["LegLength"])
         self._gender = self._subject["Gender"]
         self._trials = self.seperate_trials(self._subject["trials"])
+        self._trial_names = []
 
 
     @property
@@ -82,9 +83,14 @@ class Session(object):
     def seperate_trials(self, trials_names):
         trials = {}
         for key, value in trials_names.iteritems():
+            self._trial_names.append(key)
             trials[key] = Trial.Trial(self._config_file, value["output"], value["vicon"], value["dt"], value["notes"])
 
         return trials
+
+    def black_list_trial(self, trial_number, black):
+
+        self._trials[trial_number].add_to_blacklist(black)
 
     def collect_exo_accel(self):
         """
@@ -93,7 +99,7 @@ class Session(object):
         """
         trials = {}
         for key, value in self.trials.iteritems():
-            trials[key] = self.trials[key].seperate_accel()
+            trials[key] = self.trials[key].get_accel()
         return trials
 
     def collect_exo_CoP(self):
@@ -103,7 +109,7 @@ class Session(object):
         """
         trials = {}
         for key, value in self.trials.iteritems():
-            trials[key] = self.trials[key].seperate_CoP()
+            trials[key] = self.trials[key].get_CoP()
         return trials
 
     def collect_exo_pots(self):
