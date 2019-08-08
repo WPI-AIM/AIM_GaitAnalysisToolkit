@@ -7,24 +7,29 @@ vicon_file = "/media/nathaniel/Data/LowerLimb_HealthyGait/Subject02/walking/Walk
 config_file = "/home/nathaniel/git/exoserver/Config/sensor_list.yaml"
 exo_file = "/home/nathaniel/git/exoserver/Main/subject_1234_trial_1.csv"
 trial = Trial.Trial(vicon_file, config_file, exo_file)
-joints = trial.seperate_joint_trajectories()
-plate = trial.seperate_force_plates()
-cop = trial.seperate_CoP()
-emgs = trial.seperate_emg()
+joints = trial.get_joint_trajectories()
+plate = trial.get_force_plates()
+cop = trial.get_CoP()
+emgs = trial.get_emg()
 
-# #joint = joints["LKneeAngles"]
-# for joint in joints["LHipAngles"]:
-#     plt.plot(joint.time, joint.data )
+fig, (ax1, ax2, ax3) = plt.subplots(3)
+#joint = joints["LKneeAngles"]
+for joint in joints["RKneeAngles"]:
+    ax1.plot(joint.time, joint.data )
 
-
-
-for emg in emgs[2]:
+print "keys", emgs.keys()
+for emg in emgs[1]:
     data = EMG_Toolkit.remove_mean(emg.data)
     data = EMG_Toolkit.butterworth(data)
     data = EMG_Toolkit.rectify(data)
     data = EMG_Toolkit.low_pass(data)
-    plt.plot(data)
-
+    ax2.plot(data)
+for emg in emgs[7]:
+    data = EMG_Toolkit.remove_mean(emg.data)
+    data = EMG_Toolkit.butterworth(data)
+    data = EMG_Toolkit.rectify(data)
+    data = EMG_Toolkit.low_pass(data)
+    ax3.plot(data)
 
 plt.ylabel('some numbers')
 plt.show()

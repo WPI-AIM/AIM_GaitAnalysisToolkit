@@ -238,9 +238,12 @@ class Vicon(object):
         all_keys = self._filter_dict(sensors, 'EMG')
         T_EMG_keys = self._filter_dict(sensors, 'T_EMG')
         EMG_keys = [x for x in all_keys if x not in T_EMG_keys]
-        for e_key, t_key in zip(EMG_keys, T_EMG_keys):
+        print "skdjf", EMG_keys
+
+        for t_key in T_EMG_keys:
             self._T_EMGs[int(filter(str.isdigit, t_key))] = EMG.EMG(t_key, sensors[t_key]["EMG"])
-            print sensors[t_key]["EMG"]
+
+        for e_key in EMG_keys:
             self._EMGs[int(filter(str.isdigit, e_key))] = EMG.EMG(e_key, sensors[e_key]["IM EMG"])
 
     def _make_IMUs(self):
