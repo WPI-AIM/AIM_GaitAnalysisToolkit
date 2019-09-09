@@ -1,10 +1,13 @@
-import math
+import matplotlib.pyplot as plt
 
 import numpy as np
 
 from Exoskeleton import Exoskeleton
 from Vicon import Vicon
 from lib.Exoskeleton.Robot import core
+import lib.Plotting_Tools as PT
+import TrialExaminer
+import math
 
 
 class Trial(object):
@@ -436,13 +439,46 @@ class Trial(object):
         self._use_black_list = False
         self._black_list = []
 
+    # def plot(self):
+    #
+    #     plotter = TrialExaminer.TrialExaminer()
+    #     joints = self.get_joint_trajectories()
+    #     plates = self.get_force_plates()
+    #     cops = self.get_CoPs()
+    #     emgs = self.get_emgs()
+    #
+    #     accel = self.robot.get_accel
+    #     gyro = self.robot.get_gyro
+    #     pot = self.robot.get_pot
+    #     fsr = self.robot.get_fsr
+    #     left_fsr = [fsr["FSR1_Left"], fsr["FSR2_Left"], fsr["FSR3_Left"]]
+    #     right_fsr = [fsr["FSR1_Right"], fsr["FSR2_Right"], fsr["FSR3_Right"]]
+    #
+    #     for key, sensor in accel.items():
+    #         accel = PT.Line_Graph.Line_Graph(sensor.name, sensor, 3, ["x", "y", "z"])
+    #         plotter.addfig(accel)
+    #
+    #     for key, sensor in gyro.items():
+    #         gyro = PT.Line_Graph.Line_Graph(sensor.name, sensor, 3, ["x", "y", "z"])
+    #         plotter.addfig(gyro)
+    #
+    #     for key, sensor in pot.items():
+    #         pot = PT.Line_Graph.Line_Graph(sensor.name, sensor, 1, ["z"])
+    #         plotter.addfig(pot)
+    #
+    #     fsr_plot = PT.FSR_BarGraph.FSR_BarGraph("FSR", fsr.values())
+    #     plotter.addfig(fsr_plot)
+    #     #
+    #     cop_plot = PT.CoP_Plotter.CoP_Plotter("CoP", left_fsr, right_fsr)
+    #     plotter.addfig(cop_plot)
+
 
 if __name__ == '__main__':
     vicon_file = "/media/nathaniel/Data/LowerLimb_HealthyGait/Subject02/walking/Walking01.csv"
     config_file = "/home/nathaniel/git/exoserver/Config/sensor_list.yaml"
     exo_file = "/home/nathaniel/git/exoserver/Main/subject_1234_trial_1.csv"
     trial = Trial(vicon_file, config_file, exo_file)
-    joints = trial.seperate_joint_trajectories()
-    plate = trial.seperate_force_plates()
-    left, right = trial.seperate_CoP()
-    emg = trial.seperate_emg()
+    joints = trial.get_joint_trajectories()
+    plate = trial.get_force_plates()
+    #left, right = trial.get_CoP()
+    emg = trial.get_emg()

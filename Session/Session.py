@@ -80,7 +80,13 @@ class Session(object):
     def trials(self, value):
         self._trials = value
 
+
     def seperate_trials(self, trials_names):
+        """
+        sperates the trial into the dictionaries
+        :param trials_names:
+        :return:
+        """
         trials = {}
         for key, value in trials_names.iteritems():
             self._trial_names.append(key)
@@ -88,9 +94,24 @@ class Session(object):
 
         return trials
 
-    def black_list_trial(self, trial_number, black):
-
+    def black_list_trial_cycle(self, trial_number, black):
+        """
+        blacklist the trials
+        :param trial_number:
+        :param black:
+        :return:
+        """
         self._trials[trial_number].add_to_blacklist(black)
+
+    def black_list_trial(self, trial_number):
+        """
+        blacklist the trials
+        :param trial_number:
+        :param black:
+        :return:
+        """
+        del self._trials[trial_number]
+
 
     def collect_exo_accel(self):
         """
@@ -118,7 +139,8 @@ class Session(object):
     def collect_frame(self):
         pass
 
-
+    def see_trial(self, number):
+        pass
 # if __name__ == "__main__":
 #     session = Session("/home/nathaniel/git/exoserver/Main/subject_1234.yaml")
 #     print session.mass
