@@ -285,23 +285,23 @@ class Vicon(object):
 
         # output_names = ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"]
         data = {}
-        segs = self._seperate_csv_sections(raw_data)
-        for index, output in enumerate(output_names):
+        names, segs = self._seperate_csv_sections(raw_data)
+        for index, output in enumerate(names):
             data[output] = self._extract_values(raw_data, segs[index], segs[index + 1])
 
         return data
 
     def _seperate_csv_sections(self, all_data):
 
-        col1 = [row[0] for row in all_data]
-        devices = col1.index("Devices")
-        joints = col1.index("Joints")
-        model_output = col1.index("Model Outputs")
-        segments = col1.index("Segments")
-        trajs = col1.index("Trajectories")
-        self._find_number_of_frames(col1)
-        segs = [devices, joints, model_output, segments, trajs, len(col1)]
-        return segs
+        raw_col = [row[0] for row in all_data]
+        fitlered_col = [item for item in raw_col if not item.isdigit()]
+        fitlered_col = filter(lambda a: a != 'Frame', fitlered_col)
+        fitlered_col =filter(lambda a: a != "", fitlered_col)
+        inx = []
+        for name in fitlered_col:
+            inx.append(raw_col.index(name))
+        inx.append(len(raw_col))
+        return fitlered_col, inx
 
     def _fix_col_names(self, names):
         fixed_names = []
