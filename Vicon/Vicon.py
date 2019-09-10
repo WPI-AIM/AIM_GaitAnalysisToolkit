@@ -24,6 +24,7 @@ class Vicon(object):
         self._make_EMGs()
         self._make_force_plates()
         self._make_IMUs()
+        self._make_marker_trajs()
         self._model_output = ModelOutput.ModelOutput(self.data_dict["Model Outputs"], self.joint_names)
         self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
 
@@ -222,7 +223,7 @@ class Vicon(object):
         """
         sensors = self.data_dict["Devices"]
         keys = self._filter_dict(sensors, 'Force_Plate')  # + ['Combined Moment'] + ['Combined CoP']
-        print sensors["Force_Plate__Force_1"]
+
         self._force_plates[1] = ForcePlate.ForcePlate("Force_Plate_1", sensors["Force_Plate__Force_1"],
                                                       sensors["Force_Plate__Moment_1"])
 
@@ -251,6 +252,14 @@ class Vicon(object):
         keys = self._filter_dict(sensors, 'IMU')
         for key in keys:
             self._IMUs[int(filter(str.isdigit, key))] = IMU.IMU(key, sensors[key])
+
+    def _make_marker_trajs(self):
+        """
+        generate IMU models
+        :return: None
+        """
+        print self.data_dict["Trajectories"]
+
 
     def _make_Accelerometers(self):
         """
@@ -384,5 +393,5 @@ class Vicon(object):
 
 
 if __name__ == '__main__':
-    file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
+    file = "/home/nathaniel/gait_analysis_toolkit/Utilities/Walking01.csv"
     data = Vicon(file)
