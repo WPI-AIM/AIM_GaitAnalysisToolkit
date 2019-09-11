@@ -4,6 +4,6 @@ data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ridgid_ma
 markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_frames()
-print markers.marker_names
+print markers.get_frame("LowerLegs_Healthy:RightFoot")[0]
 
 
