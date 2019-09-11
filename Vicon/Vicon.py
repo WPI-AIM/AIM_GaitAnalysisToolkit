@@ -5,7 +5,7 @@ import EMG
 import ForcePlate
 import IMU
 import ModelOutput
-
+import Markers
 
 class Vicon(object):
 
@@ -20,14 +20,13 @@ class Vicon(object):
         self._IMUs = {}
         self._accels = {}
         self.data_dict = self.open_vicon_file(self._file_path, self.output_names)
-        self._make_Accelerometers()
-        self._make_EMGs()
-        self._make_force_plates()
-        self._make_IMUs()
+        # self._make_Accelerometers()
+        # self._make_EMGs()
+        # self._make_force_plates()
+        # self._make_IMUs()
         self._make_marker_trajs()
-        self._make_model()
-        self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
-
+        #self._make_model()
+        # self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
 
     def _find_number_of_frames(self, col):
         """
@@ -137,7 +136,7 @@ class Vicon(object):
         :return: markers
         :type: dict
         """
-        return self.data_dict["Trajectories"]
+        return self.markers
 
     def get_joints(self):
         """
@@ -281,13 +280,14 @@ class Vicon(object):
                 print "No IMUs"
         else:
             print "No Devices"
+
     def _make_marker_trajs(self):
         """
         generate IMU models
         :return: None
         """
-        print self.data_dict["Trajectories"]
-
+        self.markers = Markers.Markers(self.data_dict["Trajectories"])
+        self.markers.make_markers()
 
     def _make_Accelerometers(self):
         """
@@ -320,6 +320,8 @@ class Vicon(object):
         # output_names = ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"]
         data = {}
         names, segs = self._seperate_csv_sections(raw_data)
+        print names
+        print segs
         for index, output in enumerate(names):
             data[output] = self._extract_values(raw_data, segs[index], segs[index + 1])
 
@@ -341,14 +343,13 @@ class Vicon(object):
         fixed_names = []
         get_index = lambda x: x.index("Sensor") + 7
         for name in names:  # type: str
-
+            print name
             if "Subject" in name:
                 fixed = ''.join(
                     [i for i in name.replace("Subject", "").replace(":", "").replace("|", "") if
                      not i.isdigit()]).strip()
                 fixed_names.append(fixed)
                 continue
-
             elif "AMTI" in name:
 
                 if "Force" in name:
@@ -378,7 +379,7 @@ class Vicon(object):
                 fixed = "EMG_" + name[get_index(name):]
                 fixed_names.append(fixed)
             else:
-                fixed_names.append("")
+                fixed_names.append(name)
 
         return fixed_names
 
@@ -389,6 +390,7 @@ class Vicon(object):
         last_frame = None
 
         column_names = self._fix_col_names(raw_data[start + 2])
+        print raw_data[start + 2]
         # column_names = raw_data[start + 2]
         remove_numbers = lambda str: ''.join([i for i in str if not i.isdigit()])
         axis = map(remove_numbers, raw_data[start + 3])

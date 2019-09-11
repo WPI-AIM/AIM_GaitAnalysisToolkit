@@ -1,4 +1,9 @@
 from Vicon import Vicon
 
-data = Vicon.Vicon("/home/nathaniel/git/Gait_Analysis_Toolkit/testing_data/Walking01.csv")
-print data.get_model_output()
+data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ridgid_markers.csv")
+# markers = data.get_markers()
+# markers.smart_sort()
+# markers.auto_make_frames()
+# print markers.marker_names
+
+

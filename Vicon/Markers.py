@@ -10,13 +10,17 @@ class Markers(object):
         self._marker_names = []
         self._frames = {}
 
+    @property
+    def marker_names(self):
+        return self._marker_names
+
     def make_markers(self):
 
         for key_name, value_name in self._data_dict.iteritems():
             self._marker_names.append(key_name)
             x = value_name["X"]["data"]
             y = value_name["Y"]["data"]
-            z = value_name["z"]["data"]
+            z = value_name["Z"]["data"]
             point = core.Point(x, y, z)
             self._raw_markers[key_name] = point
 
@@ -49,9 +53,15 @@ class Markers(object):
         self._frames[name] = frame
 
     def auto_make_frames(self):
+        print "sad;ljas;ldfj "
         for name, value in self._rigid_body.iteritems():
+            print "here"
             frame = self.make_frame(value[0], value[1], value[2], value[3])
+            print "name ", name
             self.add_frame(name, frame)
+
+    def get_frame(self, name):
+        return self._frames[name]
 
 
 
