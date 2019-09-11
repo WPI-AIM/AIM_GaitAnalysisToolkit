@@ -8,6 +8,7 @@ class Markers(object):
         self._raw_markers = {}
         self._rigid_body = {}
         self._marker_names = []
+        self._frames = {}
 
     def make_markers(self):
 
@@ -26,8 +27,8 @@ class Markers(object):
         for name in single_item:
            self._rigid_body[name] = [s for s in self._data_dict.keys if name in s]
 
-    def make_frame(self,name, origin, x, y, extra):
-
+    def make_frame(self, origin, x, y, extra):
+        Frames = []
         for o, x, y in zip(origin,x, y):
             o = np.array([o.x, o.y, o.z ]).transpose()
             x = np.array([x.x, x.y, x.z]).transpose()
@@ -35,8 +36,22 @@ class Markers(object):
             xo = x - origin
             yo = y - origin
             zo = np.cross(xo, yo)
+            xo = np.pad(xo, (0,1), 'constant')
+            yo = np.pad(yo, (0, 1), 'constant')
+            zo = np.pad(zo, (0, 1), 'constant')
+            p = np.pad(o, (0,1), 'constant')
+            p[-1] = 1
+            F = np.column_stack((xo, yo, zo, p))
+            Frames.append(F)
+        return Frames
 
+    def add_frame(self, name, frame):
+        self._frames[name] = frame
 
+    def auto_make_frames(self):
+        for name, value in self._rigid_body.iteritems():
+            frame = self.make_frame(value[0], value[1], value[2], value[3])
+            self.add_frame(name, frame)
 
 
 
