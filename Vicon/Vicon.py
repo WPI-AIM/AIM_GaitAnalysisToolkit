@@ -25,7 +25,7 @@ class Vicon(object):
         self._make_force_plates()
         self._make_IMUs()
         self._make_marker_trajs()
-        self._model_output = ModelOutput.ModelOutput(self.data_dict["Model Outputs"], self.joint_names)
+        self._make_model()
         self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
 
 
@@ -216,43 +216,71 @@ class Vicon(object):
         """
         return list(filter(lambda x: substring in x, sensors.keys()))
 
+
+    def _make_model(self):
+        """
+        generates a model from the model outputs
+        :return:
+        """
+        if "Model Outputs" in self.data_dict:
+            self._model_output = ModelOutput.ModelOutput(self.data_dict["Model Outputs"], self.joint_names)
+        else:
+            print "No Model outputs"
+
     def _make_force_plates(self):
         """
         generate force plate models
         :return: None
         """
-        sensors = self.data_dict["Devices"]
-        keys = self._filter_dict(sensors, 'Force_Plate')  # + ['Combined Moment'] + ['Combined CoP']
+        if "Devices" in self.data_dict:
+            sensors = self.data_dict["Devices"]
+            if "Force_Plate" in sensors:
+                keys = self._filter_dict(sensors, 'Force_Plate')  # + ['Combined Moment'] + ['Combined CoP']
 
-        self._force_plates[1] = ForcePlate.ForcePlate("Force_Plate_1", sensors["Force_Plate__Force_1"],
-                                                      sensors["Force_Plate__Moment_1"])
+                self._force_plates[1] = ForcePlate.ForcePlate("Force_Plate_1", sensors["Force_Plate__Force_1"],
+                                                              sensors["Force_Plate__Moment_1"])
 
-        self._force_plates[2] = ForcePlate.ForcePlate("Force_Plate_2", sensors["Force_Plate__Force_2"],
-                                                      sensors["Force_Plate__Moment_2"])
+                self._force_plates[2] = ForcePlate.ForcePlate("Force_Plate_2", sensors["Force_Plate__Force_2"],
+                                                              sensors["Force_Plate__Moment_2"])
+            else:
+                print "No force plates"
+        else:
+            print "No Devices"
 
     def _make_EMGs(self):
         """
         generate EMG models
         :return: None
         """
-        sensors = self.data_dict["Devices"]
-        all_keys = self._filter_dict(sensors, 'EMG')
-        T_EMG_keys = self._filter_dict(sensors, 'T_EMG')
-        EMG_keys = [x for x in all_keys if x not in T_EMG_keys]
-        for e_key, t_key in zip(EMG_keys, T_EMG_keys):
-            self._T_EMGs[int(filter(str.isdigit, t_key))] = EMG.EMG(t_key, sensors[t_key]["EMG"])
-            self._EMGs[int(filter(str.isdigit, e_key))] = EMG.EMG(e_key, sensors[e_key]["IM EMG"])
+        if "Devices" in self.data_dict:
+            sensors = self.data_dict["Devices"]
+            if "EMG" in sensors:
+                all_keys = self._filter_dict(sensors, 'EMG')
+                T_EMG_keys = self._filter_dict(sensors, 'T_EMG')
+                EMG_keys = [x for x in all_keys if x not in T_EMG_keys]
+                for e_key, t_key in zip(EMG_keys, T_EMG_keys):
+                    self._T_EMGs[int(filter(str.isdigit, t_key))] = EMG.EMG(t_key, sensors[t_key]["EMG"])
+                    self._EMGs[int(filter(str.isdigit, e_key))] = EMG.EMG(e_key, sensors[e_key]["IM EMG"])
+            else:
+                print "No EMGs"
+        else:
+            print "No Devices"
 
     def _make_IMUs(self):
         """
         generate IMU models
         :return: None
         """
-        sensors = self.data_dict["Devices"]
-        keys = self._filter_dict(sensors, 'IMU')
-        for key in keys:
-            self._IMUs[int(filter(str.isdigit, key))] = IMU.IMU(key, sensors[key])
-
+        if "Devices" in self.data_dict:
+            sensors = self.data_dict["Devices"]
+            if "IMU" in sensors:
+                keys = self._filter_dict(sensors, 'IMU')
+                for key in keys:
+                    self._IMUs[int(filter(str.isdigit, key))] = IMU.IMU(key, sensors[key])
+            else:
+                print "No IMUs"
+        else:
+            print "No Devices"
     def _make_marker_trajs(self):
         """
         generate IMU models
@@ -266,10 +294,16 @@ class Vicon(object):
         generate the accel objects
         :return: None
         """
-        sensors = self.data_dict["Devices"]
-        keys = self._filter_dict(sensors, 'Accel')
-        for key in keys:
-            self._accels[int(filter(str.isdigit, key))] = Accel.Accel(key, sensors[key])
+        if "Devices" in self.data_dict:
+            sensors = self.data_dict["Devices"]
+            if "Accel" in sensors:
+                keys = self._filter_dict(sensors, 'Accel')
+                for key in keys:
+                    self._accels[int(filter(str.isdigit, key))] = Accel.Accel(key, sensors[key])
+            else:
+                print "No Accels"
+        else:
+            print "No Devices"
 
     def open_vicon_file(self, file_path, output_names):
         """
