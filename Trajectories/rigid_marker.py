@@ -63,9 +63,27 @@ def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
 
+def avg_vector(markers):
+    vp_norm = []
+    vp = np.array(0.0, 0.0, 0.0).transpose()
+    for marker in markers:
+        for point in marker:
+            vp = vp + np.array((point.x, point.y, point.z)).transpose()
+        vp /= len(marker)
+        vp_norm.append(vp)
+    return vp_norm
 
 def find_CoR(frame):
-    pass
+
+    A = np.array((0.0, 0.0, 0.0)).transpose()
+    vp_norm = avg_vector(frame)
+
+    for marker in frame:
+        Ak = np.array((0.0, 0.0, 0.0)).transpose()
+        for point in marker:
+            v = np.array(( point.x, point.y, point.z  )).transpose()
+
+
 
 def _get_A(markers):
 
