@@ -3,12 +3,11 @@ from lib.Exoskeleton.Robot import core
 class ModelOutput(object):
 
     def __init__(self, data, joint_name):
-        print data.keys()
+
         self.phyics = ["Angles", "Force", "Moment", "Power"]
         self.joint_names = joint_name
         self._left_joints = {}
         self._right_joints = {}
-
 
         for side, joint in zip(("R", "L"), (self._left_joints, self._right_joints)):
             for output in joint_name:
@@ -26,19 +25,6 @@ class ModelOutput(object):
                                    data[side + output + "Power"]["Z"]["data"])
                 joint[output] = core.Newton(angle, force, moment, power)
 
-        # LFE
-        # LFO
-        # FootProgressAngles
-        # LPelvisAngles
-        # LTI
-        # LTO
-        # PEL
-        # RFE
-        # RFO
-        # RFootProgressAngles
-        # RPelvisAngles
-        # RTI
-        # RTO
 
     def get_right_joint(self, joint_name):
         """
