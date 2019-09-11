@@ -26,10 +26,11 @@ class Markers(object):
 
     def smart_sort(self):
 
-        no_digits = [''.join(x for x in i if x.isalpha()) for i in self._data_dict.keys()] # removes digits
+        no_digits = [''.join(x for x in i if not x.isdigit() ) for i in self._data_dict.keys()] # removes digits
         single_item = list(set(no_digits)) # removes redundent items
+        keys = self._data_dict.keys()
         for name in single_item:
-           self._rigid_body[name] = [s for s in self._data_dict.keys if name in s]
+            self._rigid_body[name] = sorted([s for s in keys if name in s])
 
     def make_frame(self, origin, x, y, extra):
         Frames = []
@@ -55,7 +56,6 @@ class Markers(object):
     def auto_make_frames(self):
         print "sad;ljas;ldfj "
         for name, value in self._rigid_body.iteritems():
-            print "here"
             frame = self.make_frame(value[0], value[1], value[2], value[3])
             print "name ", name
             self.add_frame(name, frame)

@@ -320,8 +320,7 @@ class Vicon(object):
         # output_names = ["Devices", "Joints", "Model Outputs", "Segments", "Trajectories"]
         data = {}
         names, segs = self._seperate_csv_sections(raw_data)
-        print names
-        print segs
+
         for index, output in enumerate(names):
             data[output] = self._extract_values(raw_data, segs[index], segs[index + 1])
 
@@ -343,13 +342,14 @@ class Vicon(object):
         fixed_names = []
         get_index = lambda x: x.index("Sensor") + 7
         for name in names:  # type: str
-            print name
+
             if "Subject" in name:
                 fixed = ''.join(
                     [i for i in name.replace("Subject", "").replace(":", "").replace("|", "") if
                      not i.isdigit()]).strip()
                 fixed_names.append(fixed)
                 continue
+
             elif "AMTI" in name:
 
                 if "Force" in name:
@@ -390,7 +390,7 @@ class Vicon(object):
         last_frame = None
 
         column_names = self._fix_col_names(raw_data[start + 2])
-        print raw_data[start + 2]
+
         # column_names = raw_data[start + 2]
         remove_numbers = lambda str: ''.join([i for i in str if not i.isdigit()])
         axis = map(remove_numbers, raw_data[start + 3])
