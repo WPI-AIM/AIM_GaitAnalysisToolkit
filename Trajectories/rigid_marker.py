@@ -15,7 +15,6 @@ def make_frame(markers):
     p = np.pad(origin, (0, 1), 'constant')
     p[-1] = 1
     F = np.column_stack((xo,yo,zo,p))
-    print F
 
 def get_all_transformation_to_base(parent_frame, child_frames):
     """
@@ -64,9 +63,10 @@ def unit_vector(vector):
     return vector / np.linalg.norm(vector)
 
 def avg_vector(markers):
+
     vp_norm = []
-    vp = np.array(0.0, 0.0, 0.0).transpose()
     for marker in markers:
+        vp = np.array((0.0, 0.0, 0.0)).transpose()
         for point in marker:
             vp = vp + np.array((point.x, point.y, point.z)).transpose()
         vp /= len(marker)
@@ -75,42 +75,44 @@ def avg_vector(markers):
 
 def find_CoR(frame):
 
-    A = np.array((0.0, 0.0, 0.0)).transpose()
+    A = get_A(frame)
+    b = get_b(frame)
+    print np.linalg.solve(A,b)
+
+
+def get_A(frame):
+    A = np.zeros((3, 3))
+
     vp_norm = avg_vector(frame)
 
-    for marker in frame:
-        Ak = np.array((0.0, 0.0, 0.0)).transpose()
+    for marker, vp_n in zip(frame, vp_norm):
+        Ak = np.zeros((3, 3))
         for point in marker:
-            v = np.array(( point.x, point.y, point.z  )).transpose()
+            v = np.array((point.x, point.y, point.z))
+            Ak = Ak + v.reshape((-1, 1)) * v
+        Ak = (1.0 / len(marker)) * Ak - vp_n.reshape((-1, 1)) * vp_n
+        A = A + Ak
+    return 2.0*A
+
+
+def get_b(frame):
+
+    b = np.array((0.0, 0.0, 0.0)).transpose()
+    vp_norm = avg_vector(frame)
+
+    for ii, marker in enumerate(frame):
+        invN = 1.0/len(marker)
+        v2_sum = 0
+        v3_sum = np.array((0.0, 0.0, 0.0))
+        for point in marker:
+            v2 = invN * (point.x**2 + point.y**2 + point.z**2)
+            v2_sum = v2_sum + v2
+            v3_sum = invN * (v3_sum + v2 * np.array((point.x, point.y, point.z)))
+        b = b + v3_sum - v2_sum*vp_norm[ii]
+    return b.reshape((-1, 1))
 
 
 
-def _get_A(markers):
-
-    A = 0
-    for marker in markers:
-        inner_sum = 0
-        N = len(marker)
-        vbar = 0.0
-        for frame in marker:
-            inner_sum += (1./N) * (frame * np.transpose(frame))
-            vbar = frame*(1./N)
-        A += inner_sum - vbar*np.transpose(vbar)
-    return 2*A
-#
-#
-def _get_B(markers):
-    B = None
-    vbar = np.asarray([ [0.0], [0.0], [0.0]  ])
-    for marker in markers:
-        inner_sum = 0
-        N = len(marker)
-        vbar = 0.0
-        for frame in marker:
-            inner_sum += (1. / N) * (frame * np.transpose(frame))
-            vbar = frame * (1. / N)
-        Ba += inner_sum - vbar * np.transpose(vbar)
-    return 2 * A
 
 
 
@@ -121,7 +123,7 @@ if __name__ == '__main__':
     marker2 = np.asarray([3.8, 7.2, 1.59]).transpose()
     marker3 = np.asarray([3.4, 7.9, 1.34]).transpose()
 
-    frame = np.asarray( [ marker0, marker1, marker2, marker3])
+    frame = np.asarray([marker0, marker1, marker2, marker3])
     make_frame(frame)
     vect = get_angle_between_vects(marker1, marker2)
     print vect

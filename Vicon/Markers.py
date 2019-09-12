@@ -102,5 +102,8 @@ class Markers(object):
         """
         return self._frames[name]
 
+    def get_rigid_body(self, name):
+        return self._rigid_body[name]
+
 
 
