@@ -65,56 +65,56 @@ def unit_vector(vector):
 def avg_vector(markers):
 
     vp_norm = []
-    for marker in markers:
-        vp = np.array((0.0, 0.0, 0.0)).transpose()
-        for point in marker:
-            vp = vp + np.array((point.x, point.y, point.z)).transpose()
-        vp /= len(marker)
+    for marker in markers[:7]:
+        vp = np.array((0.0, 0.0, 0.0))
+        for point in marker[:7]:
+            vp = vp + np.array((point.x, point.y, point.z))
+        vp /= len(marker[:7])
         vp_norm.append(vp)
     return vp_norm
 
 def find_CoR(frame):
 
     A = get_A(frame)
+
     b = get_b(frame)
-    print np.linalg.solve(A,b)
+    #print np.linalg.solve(A,b)
 
 
 def get_A(frame):
     A = np.zeros((3, 3))
 
     vp_norm = avg_vector(frame)
-
     for marker, vp_n in zip(frame, vp_norm):
         Ak = np.zeros((3, 3))
-        for point in marker:
+        for point in marker[:7]:
             v = np.array((point.x, point.y, point.z))
             Ak = Ak + v.reshape((-1, 1)) * v
-        Ak = (1.0 / len(marker)) * Ak - vp_n.reshape((-1, 1)) * vp_n
+        Ak = (1.0 / len(marker[:7])) * Ak - vp_n.reshape((-1, 1)) * vp_n
         A = A + Ak
     return 2.0*A
 
 
 def get_b(frame):
 
-    b = np.array((0.0, 0.0, 0.0)).transpose()
+    b = np.array((0.0, 0.0, 0.0))
     vp_norm = avg_vector(frame)
 
     for ii, marker in enumerate(frame):
-        invN = 1.0/len(marker)
+        invN = 1.0/len(marker[:7])
         v2_sum = 0
         v3_sum = np.array((0.0, 0.0, 0.0))
-        for point in marker:
-            v2 = invN * (point.x**2 + point.y**2 + point.z**2)
+        for point in marker[:7]:
+            #v = np.array((point.x, point.y, point.z))
+            #print np.dot(v.reshape((-1,1)),v.reshape((-1,1)))
+            v2 = (point.x*point.x + point.y*point.y + point.z*point.z)
             v2_sum = v2_sum + v2
-            v3_sum = invN * (v3_sum + v2 * np.array((point.x, point.y, point.z)))
+            v3_sum = v3_sum + invN* (v2 * np.array((point.x, point.y, point.z)))
+
+        print v3_sum
         b = b + v3_sum - v2_sum*vp_norm[ii]
+
     return b.reshape((-1, 1))
-
-
-
-
-
 
 if __name__ == '__main__':
 
