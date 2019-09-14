@@ -76,9 +76,10 @@ def avg_vector(markers):
 def find_CoR(frame):
 
     A = get_A(frame)
-
+    print "A: ", A
     b = get_b(frame)
-    #print np.linalg.solve(A,b)
+    print "b: ", b
+    print "A\/b: ", np.linalg.solve(A,b)
 
 
 def get_A(frame):
@@ -108,10 +109,8 @@ def get_b(frame):
             #v = np.array((point.x, point.y, point.z))
             #print np.dot(v.reshape((-1,1)),v.reshape((-1,1)))
             v2 = (point.x*point.x + point.y*point.y + point.z*point.z)
-            v2_sum = v2_sum + v2
-            v3_sum = v3_sum + invN* (v2 * np.array((point.x, point.y, point.z)))
-
-        print v3_sum
+            v2_sum = v2_sum + invN * v2
+            v3_sum = v3_sum + invN * (v2 * np.array((point.x, point.y, point.z)))
         b = b + v3_sum - v2_sum*vp_norm[ii]
 
     return b.reshape((-1, 1))
