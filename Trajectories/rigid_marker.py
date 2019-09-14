@@ -65,47 +65,62 @@ def unit_vector(vector):
 def avg_vector(markers):
 
     vp_norm = []
-    for marker in markers[:7]:
+    for marker in markers:
         vp = np.array((0.0, 0.0, 0.0))
-        for point in marker[:7]:
+        for point in marker:
             vp = vp + np.array((point.x, point.y, point.z))
-        vp /= len(marker[:7])
+        vp /= len(marker)
         vp_norm.append(vp)
     return vp_norm
 
 def find_CoR(frame):
+    '''
+        Calculate the center of rotation given two data
+        sets representing two frames on separate rigid bodies connected by a
+        spherical joint. The function calculates the position of the CoR in the
+        reference rigidi body frame
+        For more information on this derivation see "New Least Squares Solutions
+        for Estimating the Average Centre of Rotation and the Axis of Rotation"
+        by Sahan S. Hiniduma
+    '''
 
     A = get_A(frame)
-    print "A: ", A
     b = get_b(frame)
-    print "b: ", b
-    print "A\/b: ", np.linalg.solve(A,b)
 
+    return np.linalg.solve(A,b)
 
 def get_A(frame):
-    A = np.zeros((3, 3))
+    """
 
+    :param frame: array of markers
+    :return: A array
+    """
+
+    A = np.zeros((3, 3))
     vp_norm = avg_vector(frame)
-    for marker, vp_n in zip(frame, vp_norm):
+    for marker, vp_n in zip(frame, vp_norm): # loop though each marker
         Ak = np.zeros((3, 3))
-        for point in marker[:7]:
+        for point in marker: # go through is location of the marker
             v = np.array((point.x, point.y, point.z))
             Ak = Ak + v.reshape((-1, 1)) * v
-        Ak = (1.0 / len(marker[:7])) * Ak - vp_n.reshape((-1, 1)) * vp_n
+        Ak = (1.0 / len(marker)) * Ak - vp_n.reshape((-1, 1)) * vp_n
         A = A + Ak
     return 2.0*A
 
-
 def get_b(frame):
+    """
 
+    :param frame: array of markers
+    :return: b array
+    """
     b = np.array((0.0, 0.0, 0.0))
     vp_norm = avg_vector(frame)
 
     for ii, marker in enumerate(frame):
-        invN = 1.0/len(marker[:7])
+        invN = 1.0/len(marker)
         v2_sum = 0
         v3_sum = np.array((0.0, 0.0, 0.0))
-        for point in marker[:7]:
+        for point in marker:
             #v = np.array((point.x, point.y, point.z))
             #print np.dot(v.reshape((-1,1)),v.reshape((-1,1)))
             v2 = (point.x*point.x + point.y*point.y + point.z*point.z)
