@@ -3,9 +3,9 @@ import numpy as np
 from EMG import EMG_Toolkit
 from Session import Trial
 
-vicon_file = "/media/nathaniel/Data/LowerLimb_HealthyGait/Subject02/walking/Walking01.csv"
-config_file = "/home/nathaniel/git/exoserver/Config/sensor_list.yaml"
-exo_file = "/home/nathaniel/git/exoserver/Main/subject_1234_trial_1.csv"
+vicon_file = "/home/nathaniel/Downloads/Walking01.csv"
+config_file = "/home/nathaniel/exoserver/Config/sensor_list.yaml"
+exo_file = "/home/nathaniel/exoserver/Main/subject_1234_trial_1.csv"
 trial = Trial.Trial(vicon_file, config_file, exo_file)
 joints = trial.get_joint_trajectories()
 plate = trial.get_force_plates()
@@ -43,7 +43,7 @@ ax3.title.set_text('EMG Shank')
 
 ax1.set_ylabel("degs")
 
-ax2.set_ylabel("Mv")
+ax2.set_ylabel("mv")
 ax3.set_xlabel("% of gait cycle")
 ax3.set_ylabel("mV")
 plt.show()

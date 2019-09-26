@@ -6,7 +6,7 @@ from PyQt5.uic import loadUiType
 from PyQt5 import QtCore, QtWidgets
 from matplotlib.figure import Figure
 
-Ui_MainWindow, QMainWindow = loadUiType('/home/nathaniel/git/Gait_Analysis_Toolkit/lib/Plotting_Tools/GUI/window.ui')
+Ui_MainWindow, QMainWindow = loadUiType('/home/nathaniel/gait_analysis_toolkit/lib/Plotting_Tools/GUI/window.ui')
 
 class TrialExaminer(QMainWindow, Ui_MainWindow ):
 
