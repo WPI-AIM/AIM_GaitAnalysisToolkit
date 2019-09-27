@@ -1,4 +1,17 @@
 import numpy as np
+from lib.Exoskeleton.Robot import core
+
+def transform_markers(transforms, markers):
+    trans_markers = []
+    for marker in markers:
+        adjusted_locations = []
+        for transform, frame in zip(transforms, marker):
+            v = np.array([[frame.x, frame.y,frame.z,1.0]]).T
+            v_prime = np.dot( np.linalg.inv(transform),v)
+            new_marker = core.Point(v_prime[0][0],v_prime[1][0],v_prime[2][0])
+            adjusted_locations.append(new_marker)
+        trans_markers.append(adjusted_locations)
+    return trans_markers
 
 def make_frame(markers):
 
@@ -16,7 +29,7 @@ def make_frame(markers):
     p[-1] = 1
     F = np.column_stack((xo,yo,zo,p))
 
-def get_all_transformation_to_base(parent_frame, child_frames):
+def get_all_transformation_to_base(parent_frames, child_frames):
     """
 
     :type world_to_base_frame: np.array
@@ -26,13 +39,13 @@ def get_all_transformation_to_base(parent_frame, child_frames):
     """
 
     frames = []
-
-    for frame in child_frames:
-        frames.append(get_transform(parent_frame, frame))
+    count = 0
+    for parent, child in zip(parent_frames, child_frames):
+        frames.append(get_transform_btw_two_frames(parent, child))
 
     return frames
 
-def get_transform(parent_frame, child_frame):
+def get_transform_btw_two_frames(parent_frame, child_frame):
     return np.linalg.inv(parent_frame)*child_frame
 
 def get_angle_between_vects(v1, v2):
@@ -86,7 +99,8 @@ def find_CoR(frame):
 
     A = get_A(frame)
     b = get_b(frame)
-
+    print A
+    print b
     return np.linalg.solve(A,b)
 
 def get_A(frame):
@@ -143,6 +157,12 @@ if __name__ == '__main__':
     print vect
     print transform_vector(frame, marker0)
 
+def find_AoR(frame):
+    A = get_A(frame)
+    b = get_b(frame)
+    w, v = np.linalg.eig(A)
+    print "w ",  w
+    print "v ",  v
 
 
 

@@ -57,6 +57,7 @@ class Markers(object):
                 markers.append(self._raw_markers[marker])
             self._rigid_body[name] = markers
 
+
     def make_frame(self, _origin, _x, _y, _extra):
         Frames = []
         for o_ii, x_ii, y_ii in zip(_origin, _x, _y):
@@ -91,7 +92,7 @@ class Markers(object):
         :return:
         """
         for name, value in self._rigid_body.iteritems():
-            frame = self.make_frame(value[0], value[1], value[2], value[3])
+            frame = self.make_frame(value[0], value[3], value[2], value[1])
             self.add_frame(name, frame)
 
     def get_frame(self, name):
