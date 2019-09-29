@@ -87,7 +87,7 @@ def animate(frame):
     ax.axis([-500, 500, -2000, 3000])
     ax.scatter(x, y, z, c='r', marker='o')
     cor = CoR[frame]
-    ax.scatter(cor[0], cor[1], cor[2], c='b', marker='o')
+    #ax.scatter(cor[0], cor[1], cor[2], c='b', marker='o')
 
 
 ani = animation.FuncAnimation(fig, animate, interval=10)

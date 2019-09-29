@@ -99,9 +99,10 @@ def find_CoR(frame):
 
     A = get_A(frame)
     b = get_b(frame)
-    print A
-    print b
-    return np.linalg.solve(A,b)
+    print "A ", A
+    print "b ", b
+    Ainv =  np.linalg.inv(A)
+    return np.dot(Ainv, b)
 
 def get_A(frame):
     """
@@ -129,7 +130,7 @@ def get_b(frame):
     """
     b = np.array((0.0, 0.0, 0.0))
     vp_norm = avg_vector(frame)
-
+    print vp_norm
     for ii, marker in enumerate(frame):
         invN = 1.0/len(marker)
         v2_sum = 0
@@ -154,15 +155,14 @@ if __name__ == '__main__':
     frame = np.asarray([marker0, marker1, marker2, marker3])
     make_frame(frame)
     vect = get_angle_between_vects(marker1, marker2)
-    print vect
     print transform_vector(frame, marker0)
 
 def find_AoR(frame):
+
     A = get_A(frame)
     b = get_b(frame)
-    w, v = np.linalg.eig(A)
-    print "w ",  w
-    print "v ",  v
+    V, D = np.linalg.eig(A)
+
 
 
 
