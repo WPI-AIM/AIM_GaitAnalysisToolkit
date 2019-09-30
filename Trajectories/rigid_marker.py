@@ -161,8 +161,14 @@ def find_AoR(frame):
 
     A = get_A(frame)
     b = get_b(frame)
-    V, D = np.linalg.eig(A)
+    E_vals, E_vecs = np.linalg.eig(A) # I believe that the np function eig has a different output than the matlab function eigs
 
+    min_E_val_idx = np.argmin(E_vals)
 
+    V = E_vecs[min_E_val_idx] # this assumes that E_vecs has its columns in the same array idx
 
+    P = np.linalg.inv(2*A)*b
+
+    print V
+    print P # I think this is supposed to be a 3x1 vector... Currently 3x3 matrix
 

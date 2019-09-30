@@ -76,7 +76,7 @@ for idx in range(len(all_points)):
 
 markers = [ m1, m2, m3, m4]
 
-print rigid_marker.find_CoR(markers)
-#rigid_marker.find_AoR(markers)
+#print rigid_marker.find_CoR(markers)
+rigid_marker.find_AoR(markers)
 
 
