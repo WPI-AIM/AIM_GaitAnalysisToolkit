@@ -25,7 +25,7 @@ adjusted = rigid_marker.transform_markers( np.linalg.inv(T_Th), shank_markers)
 CoR = []
 for ii in xrange(2,275):
     current_points = []
-    for marker in adjusted:
+    for marker in shank_markers:
         points = marker[ii-1:ii+2]
         current_points.append(points)
     T = T_H[ii]
@@ -87,7 +87,7 @@ def animate(frame):
     ax.axis([-500, 500, -2000, 3000])
     ax.scatter(x, y, z, c='r', marker='o')
     cor = CoR[frame]
-    #ax.scatter(cor[0], cor[1], cor[2], c='b', marker='o')
+    ax.scatter(cor[0], cor[1], cor[2], c='b', marker='o')
 
 
 ani = animation.FuncAnimation(fig, animate, interval=10)

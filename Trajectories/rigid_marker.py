@@ -1,5 +1,7 @@
 import numpy as np
 from lib.Exoskeleton.Robot import core
+###########################################DEPRICATED############################################################
+########################################SEE Vicon/Markers#########################################################
 
 def transform_markers(transforms, markers):
     trans_markers = []
@@ -99,7 +101,7 @@ def find_CoR(frame):
 
     A = get_A(frame)
     b = get_b(frame)
-    Ainv = np.linalg.pinv(A)
+    Ainv = np.linalg.pinv(2.0*A)
     return np.dot(Ainv, b)
 
 def get_A(frame):
@@ -118,7 +120,7 @@ def get_A(frame):
             Ak = Ak + v.reshape((-1, 1)) * v
         Ak = (1.0 / len(marker)) * Ak - vp_n.reshape((-1, 1)) * vp_n
         A = A + Ak
-    return 2.0*A
+    return A
 
 def get_b(frame):
     """
@@ -158,17 +160,8 @@ if __name__ == '__main__':
 def find_AoR(frame):
 
     A = get_A(frame)
-    b = get_b(frame)
-    E_vals, E_vecs = np.linalg.eig(0.5*A) # I believe that the np function eig has a different output than the matlab function eigs
-    print "A ", 0.5*A
-    print "E_val", E_vals
-    print "E_vect ", E_vecs
+    E_vals, E_vecs = np.linalg.eig(A) # I believe that the np function eig has a different output than the matlab function eigs
     min_E_val_idx = np.argmin(E_vals)
-
-    V = E_vecs[:, min_E_val_idx]
-
-    P = find_CoR(frame)
-
-    print "V ",  V
-    # print P # I think this is supposed to be a 3x1 vector... Currently 3x3 matrix
+    axis = E_vecs[:, min_E_val_idx]
+    return axis
 
