@@ -42,7 +42,7 @@ def getT(N, M, theta):
 
 N = (0,0,5)
 M = (0,1,5)
-P = np.matrix( [ [3, 10,1,3 ], [ 5,6,1, 5], [0,0,0,0], [1, 1, 1, 1 ] ] )
+P = np.matrix( [ [0, 0, 0, 0], [0,0, -5,-5 ], [-5,-30,-15,-15], [1, 1, 1, 1 ] ] )
 
 all_points = []
 theta = math.radians(1)
@@ -76,7 +76,7 @@ for idx in range(len(all_points)):
 
 markers = [ m1, m2, m3, m4]
 
-#print rigid_marker.find_CoR(markers)
+#rigid_marker.find_CoR(markers)
 rigid_marker.find_AoR(markers)
 
 

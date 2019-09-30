@@ -99,9 +99,7 @@ def find_CoR(frame):
 
     A = get_A(frame)
     b = get_b(frame)
-    print "A ", A
-    print "b ", b
-    Ainv =  np.linalg.inv(A)
+    Ainv = np.linalg.pinv(A)
     return np.dot(Ainv, b)
 
 def get_A(frame):
@@ -161,14 +159,16 @@ def find_AoR(frame):
 
     A = get_A(frame)
     b = get_b(frame)
-    E_vals, E_vecs = np.linalg.eig(A) # I believe that the np function eig has a different output than the matlab function eigs
-
+    E_vals, E_vecs = np.linalg.eig(0.5*A) # I believe that the np function eig has a different output than the matlab function eigs
+    print "A ", 0.5*A
+    print "E_val", E_vals
+    print "E_vect ", E_vecs
     min_E_val_idx = np.argmin(E_vals)
 
-    V = E_vecs[min_E_val_idx] # this assumes that E_vecs has its columns in the same array idx
+    V = E_vecs[:, min_E_val_idx]
 
-    P = np.linalg.inv(2*A)*b
+    P = find_CoR(frame)
 
-    print V
-    print P # I think this is supposed to be a 3x1 vector... Currently 3x3 matrix
+    print "V ",  V
+    # print P # I think this is supposed to be a 3x1 vector... Currently 3x3 matrix
 
