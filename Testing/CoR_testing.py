@@ -47,36 +47,49 @@ P = np.matrix( [ [0, 0, 0, 0], [0,0, -5,-5 ], [-5,-30,-15,-15], [1, 1, 1, 1 ] ] 
 all_points = []
 theta = math.radians(1)
 all_points.append(P)
+x = []
+y = []
+z = []
+B = np.matrix( [ [0.05, 0.05, 0.05, 0.05], [0.05, 0.05, 0.05, 0.05 ], [0.05,0.05,0.05,0.05], [1, 1, 1, 1 ] ] )
 
-for i in xrange(1,60):
-    P = getT(N,M,theta)*P
+for i in xrange(0,60):
+    x.append(P[0,0:])
+
+    y.append(P[1,0:])
+    z.append(P[2,0:])
+    P = getT(N, M, theta)*P + B
     all_points.append(P)
-
-m1 = []
-m2 = []
-m3 = []
-m4 = []
-
-for idx in range(len(all_points)):
-    P = all_points[idx][:,0]
-    point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
-    m1.append(point)
-
-    P = all_points[idx][:,1]
-    point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
-    m2.append(point)
-
-    P = all_points[idx][:,2]
-    point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
-    m3.append(point)
-
-    P = all_points[idx][:,3]
-    point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
-    m4.append(point)
-
-markers = [ m1, m2, m3, m4]
-
-#rigid_marker.find_CoR(markers)
-rigid_marker.find_AoR(markers)
+ax.scatter(x,y,z)
 
 
+for ii in xrange(5,7):
+    m1 = []
+    m2 = []
+    m3 = []
+    m4 = []
+
+    for idx in range(ii,ii+2):
+        P = all_points[idx][:,0]
+        point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
+        m1.append(point)
+
+        P = all_points[idx][:,1]
+        point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
+        m2.append(point)
+
+        P = all_points[idx][:,2]
+        point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
+        m3.append(point)
+
+        P = all_points[idx][:,3]
+        point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
+        m4.append(point)
+
+    markers = [ m1, m2, m3, m4]
+    cor = rigid_marker.find_CoR(markers) + np.array((0.05,0.05,0.05))
+    axis = rigid_marker.find_AoR(markers)
+    axis_x = [(cor[0] - axis[0] * 100).item(0), (cor[0]).item(0), (cor[0] + axis[0] * 100).item(0)]
+    axis_y = [(cor[1] - axis[1] * 100).item(0), (cor[1]).item(0), (cor[1] + axis[1] * 100).item(0)]
+    axis_z = [(cor[2] - axis[2] * 100).item(0), cor[2].item(0), (cor[2] + axis[2] * 100).item(0)]
+    ax.plot(axis_x, axis_y, axis_z, 'b')
+plt.show()
