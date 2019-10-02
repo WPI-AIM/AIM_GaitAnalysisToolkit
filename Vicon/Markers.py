@@ -280,6 +280,57 @@ def calc_b(markers):
 
     return b.reshape((-1, 1))
 
+def get_transformation(markers):
+    """
+    Get the transforms between marker at different times
+    :param markers:
+    :return:
+    """
+    A = np.matrix((markers[0][0].x, markers[0][0].y, markers[0][0].z))
+    B = np.matrix((markers[1][0].x, markers[1][0].y, markers[1][0].z))
+
+    N = A.shape[0]
+    centroid_A = np.mean(A, axis=0)
+    centroid_B = np.mean(B, axis=0)
+
+    # centre the points
+    AA = A - np.tile(centroid_A, (N, 1))
+    BB = B - np.tile(centroid_B, (N, 1))
+
+    # dot is matrix multiplication for array
+    H = np.transpose(AA) * BB
+
+    U, S, Vt = np.linalg.svd(H)
+
+    R = Vt.T * U.T
+
+    # special reflection case
+    if np.linalg.det(R) < 0:
+        print "Reflection detected"
+        Vt[2, :] *= -1
+        R = Vt.T * U.T
+
+    t = -R * centroid_A.T + centroid_B.T
+
+    A2 = R*A.T + t
+
+    err = A2 - B.T
+
+    err = np.multiply(err, err)
+    err = sum(err)
+    rmse = np.sqrt(err / N);
+
+    return R, t
+
+def get_center(markers, R):
+    print markers[0]
+    x1 = np.array((markers[0][0].x, markers[0][0].y, markers[0][0].z)).reshape((-1,1))
+    print x1
+    x2 = np.array((markers[1][0].x, markers[1][0].y, markers[1][0].z)).reshape((-1,1))
+    xc = -np.dot(np.linalg.pinv(R + np.eye(3)), (x2 - np.dot(R, x1)))
+
+    return xc
+
 if __name__ == '__main__':
 
     marker0 = np.asarray([3.6, 5.4, 1.69]).transpose()
