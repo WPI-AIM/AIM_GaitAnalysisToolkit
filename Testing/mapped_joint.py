@@ -13,7 +13,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 ax.set_autoscale_on(False)
-data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_leg_bend.csv")
+data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_walking01.csv")
 markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_frames()
@@ -82,11 +82,10 @@ def animate(frame):
 
     # (31.86380164,391.24609261,533.73053426)
 
-    sol = Markers.minimize_center( (thigh, shank), axis=axis, initial=(core[0][0], core[1][0], core[2][0]) )
-    temp_center = sol.x
-    print thigh-temp_center[:3]
-    angle = Markers.get_angle_between_vects(thigh-temp_center[:3], shank-temp_center[:3])
-    angles.append(angle)
+    #sol = Markers.minimize_center( (thigh, shank), axis=axis, initial=(core[0][0], core[1][0], core[2][0]) )
+    mapped_center = np.array([18.39674562,    6.96741268,  154.09657796])
+    #angle = Markers.get_angle_between_vects(thigh-temp_center[:3], shank-temp_center[:3])
+    temp_center = -mapped_center + thigh
     ax.clear()
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
