@@ -1,5 +1,6 @@
 from lib.Exoskeleton.Robot import core
 import numpy as np
+from scipy.optimize import minimize
 
 class Markers(object):
     """
@@ -15,7 +16,6 @@ class Markers(object):
         self._rigid_body = {}
         self._marker_names = []
         self._frames = {}
-
     @property
     def marker_names(self):
         """
@@ -318,7 +318,7 @@ def get_transformation(markers):
 
     err = np.multiply(err, err)
     err = sum(err)
-    rmse = np.sqrt(err / N);
+    rmse = np.sqrt(err / N)
 
     return R, t
 
@@ -330,6 +330,54 @@ def get_center(markers, R):
     xc = -np.dot(np.linalg.pinv(R + np.eye(3)), (x2 - np.dot(R, x1)))
 
     return xc
+
+def minimize_center(vectors, axis, initial ):
+    # optimize
+
+    def objective(x):
+        C = 0
+        for vect in vectors:
+            C += np.sqrt( np.power((x[0] - vect[0]),2) + np.power((x[1] - vect[1]),2) + np.power((x[2] - vect[2]),2) )
+        return C
+
+    def constraint(x):
+        return np.array((x[0], x[1], x[2])) - x[3]*axis - initial
+
+    N = 1000
+    b = (-N, N)
+    bnds = (b, b, b, b)
+    con= {'type': 'eq', 'fun': constraint}
+    cons = ([con])
+    solution = minimize(objective, np.append(initial,0), method='SLSQP', \
+                        bounds=bnds, constraints=cons)
+    return solution
+
+def calc_mass_vect(markers):
+    """
+    find the average vector to  frame
+    :param markers:
+    :return:
+    """
+    x = 0
+    y = 0
+    z = 0
+    for point in markers:
+        x += point.x
+        y += point.y
+        z += point.z
+
+    vect = np.array((x/len(markers), y/len(markers), z/len(markers)))
+    return vect
+
+def calc_vector(start_point, end_point):
+    """
+    calculate the vector between two points
+    :param start_point:
+    :param end_point:
+    :return:
+    """
+    return end_point - start_point
+
 
 if __name__ == '__main__':
 

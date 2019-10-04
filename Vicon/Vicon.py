@@ -428,6 +428,8 @@ class Vicon(object):
         return data
 
 
+
+
 if __name__ == '__main__':
     file = "/home/nathaniel/gait_analysis_toolkit/Utilities/Walking01.csv"
     data = Vicon(file)
