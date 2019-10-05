@@ -57,13 +57,6 @@ thigh = Markers.calc_mass_vect([thigh_markers[0][0],
 sol = Markers.minimize_center((thigh, shank), axis=axis, initial=(core[0][0], core[1][0], core[2][0]))
 temp_center = sol.x
 
-print thigh - temp_center[:3]
-
-axis_x = [(core[0] - axis[0] * 1000).item(0), (core[0]).item(0), (core[0] + axis[0] * 1000).item(0)]
-axis_y = [(core[1] - axis[1] * 1000).item(0), (core[1]).item(0), (core[1] + axis[1] * 1000).item(0)]
-axis_z = [(core[2] - axis[2] * 1000).item(0), core[2].item(0), (core[2] + axis[2] * 1000).item(0)]
-temp_center = np.array((0,0,0))
-angles = []
 
 def animate(frame):
     x = []
@@ -96,14 +89,24 @@ def animate(frame):
 
     # (31.86380164,391.24609261,533.73053426)
 
-    sol = Markers.minimize_center([thigh, shank], axis=axis, initial=(core[0][0], core[1][0], core[2][0]))
-    temp_center = sol.x
-    th = thigh - temp_center[:3]
-    sh = shank - temp_center[:3]
-    dist_shank = np.sqrt( np.sum(np.power(sh,2)) )
-    dist_thigh = np.sqrt(np.sum(np.power(th, 2)))
-    angle = Markers.get_angle_between_vects(thigh-temp_center[:3], shank-temp_center[:3])
-    angles.append([angle, dist_shank])
+    T_Th = markers.get_frame("ben:RightThigh")[frame]
+    T_Sh = markers.get_frame("ben:RightShank")[frame]
+    T = np.dot(np.linalg.pinv(T_Th), T_Sh)
+    offset = np.dot(np.linalg.pinv(T_Th), np.append(shank, 1).reshape((-1, 1)))
+
+    axis, theta = Markers.R_to_axis_angle(T[:3, :3])
+    axis_x = []
+    axis_y = []
+    axis_z = []
+
+    for ii in xrange(-1000, 1000):
+
+        temp = np.array([[ii*axis[0]], [ii*axis[1]], [ii*axis[2]], [1]])
+        trans = np.dot( np.linalg.pinv(T), temp)
+        axis_x.append( trans[0][0])
+        axis_y.append( trans[1][0])
+        axis_z.append(trans[2][0])
+
     ax.clear()
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
@@ -115,10 +118,9 @@ def animate(frame):
     ax.scatter([thigh[0], shank[0], temp_center[0]],
                [thigh[1], shank[1], temp_center[1]],
                [thigh[2], shank[2], temp_center[2]], c='g', marker='o')
-
     ax.plot(axis_x, axis_y, axis_z, 'b')
 
-ani = animation.FuncAnimation(fig, animate, interval=.01)
+ani = animation.FuncAnimation(fig, animate, interval=10)
 plt.show()
 np.savetxt("angles.csv", np.asarray(angles), delimiter=",")
 

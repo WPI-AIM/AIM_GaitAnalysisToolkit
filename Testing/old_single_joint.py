@@ -15,8 +15,8 @@ data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_leg_b
 markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_frames()
-cor_filter = Mean_filter.Mean_Filter(20)
-aor_filter = Mean_filter.Mean_Filter(20)
+cor_filter = Mean_filter.Mean_Filter(1)
+aor_filter = Mean_filter.Mean_Filter(1)
 all_core = []
 
 
@@ -67,13 +67,12 @@ def animate(frame):
     # axis_x = [core[0]]
     # axis_y = [core[1]]
     # axis_z = [core[2]]
+    ax.scatter( core[0], core[1], core[2], 'go')
     ax.plot(axis_x, axis_y, axis_z, 'b')
-    all_core.append(core)
 
     #ax.scatter(Rc[0], Rc[1], Rc[2], 'b')
 
 
-ani = animation.FuncAnimation(fig, animate, interval=0.01)
+ani = animation.FuncAnimation(fig, animate, interval=100)
 
 plt.show()
-np.savetxt("joint.csv", np.asarray(all_core), delimiter=",")
