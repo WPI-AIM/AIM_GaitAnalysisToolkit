@@ -54,6 +54,7 @@ thigh = Markers.calc_mass_vect([thigh_markers[0][0],
                                 thigh_markers[2][0],
                                 thigh_markers[3][0]])
 
+
 sol = Markers.minimize_center((thigh, shank), axis=axis, initial=(core[0][0], core[1][0], core[2][0]))
 temp_center = sol.x
 
@@ -94,14 +95,18 @@ def animate(frame):
                                     thigh_markers[2][frame],
                                     thigh_markers[3][frame]])
 
-    # (31.86380164,391.24609261,533.73053426)
-
+    T_Th = markers.get_frame("ben:RightThigh")[frame]
+    T_Sh = markers.get_frame("ben:RightShank")[frame]
+    T = np.dot(np.linalg.pinv(T_Th), T_Sh)
+    axis, angle = Markers.R_to_axis_angle(T[0:3, 0:3])
     sol = Markers.minimize_center([thigh, shank], axis=axis, initial=(core[0][0], core[1][0], core[2][0]))
+
     temp_center = sol.x
     th = thigh - temp_center[:3]
     sh = shank - temp_center[:3]
-    dist_shank = np.sqrt( np.sum(np.power(sh,2)) )
+    dist_shank = np.sqrt( np.sum(np.power(sh,2)))
     dist_thigh = np.sqrt(np.sum(np.power(th, 2)))
+
     angle = Markers.get_angle_between_vects(thigh-temp_center[:3], shank-temp_center[:3])
     angles.append([angle, dist_shank])
     ax.clear()
@@ -116,9 +121,13 @@ def animate(frame):
                [thigh[1], shank[1], temp_center[1]],
                [thigh[2], shank[2], temp_center[2]], c='g', marker='o')
 
+    axis_x = [(core[0] - axis[0] * 1000).item(0), (core[0]).item(0), (core[0] + axis[0] * 1000).item(0)]
+    axis_y = [(core[1] - axis[1] * 1000).item(0), (core[1]).item(0), (core[1] + axis[1] * 1000).item(0)]
+    axis_z = [(core[2] - axis[2] * 1000).item(0), core[2].item(0), (core[2] + axis[2] * 1000).item(0)]
+
     ax.plot(axis_x, axis_y, axis_z, 'b')
 
-ani = animation.FuncAnimation(fig, animate, interval=.01)
+ani = animation.FuncAnimation(fig, animate, interval=100)
 plt.show()
 np.savetxt("angles.csv", np.asarray(angles), delimiter=",")
 
