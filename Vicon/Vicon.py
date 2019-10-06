@@ -1,5 +1,5 @@
 import csv
-
+from lib.Exoskeleton.Robot import core
 import Accel
 import EMG
 import ForcePlate
@@ -24,6 +24,7 @@ class Vicon(object):
         self._make_EMGs()
         self._make_force_plates()
         self._make_IMUs()
+        self._make_markers()
         self._model_output = ModelOutput.ModelOutput(self.data_dict["Model Outputs"], self.joint_names)
         self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
 
@@ -222,12 +223,15 @@ class Vicon(object):
         """
         sensors = self.data_dict["Devices"]
         keys = self._filter_dict(sensors, 'Force_Plate')  # + ['Combined Moment'] + ['Combined CoP']
-        print sensors["Force_Plate__Force_1"]
         self._force_plates[1] = ForcePlate.ForcePlate("Force_Plate_1", sensors["Force_Plate__Force_1"],
                                                       sensors["Force_Plate__Moment_1"])
 
         self._force_plates[2] = ForcePlate.ForcePlate("Force_Plate_2", sensors["Force_Plate__Force_2"],
                                                       sensors["Force_Plate__Moment_2"])
+
+    def _make_markers(self):
+        markers = self.data_dict["Trajectories"]
+        print markers['RTIB'].keys()
 
     def _make_EMGs(self):
         """
@@ -238,7 +242,6 @@ class Vicon(object):
         all_keys = self._filter_dict(sensors, 'EMG')
         T_EMG_keys = self._filter_dict(sensors, 'T_EMG')
         EMG_keys = [x for x in all_keys if x not in T_EMG_keys]
-        print "skdjf", EMG_keys
 
         for t_key in T_EMG_keys:
             self._T_EMGs[int(filter(str.isdigit, t_key))] = EMG.EMG(t_key, sensors[t_key]["EMG"])
@@ -288,7 +291,7 @@ class Vicon(object):
         return data
 
     def _seperate_csv_sections(self, all_data):
-        print len(all_data[0])
+
         col1 = [row[0] for row in all_data]
         devices = col1.index("Devices")
         joints = col1.index("Joints")
@@ -374,7 +377,7 @@ class Vicon(object):
         # Put all the data in the correct sub dictionary.
 
         for row in raw_data[start + 5:end - 1]:
-
+            print row
             frame = int(row[0])
             for key, value in data.iteritems():
                 for sub_key, sub_value in value.iteritems():
@@ -389,5 +392,5 @@ class Vicon(object):
 
 
 if __name__ == '__main__':
-    file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
+    file = "/home/nathaniel/git/Gait_Analysis_Toolkit/testing_data/Walking01.csv"
     data = Vicon(file)

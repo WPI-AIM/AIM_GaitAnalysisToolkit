@@ -61,6 +61,7 @@ def transform_vector(frame, vector):
     """
     p = np.pad(vector, (0, 1), 'constant')
     p[-1] = 1
+    return frame*p
 
 
 def unit_vector(vector):
@@ -68,18 +69,18 @@ def unit_vector(vector):
     return vector / np.linalg.norm(vector)
 
 
-# def get_A(markers):
-#
-#     A = 0
-#     for marker in markers:
-#         inner_sum = 0
-#         N = len(marker)
-#         vbar = 0.0
-#         for frame in marker:
-#             inner_sum += (1./N) * (frame * np.transpose(frame))
-#             vbar = frame*(1./N)
-#         A += inner_sum - vbar*np.transpose(vbar)
-#     return 2*A
+def get_A(markers):
+
+    A = 0
+    for marker in markers:
+        inner_sum = 0
+        N = len(marker)
+        vbar = 0.0
+        for frame in marker:
+            inner_sum += (1./N) * (frame * np.transpose(frame))
+            vbar = frame*(1./N)
+        A += inner_sum - vbar*np.transpose(vbar)
+    return 2*A
 #
 #
 # def get_B(markers):
@@ -106,7 +107,9 @@ if __name__ == '__main__':
 
     frame = np.asarray( [ marker0, marker1, marker2, marker3])
     make_frame(frame)
-
+    vect = get_angle_between_vects(marker1, marker2)
+    print vect
+    print transform_vector(frame, marker0)
 
 
 
