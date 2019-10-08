@@ -103,6 +103,7 @@ def animate(frame):
                                     shank_markers[1][frame],
                                     shank_markers[2][frame],
                                     shank_markers[3][frame]])
+
     axis[0], axis[2] = axis[2], axis[0]
     sol = Markers.minimize_center([thigh, shank], axis=axis, initial=(core[0][0], core[1][0], core[2][0]))
     temp_center = sol.x

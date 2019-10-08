@@ -412,6 +412,41 @@ def R_to_axis_angle(matrix):
     # Return the data.
     return axis, theta
 
+
+def sphereFit(frames):
+    #   Assemble the A matrix
+    spX = []
+    spY = []
+    spZ = []
+    for frame in frames:
+        for marker in frame:
+            spX.append(marker.x)
+            spY.append(marker.y)
+            spZ.append(marker.z)
+
+
+    spX = np.array(spX)
+    spY = np.array(spY)
+    spZ = np.array(spZ)
+    A = np.zeros((len(spX),4))
+    A[:,0] = spX*2
+    A[:,1] = spY*2
+    A[:,2] = spZ*2
+    A[:,3] = 1
+
+    #   Assemble the f matrix
+    f = np.zeros((len(spX),1))
+    f[:,0] = (spX*spX) + (spY*spY) + (spZ*spZ)
+    C, residules, rank, singval = np.linalg.lstsq(A,f)
+
+    #   solve for the radius
+    t = (C[0]*C[0])+(C[1]*C[1])+(C[2]*C[2])+C[3]
+    radius = np.sqrt(t)
+    return radius, C
+
+
+
+
 if __name__ == '__main__':
 
     marker0 = np.asarray([3.6, 5.4, 1.69]).transpose()

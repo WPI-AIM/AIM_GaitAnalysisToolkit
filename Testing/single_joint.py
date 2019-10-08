@@ -47,7 +47,7 @@ def animate(frame):
     ax.axis([-500, 500, -750, 1500])
     ax.set_zlim3d(0,1250)
     ax.scatter(x, y, z, c='r', marker='o')
-    offset = 3
+    offset = 1
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
     thigh_markers = markers.get_rigid_body("ben:RightThigh")[0:]
 
@@ -64,6 +64,10 @@ def animate(frame):
     R1 = T_TH_SH_1[:3, :3]
     R2 = T_TH_SH_2[:3, :3]
     R1_2 = np.dot(np.transpose(R2), R1)
+    T = np.dot(np.linalg.pinv(T_Th[frame]), T_Sh[frame])
+
+    axis, theta = Markers.R_to_axis_angle(T[:3, :3])
+    axis[0], axis[2] = axis[2], axis[0]
     
     rp_1 = Markers.calc_mass_vect(
         [shank_markers[0][frame], shank_markers[1][frame], shank_markers[2][frame], shank_markers[3][frame]])
@@ -85,7 +89,11 @@ def animate(frame):
 
     rc = np.dot(np.linalg.pinv(P),Q)
     Rc = rp_1 + np.dot(np.transpose(T_Sh[frame][:3, :3]), rc)
+    axis_x = [(Rc[0] - axis[0] * 1000).item(0), (Rc[0]).item(0), (Rc[0] + axis[0] * 1000).item(0)]
+    axis_y = [(Rc[1] - axis[1] * 1000).item(0), (Rc[1]).item(0), (Rc[1] + axis[1] * 1000).item(0)]
+    axis_z = [(Rc[2] - axis[2] * 1000).item(0), Rc[2].item(0), (Rc[2] + axis[2] * 1000).item(0)]
 
+    ax.plot(axis_x, axis_y, axis_z, 'b')
     ax.scatter(Rc[0], Rc[1], Rc[2], 'b')
 
 
