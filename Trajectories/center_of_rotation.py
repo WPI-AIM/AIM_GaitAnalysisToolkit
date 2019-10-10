@@ -111,52 +111,37 @@ def rotation_method(markers,offset=10):
 def sphere_method(markers, offset=10):
 
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
-    thigh_markers = markers.get_rigid_body("ben:RightThigh")[0:]
-
     T_Th = markers.get_frame("ben:RightThigh")
-    T_Sh = markers.get_frame("ben:RightShank")
-
     adjusted = Markers.transform_markers(T_Th, shank_markers)
 
     centers = []
     axises = []
+    CoM = []
+    CoM_fixed = []
 
-    for frame_number in xrange(offset, len(adjusted[0]) - offset):
+    # Get all the mass centers of the frame
+    for ii in xrange(len(adjusted[0])):
+        temp = Markers.calc_mass_vect([adjusted[0][ii],
+                                       adjusted[1][ii],
+                                       adjusted[2][ii],
+                                       adjusted[3][ii]])
+        CoM.append(np.asarray(temp))
 
-        # m1 = adjusted[0][frame_number - offset:frame_number + offset + 1]
-        # m2 = adjusted[1][frame_number - offset:frame_number + offset + 1]
-        # m3 = adjusted[2][frame_number - offset:frame_number + offset + 1]
-        # m4 = adjusted[3][frame_number - offset:frame_number + offset + 1]
-        # data = [m1, m2, m3, m4]
-        CoM = []
-        for ii in xrange(frame_number-offset,frame_number+offset+1):
-            temp = Markers.calc_mass_vect([adjusted[0][ii],
-                                    adjusted[1][ii],
-                                    adjusted[2][ii],
-                                    adjusted[3][ii]])
-            CoM.append(temp)
+    fixed = CoM[0]
+    CoM_fixed.append(fixed)
+    frame_index = []
+    thresh = 0.0
+    for ii, center in enumerate(CoM):
+        dist = np.sqrt(np.sum(np.power(fixed-center,2)))
+        if dist >= thresh:
+            frame_index.append(ii)
+            fixed = center
+            CoM_fixed.append(fixed)
 
-        raduis, C = Markers.sphereFit(CoM)
-
+    for ii in xrange(len(CoM_fixed)-5):
+        raduis, C = Markers.sphereFit(CoM_fixed[ii:ii+5])
         C = np.row_stack((C,[1]))
-        C = np.dot(np.linalg.pinv(T_Th[frame_number]), C)
-
-        thigh = Markers.calc_mass_vect([thigh_markers[0][frame_number],
-                                        thigh_markers[1][frame_number],
-                                        thigh_markers[2][frame_number],
-                                        thigh_markers[3][frame_number]])
-
-        shank = Markers.calc_mass_vect([shank_markers[0][frame_number],
-                                        shank_markers[1][frame_number],
-                                        shank_markers[2][frame_number],
-                                        shank_markers[3][frame_number]])
-
-        T = np.dot(np.linalg.pinv(T_Th[frame_number]), T_Sh[frame_number])
-
-        axis, angle = Markers.R_to_axis_angle(T[0:3, 0:3])
-        axis[0], axis[2] = axis[2], axis[0]
-        sol = Markers.minimize_center([thigh, shank], axis=axis, initial=(C[0][0], C[1][0], C[2][0]))
-        centers.append( (C[0][0], C[1][0], C[2][0]) )
-        axises.append(axis)
-
-    return centers, axises
+        C = np.dot(np.linalg.pinv(T_Th[frame_index[ii]]),C)
+        centers.append(C[0:3])
+    print frame_index
+    return centers, axises, frame_index

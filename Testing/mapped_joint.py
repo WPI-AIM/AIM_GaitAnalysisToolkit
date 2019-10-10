@@ -21,8 +21,8 @@ angles = []
 offset = 10
 
 #centers, axis = center_of_rotation.leastsq_method(markers=markers)
-centers, axis = center_of_rotation.sphere_method(markers=markers)
-#centers, axis = center_of_rotation.rotation_method(markers=markers)
+#centers, axis, frame_index = center_of_rotation.sphere_method(markers=markers)
+centers, axis = center_of_rotation.rotation_method(markers=markers)
 
 x_center = []
 y_center = []
@@ -34,7 +34,8 @@ for center in centers:
     z_center.append(center[2])
 
 def animate(frame):
-    frame + offset
+    count = frame
+    frame = frame
     x = []
     y = []
     z = []
@@ -61,7 +62,8 @@ def animate(frame):
     ax.axis([-500, 500, -750, 1500])
     ax.set_zlim3d(0, 1250)
     ax.scatter(x, y, z, c='r', marker='o')
-    ax.scatter( [x_center[frame-offset]],[y_center[frame-offset]],[z_center[frame-offset]],  c='g', marker='o')
+    #ax.scatter( [x_center[frame-offset]],[y_center[frame-offset]],[z_center[frame-offset]],  c='g', marker='o')
+    ax.scatter([x_center[count]], [y_center[count]], [z_center[count ]], c='g', marker='o')
     # axis_x = [(core[0] - axis[0] * 1000).item(0), (core[0]).item(0), (core[0] + axis[0] * 1000).item(0)]
     # axis_y = [(core[1] - axis[1] * 1000).item(0), (core[1]).item(0), (core[1] + axis[1] * 1000).item(0)]
     # axis_z = [(core[2] - axis[2] * 1000).item(0), core[2].item(0), (core[2] + axis[2] * 1000).item(0)]

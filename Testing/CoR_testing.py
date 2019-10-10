@@ -19,14 +19,17 @@ import numpy as np
 from Vicon import Markers
 from Utilities import Mean_filter
 
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
 
 def make_frame(markers):
-    origin = np.array([markers[0][0].x, markers[0][0].y, markers[0][0].z])
-    x_axis = np.array([markers[1][0].x, markers[1][0].y, markers[1][0].z])
-    y_axis = np.array([markers[2][0].x, markers[2][0].y, markers[2][0].z])
-    xo = origin - x_axis
-    yo = origin - y_axis
-    zo = np.cross(xo,yo)
+    origin = np.array([markers[0].x, markers[0].y, markers[0].z])
+    x_axis = np.array([markers[1].x, markers[1].y, markers[1].z])
+    y_axis = np.array([markers[2].x, markers[2].y, markers[2].z])
+    xo = unit_vector(origin - x_axis)
+    yo = unit_vector(origin - y_axis)
+    zo = unit_vector(np.cross(xo,yo))
     xo = np.pad(xo, (0, 1), 'constant')
     yo = np.pad(yo, (0, 1), 'constant')
     zo = np.pad(zo, (0, 1), 'constant')
@@ -52,26 +55,42 @@ def leastsq_method(markers, offset=0):
 
     return centers
 
-def rotation_method(markers,offset=1):
 
+def rotation_method2(markers,offset=0):
+
+    for frame in xrange(offset, len(markers[0]) - offset):
+        m1 = markers[0][frame:frame + 2]
+        m2 = markers[1][frame:frame + 2]
+        m3 = markers[2][frame:frame + 2]
+        m4 = markers[3][frame:frame + 2]
+        data = [m1, m2, m3, m4]
+        R, t = Markers.get_transformation(data)
+
+
+
+
+
+
+def rotation_method(markers,offset=1):
 
     centers = []
     axises = []
-
+    offset = 5
     for frame in xrange(offset, len(markers[0]) - offset):
-        data = []
 
-        m1 = markers[0][frame:frame + 1]
-        m2 = markers[1][frame:frame + 1]
-        m3 = markers[2][frame:frame + 1]
-        m4 = markers[3][frame:frame + 1]
+        data = []
+        m1 = markers[0][frame]
+        m2 = markers[1][frame]
+        m3 = markers[2][frame]
+        m4 = markers[3][frame]
         data = [m1, m2, m3, m4]
         T_Sh1 = make_frame(data)
         
-        m1 = markers[0][frame+offset:frame + offset + 1]
-        m2 = markers[1][frame+offset:frame + offset + 1]
-        m3 = markers[2][frame+offset:frame + offset + 1]
-        m4 = markers[3][frame+offset:frame + offset + 1]
+        m1 = markers[0][frame + offset]
+        m2 = markers[1][frame + offset]
+        m3 = markers[2][frame + offset]
+        m4 = markers[3][frame + offset]
+
         data = [m1, m2, m3, m4]
         T_Sh2 = make_frame(data)
 
@@ -80,38 +99,39 @@ def rotation_method(markers,offset=1):
                             [0.0, 0.0, 1.0, 0.0],
                             [0.0, 0.0, 0.0, 1.0]])
 
-        T_TH_SH_1 = np.dot(np.linalg.pinv(T_Th), T_Sh1)  # Markers.get_all_transformation_to_base(T_Th, T_Sh)[frame]
-        T_TH_SH_2 = np.dot(np.linalg.pinv(T_Th), T_Sh2)
+        T_TH_SH_1 = T_Sh1  # Markers.get_all_transformation_to_base(T_Th, T_Sh)[frame]
+        T_TH_SH_2 = T_Sh2
 
         R1 = T_TH_SH_1[:3, :3]
         R2 = T_TH_SH_2[:3, :3]
         R1_2 = np.dot(np.transpose(R2), R1)
 
-        rp_1 = Markers.calc_mass_vect([markers[0][frame],
-                                       markers[1][frame],
-                                       markers[2][frame],
-                                       markers[3][frame]])
+        # rp_1 = Markers.calc_mass_vect([markers[0][frame],
+        #                                markers[1][frame],
+        #                                markers[2][frame],
+        #                                markers[3][frame]])
+        #
+        # rp_2 = Markers.calc_mass_vect([markers[0][frame + 1],
+        #                                markers[1][frame + 1],
+        #                                markers[2][frame + 1],
+        #                                markers[3][frame + 1]])
 
-        rp_2 = Markers.calc_mass_vect([markers[0][frame + offset],
-                                       markers[1][frame + offset],
-                                       markers[2][frame + offset],
-                                       markers[3][frame + offset]])
-
+        rp_1 = np.asarray([[markers[0][frame].x],[markers[0][frame].y],[markers[0][frame].z]])
+        rp_2 = np.asarray([[markers[0][frame+offset].x], [markers[0][frame+offset].y], [markers[0][frame+offset].z]])
         rd_1 = np.asarray([[0.0], [0.0], [0.0]])
-        rd_2 = np.asarray([[0.0], [0.0], [0.0]])
+        rd_2 = np.asarray([[0.0], [0.0], [0.0]] )
 
-        rdp1 = np.dot(T_Sh1[:3, :3], rd_1 - rp_1)
-        rdp2 = np.dot(T_Sh2[:3, :3], rd_2 - rp_2)
-
+        rdp1 = np.dot(T_Sh1[:3,:3], rd_1 - rp_1)
+        rdp2 = np.dot(T_Sh2[:3,:3], rd_2 - rp_2)
         P = np.eye(3) - R1_2
         Q = rdp2 - np.dot(R1_2, rdp1)
 
         rc = np.dot(np.linalg.pinv(P), Q)
 
         axis, angle = Markers.R_to_axis_angle(T_TH_SH_1[0:3, 0:3])
-        Rc = rp_1 + np.dot(np.transpose(T_Sh1[:3, :3]), rc)
-
+        Rc = rp_1 + np.dot(np.transpose(T_Sh1[:3,:3]), rc.reshape((-1,1)))
         centers.append(Rc)
+        print Rc
         axises.append(axis)
 
     return centers, axises
@@ -132,7 +152,7 @@ def sphere_method(markers, offset=10):
 
     fixed = CoM[0]
     CoM_fixed.append(fixed)
-    thresh = 0.5
+    thresh = 0.0
     for center in CoM:
         dist = np.sqrt(np.sum(np.power(fixed-center,2)))
         if dist >= thresh:
@@ -147,8 +167,6 @@ def sphere_method(markers, offset=10):
         centers.append(C[0:3])
 
     return centers
-
-
 
 def getD(x,y,z):
     return np.matrix( [[1, 0, 0, -x,], [0, 1, 0, -y,], [0, 0, 1, -z,], [0, 0, 0, 1]])
@@ -226,10 +244,10 @@ for idx in range(0,60):
 
 markers = [ m1, m2, m3, m4]
 # center = Markers.calc_CoR(markers)
-centers = sphere_method(markers)
+#centers = sphere_method(markers)
 #centers = leastsq_method(markers,2)
-#centers = rotation_method(markers)
-
+centers = rotation_method(markers)
+rotation_method2(markers)
 x = []
 y = []
 z = []
@@ -238,7 +256,6 @@ for ii in xrange(len(centers)-1):
     x.append(centers[ii][0])
     y.append(centers[ii][1])
     z.append(centers[ii][2])
-    print "center ",  centers[ii]
 
 ax.scatter(x,y,z)
 plt.show()
