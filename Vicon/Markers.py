@@ -106,9 +106,6 @@ class Markers(object):
     def get_rigid_body(self, name):
         return self._rigid_body[name]
 
-
-
-
 import numpy as np
 from lib.Exoskeleton.Robot import core
 
@@ -118,7 +115,7 @@ def transform_markers(transforms, markers):
         adjusted_locations = []
         for transform, frame in zip(transforms, marker):
             v = np.array([[frame.x, frame.y,frame.z,1.0]]).T
-            v_prime = np.dot( np.linalg.inv(transform),v)
+            v_prime = np.dot(transform,v)
             new_marker = core.Point(v_prime[0][0],v_prime[1][0],v_prime[2][0])
             adjusted_locations.append(new_marker)
         trans_markers.append(adjusted_locations)
@@ -265,7 +262,6 @@ def calc_b(markers):
     """
     b = np.array((0.0, 0.0, 0.0))
     vp_norm = avg_vector(markers)
-    print vp_norm
     for ii, marker in enumerate(markers):
         invN = 1.0/len(marker)
         v2_sum = 0
@@ -419,10 +415,9 @@ def sphereFit(frames):
     spY = []
     spZ = []
     for frame in frames:
-        for marker in frame:
-            spX.append(marker.x)
-            spY.append(marker.y)
-            spZ.append(marker.z)
+        spX.append(frame[0])
+        spY.append(frame[1])
+        spZ.append(frame[2])
 
 
     spX = np.array(spX)
@@ -442,7 +437,7 @@ def sphereFit(frames):
     #   solve for the radius
     t = (C[0]*C[0])+(C[1]*C[1])+(C[2]*C[2])+C[3]
     radius = np.sqrt(t)
-    return radius, C
+    return radius, C[:3]
 
 
 

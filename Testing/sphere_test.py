@@ -14,9 +14,6 @@ def moving_average(a, n=3) :
     return ret[n - 1:] / n
 
 
-
-
-
 data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_leg_bend.csv")
 markers = data.get_markers()
 markers.smart_sort()

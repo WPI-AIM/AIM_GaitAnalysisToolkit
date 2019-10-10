@@ -13,6 +13,143 @@ from Trajectories import rigid_marker
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
+
+
+import numpy as np
+from Vicon import Markers
+from Utilities import Mean_filter
+
+
+def make_frame(markers):
+    origin = np.array([markers[0][0].x, markers[0][0].y, markers[0][0].z])
+    x_axis = np.array([markers[1][0].x, markers[1][0].y, markers[1][0].z])
+    y_axis = np.array([markers[2][0].x, markers[2][0].y, markers[2][0].z])
+    xo = origin - x_axis
+    yo = origin - y_axis
+    zo = np.cross(xo,yo)
+    xo = np.pad(xo, (0, 1), 'constant')
+    yo = np.pad(yo, (0, 1), 'constant')
+    zo = np.pad(zo, (0, 1), 'constant')
+    p = np.pad(origin, (0, 1), 'constant')
+    p[-1] = 1
+    F = np.column_stack((xo,yo,zo,p))
+    return F
+
+def leastsq_method(markers, offset=0):
+
+    centers = []
+    cor_filter = Mean_filter.Mean_Filter(10)
+
+    for frame in xrange(offset, len(markers[0]) - offset):
+        m1 = markers[0][frame - offset:frame + offset + 1]
+        m2 = markers[1][frame - offset:frame + offset + 1]
+        m3 = markers[2][frame - offset:frame + offset + 1]
+        m4 = markers[3][frame - offset:frame + offset + 1]
+        data = [m1, m2, m3, m4]
+        core = cor_filter.update(Markers.calc_CoR(data))
+
+        centers.append(core)
+
+    return centers
+
+def rotation_method(markers,offset=1):
+
+
+    centers = []
+    axises = []
+
+    for frame in xrange(offset, len(markers[0]) - offset):
+        data = []
+
+        m1 = markers[0][frame:frame + 1]
+        m2 = markers[1][frame:frame + 1]
+        m3 = markers[2][frame:frame + 1]
+        m4 = markers[3][frame:frame + 1]
+        data = [m1, m2, m3, m4]
+        T_Sh1 = make_frame(data)
+        
+        m1 = markers[0][frame+offset:frame + offset + 1]
+        m2 = markers[1][frame+offset:frame + offset + 1]
+        m3 = markers[2][frame+offset:frame + offset + 1]
+        m4 = markers[3][frame+offset:frame + offset + 1]
+        data = [m1, m2, m3, m4]
+        T_Sh2 = make_frame(data)
+
+        T_Th = np.asarray([ [1.0, 0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0, 0.0],
+                            [0.0, 0.0, 0.0, 1.0]])
+
+        T_TH_SH_1 = np.dot(np.linalg.pinv(T_Th), T_Sh1)  # Markers.get_all_transformation_to_base(T_Th, T_Sh)[frame]
+        T_TH_SH_2 = np.dot(np.linalg.pinv(T_Th), T_Sh2)
+
+        R1 = T_TH_SH_1[:3, :3]
+        R2 = T_TH_SH_2[:3, :3]
+        R1_2 = np.dot(np.transpose(R2), R1)
+
+        rp_1 = Markers.calc_mass_vect([markers[0][frame],
+                                       markers[1][frame],
+                                       markers[2][frame],
+                                       markers[3][frame]])
+
+        rp_2 = Markers.calc_mass_vect([markers[0][frame + offset],
+                                       markers[1][frame + offset],
+                                       markers[2][frame + offset],
+                                       markers[3][frame + offset]])
+
+        rd_1 = np.asarray([[0.0], [0.0], [0.0]])
+        rd_2 = np.asarray([[0.0], [0.0], [0.0]])
+
+        rdp1 = np.dot(T_Sh1[:3, :3], rd_1 - rp_1)
+        rdp2 = np.dot(T_Sh2[:3, :3], rd_2 - rp_2)
+
+        P = np.eye(3) - R1_2
+        Q = rdp2 - np.dot(R1_2, rdp1)
+
+        rc = np.dot(np.linalg.pinv(P), Q)
+
+        axis, angle = Markers.R_to_axis_angle(T_TH_SH_1[0:3, 0:3])
+        Rc = rp_1 + np.dot(np.transpose(T_Sh1[:3, :3]), rc)
+
+        centers.append(Rc)
+        axises.append(axis)
+
+    return centers, axises
+
+def sphere_method(markers, offset=10):
+
+    centers = []
+    axises = []
+    CoM = []
+    CoM_fixed = []
+    # Get all the mass centers of the frame
+    for ii in xrange(len(markers[0])):
+        temp = Markers.calc_mass_vect([markers[0][ii],
+                                       markers[1][ii],
+                                       markers[2][ii],
+                                       markers[3][ii]])
+        CoM.append(np.asarray(temp))
+
+    fixed = CoM[0]
+    CoM_fixed.append(fixed)
+    thresh = 0.5
+    for center in CoM:
+        dist = np.sqrt(np.sum(np.power(fixed-center,2)))
+        if dist >= thresh:
+            fixed = center
+            CoM_fixed.append(fixed)
+
+    for ii in xrange( len(CoM_fixed)-5):
+        raduis, C = Markers.sphereFit(CoM_fixed[ii:ii+5])
+        print "center ",  C
+        C = np.row_stack((C,[1]))
+
+        centers.append(C[0:3])
+
+    return centers
+
+
+
 def getD(x,y,z):
     return np.matrix( [[1, 0, 0, -x,], [0, 1, 0, -y,], [0, 0, 1, -z,], [0, 0, 0, 1]])
 
@@ -42,7 +179,11 @@ def getT(N, M, theta):
 
 N = (0,0,5)
 M = (0,1,5)
-P = np.matrix( [ [0, 0, 0, 0], [0,0, -5,-5 ], [-5,-30,-15,-15], [1, 1, 1, 1 ] ] )
+
+P = np.matrix( [ [0,  8,   0,  4],
+                 [4,  4,   4,  4],
+                 [0,  0,   8,  4],
+                 [1,   1,  1,  1]])
 
 all_points = []
 theta = math.radians(1)
@@ -50,46 +191,54 @@ all_points.append(P)
 x = []
 y = []
 z = []
-B = np.matrix( [ [0.05, 0.05, 0.05, 0.05], [0.05, 0.05, 0.05, 0.05 ], [0.05,0.05,0.05,0.05], [1, 1, 1, 1 ] ] )
 
 for i in xrange(0,60):
-    x.append(P[0,0:])
 
+    x.append(P[0,0:])
     y.append(P[1,0:])
     z.append(P[2,0:])
-    P = getT(N, M, theta)*P + B
+    P = getT(N, M, theta)*P
     all_points.append(P)
+
 ax.scatter(x,y,z)
+m1 = []
+m2 = []
+m3 = []
+m4 = []
 
+for idx in range(0,60):
 
-for ii in xrange(5,7):
-    m1 = []
-    m2 = []
-    m3 = []
-    m4 = []
+    P = all_points[idx][:,0]
+    point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
+    m1.append(point)
 
-    for idx in range(ii,ii+2):
-        P = all_points[idx][:,0]
-        point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
-        m1.append(point)
+    P = all_points[idx][:,1]
+    point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
+    m2.append(point)
 
-        P = all_points[idx][:,1]
-        point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
-        m2.append(point)
+    P = all_points[idx][:,2]
+    point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
+    m3.append(point)
 
-        P = all_points[idx][:,2]
-        point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
-        m3.append(point)
+    P = all_points[idx][:,3]
+    point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
+    m4.append(point)
 
-        P = all_points[idx][:,3]
-        point = core.Point( P[0].item(0), P[1].item(0), P[2].item(0))
-        m4.append(point)
+markers = [ m1, m2, m3, m4]
+# center = Markers.calc_CoR(markers)
+centers = sphere_method(markers)
+#centers = leastsq_method(markers,2)
+#centers = rotation_method(markers)
 
-    markers = [ m1, m2, m3, m4]
-    cor = rigid_marker.find_CoR(markers) + np.array((0.05,0.05,0.05))
-    axis = rigid_marker.find_AoR(markers)
-    axis_x = [(cor[0] - axis[0] * 100).item(0), (cor[0]).item(0), (cor[0] + axis[0] * 100).item(0)]
-    axis_y = [(cor[1] - axis[1] * 100).item(0), (cor[1]).item(0), (cor[1] + axis[1] * 100).item(0)]
-    axis_z = [(cor[2] - axis[2] * 100).item(0), cor[2].item(0), (cor[2] + axis[2] * 100).item(0)]
-    ax.plot(axis_x, axis_y, axis_z, 'b')
+x = []
+y = []
+z = []
+
+for ii in xrange(len(centers)-1):
+    x.append(centers[ii][0])
+    y.append(centers[ii][1])
+    z.append(centers[ii][2])
+    print "center ",  centers[ii]
+
+ax.scatter(x,y,z)
 plt.show()
