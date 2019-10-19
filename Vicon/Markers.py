@@ -395,7 +395,6 @@ def calc_vector(start_point, end_point):
     """
     return end_point - start_point
 
-
 def R_to_axis_angle(matrix):
     """Convert the rotation matrix into the axis-angle notation.
     Conversion equations
@@ -460,13 +459,6 @@ def sphereFit(frames):
     radius = np.sqrt(t)
     return radius, C[:3]
 
-def pivot(transformations):
-
-    N = np.mean(transformations, axis=0)
-    A = np.zeros(3 * N, 6)
-    B = np.zeros(3 * N, 1)
-    negI = -1 * np.eye((3, 3))
-
 def cloudtocloud(markers, points):
 
     centroidA = calc_mass_vect(markers)
@@ -475,8 +467,8 @@ def cloudtocloud(markers, points):
     marker_cloud = points_to_matrix(markers).transpose()
     points_cloud = points_to_matrix(points).transpose()
     H = np.zeros((3,3))
-    print marker_cloud
     N = len(marker_cloud[0])
+
     for ii in xrange(N):
         ATilde = marker_cloud[:,ii] - centroidA
         BTilde = points_cloud[:,ii] - centroidB
@@ -497,16 +489,21 @@ def cloudtocloud(markers, points):
         R = Vt.T * U.T
 
     print R
-    t = np.dot(-R , centroidA.T) + centroidB.T
+    p = np.dot(-R , centroidA.T) + centroidB.T
 
     T = np.zeros((4,4))
     T[:3,:3] = R
-    T[0, 3] = t[0]
-    T[1, 3] = t[1]
-    T[2, 3] = t[2]
-    T[3,3] = 1
-    print T
-    return R, t
+    for ii in xrange(3):
+        T[ii, 3] = p[ii]
+    T[3,3] = 1.0
+
+    RMSE_sum = 0
+    for ii in xrange(N):
+        trans = np.dot(R,marker_cloud[:,ii] ) + p
+        error = trans - points_cloud[:,ii]
+        RMSE_sum += np.sqrt(np.mean(np.power(error,2)))
+
+    return T, RMSE_sum/N
 
 def points_to_matrix(points):
     """
