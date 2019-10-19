@@ -2,10 +2,13 @@ from lib.Exoskeleton.Robot import core
 import numpy as np
 from scipy.optimize import minimize
 import math
+
+
 class Markers(object):
     """
     Creates an object to hold marker values
     """
+
     def __init__(self, marker_dict):
         """
 
@@ -16,6 +19,7 @@ class Markers(object):
         self._rigid_body = {}
         self._marker_names = []
         self._frames = {}
+
     @property
     def marker_names(self):
         """
@@ -47,8 +51,8 @@ class Markers(object):
         Gather all the frames and attempt to sort the markers into the rigid markers
         :return:
         """
-        no_digits = [''.join(x for x in i if not x.isdigit() ) for i in self._data_dict.keys()] # removes digits
-        single_item = list(set(no_digits)) # removes redundent items
+        no_digits = [''.join(x for x in i if not x.isdigit()) for i in self._data_dict.keys()]  # removes digits
+        single_item = list(set(no_digits))  # removes redundent items
         keys = self._data_dict.keys()
         for name in single_item:
             markers_keys = [s for s in keys if name in s]
@@ -57,20 +61,19 @@ class Markers(object):
                 markers.append(self._raw_markers[marker])
             self._rigid_body[name] = markers
 
-
     def make_frame(self, _origin, _x, _y, _extra):
         Frames = []
         for o_ii, x_ii, y_ii in zip(_origin, _x, _y):
-            o = np.array([o_ii.x, o_ii.y, o_ii.z ]).transpose()
+            o = np.array([o_ii.x, o_ii.y, o_ii.z]).transpose()
             x = np.array([x_ii.x, x_ii.y, x_ii.z]).transpose()
             y = np.array([y_ii.x, y_ii.y, y_ii.z]).transpose()
             xo = (x - o) / np.linalg.norm(x - o)
             yo = (y - o) / np.linalg.norm(y - o)
             zo = np.cross(xo, yo)
-            xo = np.pad(xo, (0,1), 'constant')
+            xo = np.pad(xo, (0, 1), 'constant')
             yo = np.pad(yo, (0, 1), 'constant')
             zo = np.pad(zo, (0, 1), 'constant')
-            p = np.pad(o, (0,1), 'constant')
+            p = np.pad(o, (0, 1), 'constant')
             p[-1] = 1
             F = np.column_stack((xo, yo, zo, p))
             Frames.append(F)
@@ -106,36 +109,39 @@ class Markers(object):
     def get_rigid_body(self, name):
         return self._rigid_body[name]
 
+
 import numpy as np
 from lib.Exoskeleton.Robot import core
+
 
 def transform_markers(transforms, markers):
     trans_markers = []
     for marker in markers:
         adjusted_locations = []
         for transform, frame in zip(transforms, marker):
-            v = np.array([[frame.x, frame.y,frame.z,1.0]]).T
-            v_prime = np.dot(transform,v)
-            new_marker = core.Point(v_prime[0][0],v_prime[1][0],v_prime[2][0])
+            v = np.array([[frame.x, frame.y, frame.z, 1.0]]).T
+            v_prime = np.dot(transform, v)
+            new_marker = core.Point(v_prime[0][0], v_prime[1][0], v_prime[2][0])
             adjusted_locations.append(new_marker)
         trans_markers.append(adjusted_locations)
     return trans_markers
 
-def make_frame(markers):
 
+def make_frame(markers):
     origin = markers[0]
     x_axis = markers[1]
     y_axis = markers[2]
 
     xo = origin - x_axis
     yo = origin - y_axis
-    zo = np.cross(xo,yo)
+    zo = np.cross(xo, yo)
     xo = np.pad(xo, (0, 1), 'constant')
     yo = np.pad(yo, (0, 1), 'constant')
     zo = np.pad(zo, (0, 1), 'constant')
     p = np.pad(origin, (0, 1), 'constant')
     p[-1] = 1
-    F = np.column_stack((xo,yo,zo,p))
+    F = np.column_stack((xo, yo, zo, p))
+
 
 def get_all_transformation_to_base(parent_frames, child_frames):
     """
@@ -153,8 +159,10 @@ def get_all_transformation_to_base(parent_frames, child_frames):
 
     return frames
 
+
 def get_transform_btw_two_frames(parent_frame, child_frame):
-    return np.linalg.inv(parent_frame)*child_frame
+    return np.linalg.inv(parent_frame) * child_frame
+
 
 def get_angle_between_vects(v1, v2):
     """
@@ -168,6 +176,7 @@ def get_angle_between_vects(v1, v2):
     v2_u = unit_vector(v2)
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
+
 def transform_vector(frame, vector):
     """
     transform a vector from one frame to another
@@ -177,11 +186,13 @@ def transform_vector(frame, vector):
     """
     p = np.pad(vector, (0, 1), 'constant')
     p[-1] = 1
-    return frame*p
+    return frame * p
+
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
+
 
 def avg_vector(markers):
     """
@@ -198,6 +209,7 @@ def avg_vector(markers):
         vp_norm.append(vp)
     return vp_norm
 
+
 def calc_CoR(markers):
     '''
         Calculate the center of rotation given two data
@@ -211,8 +223,9 @@ def calc_CoR(markers):
 
     A = calc_A(markers)
     b = calc_b(markers)
-    Ainv = np.linalg.pinv(2.0*A)
+    Ainv = np.linalg.pinv(2.0 * A)
     return np.dot(Ainv, b)
+
 
 def calc_AoR(markers):
     """
@@ -230,11 +243,13 @@ def calc_AoR(markers):
     :return: axis of rotation
     :rtype np.array
     """
-    A = calc_A(markers) #calculates the A matrix
-    E_vals, E_vecs = np.linalg.eig(A) # I believe that the np function eig has a different output than the matlab function eigs
+    A = calc_A(markers)  # calculates the A matrix
+    E_vals, E_vecs = np.linalg.eig(
+        A)  # I believe that the np function eig has a different output than the matlab function eigs
     min_E_val_idx = np.argmin(E_vals)
     axis = E_vecs[:, min_E_val_idx]
     return axis
+
 
 def calc_A(markers):
     """
@@ -245,14 +260,15 @@ def calc_A(markers):
 
     A = np.zeros((3, 3))
     vp_norm = avg_vector(markers)
-    for marker, vp_n in zip(markers, vp_norm): # loop though each marker
+    for marker, vp_n in zip(markers, vp_norm):  # loop though each marker
         Ak = np.zeros((3, 3))
-        for point in marker: # go through is location of the marker
+        for point in marker:  # go through is location of the marker
             v = np.array((point.x, point.y, point.z))
             Ak = Ak + v.reshape((-1, 1)) * v
         Ak = (1.0 / len(marker)) * Ak - vp_n.reshape((-1, 1)) * vp_n
         A = A + Ak
     return A
+
 
 def calc_b(markers):
     """
@@ -263,18 +279,19 @@ def calc_b(markers):
     b = np.array((0.0, 0.0, 0.0))
     vp_norm = avg_vector(markers)
     for ii, marker in enumerate(markers):
-        invN = 1.0/len(marker)
+        invN = 1.0 / len(marker)
         v2_sum = 0
         v3_sum = np.array((0.0, 0.0, 0.0))
         for point in marker:
-            #v = np.array((point.x, point.y, point.z))
-            #print np.dot(v.reshape((-1,1)),v.reshape((-1,1)))
-            v2 = (point.x*point.x + point.y*point.y + point.z*point.z)
+            # v = np.array((point.x, point.y, point.z))
+            # print np.dot(v.reshape((-1,1)),v.reshape((-1,1)))
+            v2 = (point.x * point.x + point.y * point.y + point.z * point.z)
             v2_sum = v2_sum + invN * v2
             v3_sum = v3_sum + invN * (v2 * np.array((point.x, point.y, point.z)))
-        b = b + v3_sum - v2_sum*vp_norm[ii]
+        b = b + v3_sum - v2_sum * vp_norm[ii]
 
     return b.reshape((-1, 1))
+
 
 def get_transformation(markers):
     """
@@ -308,7 +325,7 @@ def get_transformation(markers):
 
     t = -R * centroid_A.T + centroid_B.T
 
-    A2 = R*A.T + t
+    A2 = R * A.T + t
 
     err = A2 - B.T
 
@@ -318,35 +335,38 @@ def get_transformation(markers):
 
     return R, t
 
+
 def get_center(markers, R):
     print markers[0]
-    x1 = np.array((markers[0][0].x, markers[0][0].y, markers[0][0].z)).reshape((-1,1))
+    x1 = np.array((markers[0][0].x, markers[0][0].y, markers[0][0].z)).reshape((-1, 1))
     print x1
-    x2 = np.array((markers[1][0].x, markers[1][0].y, markers[1][0].z)).reshape((-1,1))
+    x2 = np.array((markers[1][0].x, markers[1][0].y, markers[1][0].z)).reshape((-1, 1))
     xc = -np.dot(np.linalg.pinv(R + np.eye(3)), (x2 - np.dot(R, x1)))
 
     return xc
 
-def minimize_center(vectors, axis, initial ):
+
+def minimize_center(vectors, axis, initial):
     # optimize
 
     def objective(x):
         C = 0
         for vect in vectors:
-            C += np.sqrt( np.power((x[0] - vect[0]),2) + np.power((x[1] - vect[1]),2) + np.power((x[2] - vect[2]),2) )
+            C += np.sqrt(np.power((x[0] - vect[0]), 2) + np.power((x[1] - vect[1]), 2) + np.power((x[2] - vect[2]), 2))
         return C
 
     def constraint(x):
-        return np.array((x[0], x[1], x[2])) - x[3]*axis - initial
+        return np.array((x[0], x[1], x[2])) - x[3] * axis - initial
 
     N = 1000
     b = (-N, N)
     bnds = (b, b, b, b)
-    con= {'type': 'eq', 'fun': constraint}
+    con = {'type': 'eq', 'fun': constraint}
     cons = ([con])
-    solution = minimize(objective, np.append(initial,0), method='SLSQP', \
+    solution = minimize(objective, np.append(initial, 0), method='SLSQP', \
                         bounds=bnds, constraints=cons)
     return solution
+
 
 def calc_mass_vect(markers):
     """
@@ -362,8 +382,9 @@ def calc_mass_vect(markers):
         y += point.y
         z += point.z
 
-    vect = np.array((x/len(markers), y/len(markers), z/len(markers)))
+    vect = np.array((x / len(markers), y / len(markers), z / len(markers)))
     return vect
+
 
 def calc_vector(start_point, end_point):
     """
@@ -373,6 +394,7 @@ def calc_vector(start_point, end_point):
     :return:
     """
     return end_point - start_point
+
 
 def R_to_axis_angle(matrix):
     """Convert the rotation matrix into the axis-angle notation.
@@ -393,14 +415,14 @@ def R_to_axis_angle(matrix):
 
     # Axes.
     axis = np.zeros(3)
-    axis[0] = matrix[2,1] - matrix[1,2]
-    axis[1] = matrix[0,2] - matrix[2,0]
-    axis[2] = matrix[1,0] - matrix[0,1]
+    axis[0] = matrix[2, 1] - matrix[1, 2]
+    axis[1] = matrix[0, 2] - matrix[2, 0]
+    axis[2] = matrix[1, 0] - matrix[0, 1]
 
     # Angle.
     r = np.hypot(axis[0], np.hypot(axis[1], axis[2]))
     t = matrix[0, 0] + matrix[1, 1] + matrix[2, 2]
-    theta = math.atan2(r, t-1)
+    theta = math.atan2(r, t - 1)
 
     # Normalise the axis.
     axis = axis / r
@@ -419,39 +441,117 @@ def sphereFit(frames):
         spY.append(frame[1])
         spZ.append(frame[2])
 
-
     spX = np.array(spX)
     spY = np.array(spY)
     spZ = np.array(spZ)
-    A = np.zeros((len(spX),4))
-    A[:,0] = spX*2
-    A[:,1] = spY*2
-    A[:,2] = spZ*2
-    A[:,3] = 1
+    A = np.zeros((len(spX), 4))
+    A[:, 0] = spX * 2
+    A[:, 1] = spY * 2
+    A[:, 2] = spZ * 2
+    A[:, 3] = 1
 
     #   Assemble the f matrix
-    f = np.zeros((len(spX),1))
-    f[:,0] = (spX*spX) + (spY*spY) + (spZ*spZ)
-    C, residules, rank, singval = np.linalg.lstsq(A,f)
+    f = np.zeros((len(spX), 1))
+    f[:, 0] = (spX * spX) + (spY * spY) + (spZ * spZ)
+    C, residules, rank, singval = np.linalg.lstsq(A, f)
 
     #   solve for the radius
-    t = (C[0]*C[0])+(C[1]*C[1])+(C[2]*C[2])+C[3]
+    t = (C[0] * C[0]) + (C[1] * C[1]) + (C[2] * C[2]) + C[3]
     radius = np.sqrt(t)
     return radius, C[:3]
 
+def pivot(transformations):
 
+    N = np.mean(transformations, axis=0)
+    A = np.zeros(3 * N, 6)
+    B = np.zeros(3 * N, 1)
+    negI = -1 * np.eye((3, 3))
 
+def cloudtocloud(markers, points):
+
+    centroidA = calc_mass_vect(markers)
+    centroidB = calc_mass_vect(points)
+
+    marker_cloud = points_to_matrix(markers).transpose()
+    points_cloud = points_to_matrix(points).transpose()
+    H = np.zeros((3,3))
+    print marker_cloud
+    N = len(marker_cloud[0])
+    for ii in xrange(N):
+        ATilde = marker_cloud[:,ii] - centroidA
+        BTilde = points_cloud[:,ii] - centroidB
+
+        print "------------"
+        for j in xrange(3):
+            for k in xrange(3):
+                H[j,k] = H[j,k] + ATilde[j]*BTilde[k]
+
+    U, S, Vt = np.linalg.svd(H)
+    print
+    R = np.dot(Vt.T, U.T)
+
+    # special reflection case
+    if np.linalg.det(R) < 0:
+        print "Reflection detected"
+        Vt[2, :] *= -1
+        R = Vt.T * U.T
+
+    print R
+    t = np.dot(-R , centroidA.T) + centroidB.T
+
+    T = np.zeros((4,4))
+    T[:3,:3] = R
+    T[0, 3] = t[0]
+    T[1, 3] = t[1]
+    T[2, 3] = t[2]
+    T[3,3] = 1
+    print T
+    return R, t
+
+def points_to_matrix(points):
+    """
+    converts the points to an array
+    :param points:
+    :return:
+    """
+
+    cloud = np.zeros((len(points),3))
+    for index, point in enumerate(points):
+        cloud[index,:] = [point.x, point.y, point.z]
+
+    return cloud
 
 if __name__ == '__main__':
 
-    marker0 = np.asarray([3.6, 5.4, 1.69]).transpose()
-    marker1 = np.asarray([4.0 , 6.0, 1.75 ]).transpose()
-    marker2 = np.asarray([3.8, 7.2, 1.59]).transpose()
-    marker3 = np.asarray([3.4, 7.9, 1.34]).transpose()
+    DataSets1 = [core.Point(531.6667, - 508.9951, 314.4273),
+                 core.Point(510.5082, - 457.7791, 357.1969),
+                 core.Point(463.9945, - 476.0904, 356.1137),
+                 core.Point(552.4579, - 566.4891, 393.5611),
+                 core.Point(505.9442, - 584.8004, 392.4779)]
 
-    frame = np.asarray([marker0, marker1, marker2, marker3])
-    make_frame(frame)
-    vect = get_angle_between_vects(marker1, marker2)
-    print transform_vector(frame, marker0)
+    DataSets2 = [[-55.4398, 406.9759, - 487.4170],
+                 [-117.4716, 384.3339, -510.7755],
+                 [-99.5008, 336.9028, - 511.4401],
+                 [-84.8805, 394.2636, - 393.6067],
+                 [-67.3354, 347.3059, - 393.7805]]
+
+    marker = [core.Point(0.0,   50.0,  0.0),
+              core.Point(-70.0, 50.0,  0.0),
+              core.Point(-70, 0,   0),
+              core.Point(0.0,  50.0,  100.0),
+              core.Point(0.0,   0.0,   100.0)]
 
 
+    cloudtocloud(marker, DataSets1)
+
+
+
+    # marker0 = np.asarray([3.6, 5.4, 1.69]).transpose()
+    # marker1 = np.asarray([4.0, 6.0, 1.75]).transpose()
+    # marker2 = np.asarray([3.8, 7.2, 1.59]).transpose()
+    # marker3 = np.asarray([3.4, 7.9, 1.34]).transpose()
+    #
+    # frame = np.asarray([marker0, marker1, marker2, marker3])
+    # make_frame(frame)
+    # vect = get_angle_between_vects(marker1, marker2)
+    # print transform_vector(frame, marker0)

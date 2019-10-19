@@ -44,7 +44,7 @@ class Trial(object):
         for start in xrange(2, len(max_peakind) - 2):
             error = 10000000
             offset = 0
-            for ii in xrange(0, 25):  # TODO why is this 25??????????????
+            for ii in xrange(0, 25):
                 temp_error = model.get_left_joint("LKneeAngles").angle.x[max_peakind[start + 1] + ii]
                 if temp_error < error:
                     error = temp_error
