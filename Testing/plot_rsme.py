@@ -28,19 +28,29 @@ data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_leg_b
 markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_frames()
-frame = 125
 
-m = markers.get_rigid_body("ben:hip")
-f = [ m[0][frame], m[1][frame], m[2][frame], m[3][frame] ]
-T, err = Markers.cloud_to_cloud(hip_marker, f)
-print err
+hip_err = []
+thigh_err = []
+shank_err = []
+for frame in xrange(1000 ):
+    m = markers.get_rigid_body("ben:hip")
+    f = [ m[0][frame], m[1][frame], m[2][frame], m[3][frame] ]
+    T, err = Markers.cloud_to_cloud(hip_marker, f)
+    hip_err.append(err)
 
-m = markers.get_rigid_body("ben:RightShank")
-f = [ m[0][frame], m[1][frame], m[2][frame], m[3][frame] ]
-T, err = Markers.cloud_to_cloud(shank_marker, f)
-print err
+    m = markers.get_rigid_body("ben:RightShank")
+    f = [ m[0][frame], m[1][frame], m[2][frame], m[3][frame] ]
+    T, err = Markers.cloud_to_cloud(shank_marker, f)
+    thigh_err.append(err)
 
-m = markers.get_rigid_body("ben:RightThigh")
-f = [ m[0][frame], m[1][frame], m[2][frame], m[3][frame] ]
-T, err = Markers.cloud_to_cloud(thigh_marker, f)
-print err
+    m = markers.get_rigid_body("ben:RightThigh")
+    f = [ m[0][frame], m[1][frame], m[2][frame], m[3][frame] ]
+    T, err = Markers.cloud_to_cloud(thigh_marker, f)
+    shank_err.append(err)
+
+plt.plot(hip_err)
+plt.plot(thigh_err)
+plt.plot(shank_err)
+plt.xlabel("frame")
+plt.ylabel("RMSE")
+plt.show()

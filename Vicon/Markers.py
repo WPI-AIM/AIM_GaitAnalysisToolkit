@@ -22,6 +22,8 @@ class Markers(object):
         self._rigid_body = {}
         self._marker_names = []
         self._frames = {}
+        self._filter_window = 3
+        self._filtered_markers = {}
 
     @property
     def marker_names(self):
@@ -31,6 +33,22 @@ class Markers(object):
         """
         return self._marker_names
 
+    @property
+    def filter_window(self):
+        return self._filter_window
+
+    @filter_window.setter
+    def filter_window(self, value):
+        self._filter_window = value
+
+    @property
+    def filtered_markers(self):
+        return self._filtered_markers
+
+    @filtered_markers.setter
+    def filtered_markers(self, value):
+        self._filtered_markers = value
+
     def make_markers(self):
         """
         Convert the dictioanry into something a that can be easy read
@@ -39,15 +57,21 @@ class Markers(object):
         for key_name, value_name in self._data_dict.iteritems():
             self._marker_names.append(key_name)
             self._raw_markers[key_name] = []
+            self.filtered_markers[key_name] = []
             x_arr = value_name["X"]["data"]
             y_arr = value_name["Y"]["data"]
             z_arr = value_name["Z"]["data"]
-            for inx in xrange(len(value_name["X"]["data"])):
-                x = x_arr[inx]
-                y = y_arr[inx]
-                z = z_arr[inx]
-                point = core.Point(x, y, z)
+            x_filt = np.convolve(x_arr, np.ones((self._filter_window,)) / self._filter_window, mode='full')
+            y_filt = np.convolve(x_arr, np.ones((self._filter_window,)) / self._filter_window, mode='full')
+            z_filt = np.convolve(x_arr, np.ones((self._filter_window,)) / self._filter_window, mode='full')
+             for inx in xrange(len(value_name["X"]["data"])):
+                point = core.Point(x_arr[inx], y_arr[inx], z_arr[inx])
                 self._raw_markers[key_name].append(point)
+                point = core.Point(x_filt[inx], y_filt[inx], z_filt[inx])
+                self._filtered_markers[key_name].append(point)
+
+    def smooth_marker(self):
+        pass
 
     def smart_sort(self):
         """
@@ -63,8 +87,6 @@ class Markers(object):
             markers = []
             for marker in markers_keys:
                 markers.append(self._raw_markers[marker])
-
-            #markers[1], markers[3] = markers[3], markers[1]
             self._rigid_body[name] = markers
 
     def make_frame(self, _origin, _x, _y, _extra):
@@ -111,7 +133,7 @@ class Markers(object):
         :return:
         """
         for name, value in self._rigid_body.iteritems():
-            frame = cloudtocloud(bodies[name], value)
+            frame = cloud_to_cloud(bodies[name], value)
             self.add_frame(name, frame)
 
     def get_frame(self, name):
@@ -124,6 +146,8 @@ class Markers(object):
 
     def get_rigid_body(self, name):
         return self._rigid_body[name]
+
+
 
 
 def transform_markers(transforms, markers):
@@ -359,9 +383,14 @@ def cloud_to_cloud(A_,B_):
     return T, err
 
 def get_center(markers, R):
-    print markers[0]
+    """
+    Get the marker set
+    :param markers:
+    :param R:
+    :return:
+    """
+
     x1 = np.array((markers[0][0].x, markers[0][0].y, markers[0][0].z)).reshape((-1, 1))
-    print x1
     x2 = np.array((markers[1][0].x, markers[1][0].y, markers[1][0].z)).reshape((-1, 1))
     xc = -np.dot(np.linalg.pinv(R + np.eye(3)), (x2 - np.dot(R, x1)))
 
@@ -495,6 +524,14 @@ def points_to_matrix(points):
 
     return cloud
 
+def get_rmse(marker_set, body):
+
+    error = []
+    for frame in xrange(1000):
+        f = [body[0][frame], body[1][frame], body[2][frame], body[frame]]
+        T, err = Markers.cloud_to_cloud(marker_set, f)
+        error.append(err)
+
 if __name__ == '__main__':
 
     DataSets1 = [core.Point(531.6667, - 508.9951, 314.4273),
@@ -516,7 +553,7 @@ if __name__ == '__main__':
               core.Point(0.0,   0.0,   100.0)]
 
 
-    print cloudtocloud(marker, DataSets1)
+    #print cloudtocloud(marker, DataSets1)
 
     # marker0 = np.asarray([3.6, 5.4, 1.69]).transpose()
     # marker1 = np.asarray([4.0, 6.0, 1.75]).transpose()
