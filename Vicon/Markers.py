@@ -2,7 +2,10 @@ from lib.Exoskeleton.Robot import core
 import numpy as np
 from scipy.optimize import minimize
 import math
+from numpy import *
+from math import sqrt
 
+# TODO add rigid body frame information
 
 class Markers(object):
     """
@@ -56,9 +59,12 @@ class Markers(object):
         keys = self._data_dict.keys()
         for name in single_item:
             markers_keys = [s for s in keys if name in s]
+            markers_keys.sort()
             markers = []
             for marker in markers_keys:
                 markers.append(self._raw_markers[marker])
+
+            #markers[1], markers[3] = markers[3], markers[1]
             self._rigid_body[name] = markers
 
     def make_frame(self, _origin, _x, _y, _extra):
@@ -98,6 +104,16 @@ class Markers(object):
             frame = self.make_frame(value[0], value[3], value[2], value[1])
             self.add_frame(name, frame)
 
+    def auto_make_transform(self, bodies):
+        """
+        make the frames using the cloud method
+        :param bodies:
+        :return:
+        """
+        for name, value in self._rigid_body.iteritems():
+            frame = cloudtocloud(bodies[name], value)
+            self.add_frame(name, frame)
+
     def get_frame(self, name):
         """
         get a frame
@@ -108,10 +124,6 @@ class Markers(object):
 
     def get_rigid_body(self, name):
         return self._rigid_body[name]
-
-
-import numpy as np
-from lib.Exoskeleton.Robot import core
 
 
 def transform_markers(transforms, markers):
@@ -128,6 +140,11 @@ def transform_markers(transforms, markers):
 
 
 def make_frame(markers):
+    """
+    Create a frame based on the marker layout
+    :param markers:
+    :return:
+    """
     origin = markers[0]
     x_axis = markers[1]
     y_axis = markers[2]
@@ -141,8 +158,7 @@ def make_frame(markers):
     p = np.pad(origin, (0, 1), 'constant')
     p[-1] = 1
     F = np.column_stack((xo, yo, zo, p))
-
-
+    return F
 def get_all_transformation_to_base(parent_frames, child_frames):
     """
 
@@ -159,10 +175,8 @@ def get_all_transformation_to_base(parent_frames, child_frames):
 
     return frames
 
-
 def get_transform_btw_two_frames(parent_frame, child_frame):
     return np.linalg.inv(parent_frame) * child_frame
-
 
 def get_angle_between_vects(v1, v2):
     """
@@ -188,11 +202,9 @@ def transform_vector(frame, vector):
     p[-1] = 1
     return frame * p
 
-
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
-
 
 def avg_vector(markers):
     """
@@ -208,7 +220,6 @@ def avg_vector(markers):
         vp /= len(marker)
         vp_norm.append(vp)
     return vp_norm
-
 
 def calc_CoR(markers):
     '''
@@ -292,17 +303,25 @@ def calc_b(markers):
 
     return b.reshape((-1, 1))
 
-
-def get_transformation(markers):
+def cloud_to_cloud(A_,B_):
     """
-    Get the transforms between marker at different times
-    :param markers:
+    http://nghiaho.com/?page_id=671
+    :param A_: ,rigid body markers set
+    :param B_: currnet position of the markers
     :return:
     """
-    A = np.matrix((markers[0][0].x, markers[0][0].y, markers[0][0].z))
-    B = np.matrix((markers[1][0].x, markers[1][0].y, markers[1][0].z))
+    A = np.asmatrix(points_to_matrix(A_))
+    B = np.asmatrix(points_to_matrix(B_))
 
-    N = A.shape[0]
+    # A = np.matrix([[0., 0., 0.], [70., 0., 0.], [0., 42., 0.], [35., 70., 0.]])
+    # B = np.matrix([[136.851, 561.396, 1079.93], [66.226, 558.551, 1088.34], [140.598, 567.399, 1121.59],
+    #             [108.485, 570.347, 1152.85]])
+    assert len(A) == len(B)
+
+    N = A.shape[0];  # total points
+    print "N ", N
+    print type(A)
+
     centroid_A = np.mean(A, axis=0)
     centroid_B = np.mean(B, axis=0)
 
@@ -319,22 +338,25 @@ def get_transformation(markers):
 
     # special reflection case
     if np.linalg.det(R) < 0:
-        print "Reflection detected"
         Vt[2, :] *= -1
         R = Vt.T * U.T
 
-    t = -R * centroid_A.T + centroid_B.T
+    p = -R * centroid_A.T + centroid_B.T
 
-    A2 = R * A.T + t
-
-    err = A2 - B.T
-
+    A2 = (R * A.T) + np.tile(p, (1, N))
+    A2 = A2.T
+    err = A2 - B
     err = np.multiply(err, err)
     err = sum(err)
-    rmse = np.sqrt(err / N)
+    rmse = sqrt(err / N)
 
-    return R, t
+    T = np.zeros((4, 4))
+    T[:3, :3] = R
+    for ii in xrange(3):
+        T[ii, 3] = p[ii]
+    T[3, 3] = 1.0
 
+    return T, err
 
 def get_center(markers, R):
     print markers[0]
@@ -459,51 +481,6 @@ def sphereFit(frames):
     radius = np.sqrt(t)
     return radius, C[:3]
 
-def cloudtocloud(markers, points):
-
-    centroidA = calc_mass_vect(markers)
-    centroidB = calc_mass_vect(points)
-
-    marker_cloud = points_to_matrix(markers).transpose()
-    points_cloud = points_to_matrix(points).transpose()
-    H = np.zeros((3,3))
-    N = len(marker_cloud[0])
-
-    for ii in xrange(N):
-        ATilde = marker_cloud[:,ii] - centroidA
-        BTilde = points_cloud[:,ii] - centroidB
-
-        print "------------"
-        for j in xrange(3):
-            for k in xrange(3):
-                H[j,k] = H[j,k] + ATilde[j]*BTilde[k]
-
-    U, S, Vt = np.linalg.svd(H)
-    print
-    R = np.dot(Vt.T, U.T)
-
-    # special reflection case
-    if np.linalg.det(R) < 0:
-        print "Reflection detected"
-        Vt[2, :] *= -1
-        R = Vt.T * U.T
-
-    print R
-    p = np.dot(-R , centroidA.T) + centroidB.T
-
-    T = np.zeros((4,4))
-    T[:3,:3] = R
-    for ii in xrange(3):
-        T[ii, 3] = p[ii]
-    T[3,3] = 1.0
-
-    RMSE_sum = 0
-    for ii in xrange(N):
-        trans = np.dot(R,marker_cloud[:,ii] ) + p
-        error = trans - points_cloud[:,ii]
-        RMSE_sum += np.sqrt(np.mean(np.power(error,2)))
-
-    return T, RMSE_sum/N
 
 def points_to_matrix(points):
     """
@@ -539,9 +516,7 @@ if __name__ == '__main__':
               core.Point(0.0,   0.0,   100.0)]
 
 
-    cloudtocloud(marker, DataSets1)
-
-
+    print cloudtocloud(marker, DataSets1)
 
     # marker0 = np.asarray([3.6, 5.4, 1.69]).transpose()
     # marker1 = np.asarray([4.0, 6.0, 1.75]).transpose()

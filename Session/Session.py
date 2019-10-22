@@ -22,7 +22,6 @@ class Session(object):
         self._gender = self._subject["Gender"]
         self._trials = self.seperate_trials(self._subject["trials"])
 
-
     @property
     def gender(self):
         return self._gender

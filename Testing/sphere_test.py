@@ -26,11 +26,14 @@ radii = []
 x = []
 y = []
 z = []
+
 for frame_number in xrange(offset, len(adjusted[0])-offset):
+
     m1 = adjusted[0][frame_number-offset:frame_number+offset+1]
     m2 = adjusted[1][frame_number-offset:frame_number+offset+1]
     m3 = adjusted[2][frame_number-offset:frame_number+offset+1]
     m4 = adjusted[3][frame_number-offset:frame_number+offset+1]
+
     data = [m1, m2, m3, m4]
     raduis, C = Markers.sphereFit(data)
     T_Th = markers.get_frame("ben:RightThigh")[frame_number]
