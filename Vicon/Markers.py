@@ -22,7 +22,7 @@ class Markers(object):
         self._rigid_body = {}
         self._marker_names = []
         self._frames = {}
-        self._filter_window = 3
+        self._filter_window = 10
         self._filtered_markers = {}
 
     @property
@@ -57,23 +57,20 @@ class Markers(object):
         for key_name, value_name in self._data_dict.iteritems():
             self._marker_names.append(key_name)
             self._raw_markers[key_name] = []
-            self.filtered_markers[key_name] = []
+            self._filtered_markers[key_name] = []
             x_arr = value_name["X"]["data"]
             y_arr = value_name["Y"]["data"]
             z_arr = value_name["Z"]["data"]
-            x_filt = np.convolve(x_arr, np.ones((self._filter_window,)) / self._filter_window, mode='full')
-            y_filt = np.convolve(x_arr, np.ones((self._filter_window,)) / self._filter_window, mode='full')
-            z_filt = np.convolve(x_arr, np.ones((self._filter_window,)) / self._filter_window, mode='full')
-             for inx in xrange(len(value_name["X"]["data"])):
+            x_filt = np.convolve(x_arr, np.ones((self._filter_window,)) / self._filter_window, mode='valid')
+            y_filt = np.convolve(y_arr, np.ones((self._filter_window,)) / self._filter_window, mode='valid')
+            z_filt = np.convolve(z_arr, np.ones((self._filter_window,)) / self._filter_window, mode='valid')
+            for inx in xrange(len(x_filt)):
                 point = core.Point(x_arr[inx], y_arr[inx], z_arr[inx])
                 self._raw_markers[key_name].append(point)
                 point = core.Point(x_filt[inx], y_filt[inx], z_filt[inx])
                 self._filtered_markers[key_name].append(point)
 
-    def smooth_marker(self):
-        pass
-
-    def smart_sort(self):
+    def smart_sort(self,filter=False):
         """
         Gather all the frames and attempt to sort the markers into the rigid markers
         :return:
@@ -86,7 +83,10 @@ class Markers(object):
             markers_keys.sort()
             markers = []
             for marker in markers_keys:
-                markers.append(self._raw_markers[marker])
+                if filter:
+                    markers.append(self._filtered_markers[marker])
+                else:
+                    markers.append(self._raw_markers[marker])
             self._rigid_body[name] = markers
 
     def make_frame(self, _origin, _x, _y, _extra):
@@ -146,8 +146,6 @@ class Markers(object):
 
     def get_rigid_body(self, name):
         return self._rigid_body[name]
-
-
 
 
 def transform_markers(transforms, markers):
@@ -343,8 +341,6 @@ def cloud_to_cloud(A_,B_):
     assert len(A) == len(B)
 
     N = A.shape[0];  # total points
-    print "N ", N
-    print type(A)
 
     centroid_A = np.mean(A, axis=0)
     centroid_B = np.mean(B, axis=0)

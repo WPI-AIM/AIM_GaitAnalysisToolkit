@@ -46,7 +46,7 @@ def leastsq_method(markers, offset=0):
     return centers, axises
 
 
-def rotation_method(markers,offset=10):
+def rotation_method(markers,offset=1):
 
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
     T_Th = markers.get_frame("ben:RightThigh")
@@ -61,7 +61,7 @@ def rotation_method(markers,offset=10):
     centers = []
     axises = []
 
-    for frame in xrange(offset, len(adjusted[0]) - offset):
+    for frame in xrange(1000):
 
         T_TH_SH_1 = np.dot(np.linalg.pinv(T_Th[frame]), T_Sh[frame])  # Markers.get_all_transformation_to_base(T_Th, T_Sh)[frame]
         T_TH_SH_2 = np.dot(np.linalg.pinv(T_Th[frame + offset]), T_Sh[frame + offset])
@@ -71,6 +71,7 @@ def rotation_method(markers,offset=10):
 
         rp_1 = Markers.calc_mass_vect(
             [shank_markers[0][frame], shank_markers[1][frame], shank_markers[2][frame], shank_markers[3][frame]])
+
         rp_2 = Markers.calc_mass_vect(
             [shank_markers[0][frame + offset], shank_markers[1][frame + offset], shank_markers[2][frame + offset],
              shank_markers[3][frame + offset]])
@@ -83,7 +84,7 @@ def rotation_method(markers,offset=10):
 
         rdp1 = np.dot(T_Sh[frame][:3, :3], rd_1 - rp_1)
         rdp2 = np.dot(T_Sh[frame + offset][:3, :3], rd_2 - rp_2)
-
+        print
         P = np.eye(3) - R1_2
         Q = rdp2 - np.dot(R1_2, rdp1)
 

@@ -13,18 +13,13 @@ ax = fig.add_subplot(111, projection='3d')
 ax.set_autoscale_on(False)
 data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_leg_bend.csv")
 markers = data.get_markers()
-markers.smart_sort()
+markers.smart_sort(True)
 markers.auto_make_frames()
 cor_filter = Mean_filter.Mean_Filter(20)
 cor_filter2 = Mean_filter.Mean_Filter(20)
 all_core = []
 
 angles = []
-
-
-
-
-
 
 def animate(frame):
     frame = frame

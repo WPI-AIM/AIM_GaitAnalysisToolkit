@@ -67,10 +67,6 @@ def rotation_method2(markers,offset=0):
         R, t = Markers.get_transformation(data)
 
 
-
-
-
-
 def rotation_method(markers,offset=1):
 
     centers = []
