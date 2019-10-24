@@ -92,8 +92,14 @@ output = signal.filtfilt(b, a, z,axis=0)
 N = 10
 output = moving_average(output, 10)
 #plt.plot(radii)
-plt.plot(x)
-plt.plot(y)
-#plt.plot(output)
-plt.plot(z)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(x, y, z, c='r', marker='o')
+
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
+
+plt.show()
 plt.show()

@@ -19,8 +19,8 @@ markers.smart_sort()
 markers.auto_make_frames()
 
 #centers, axis = center_of_rotation.leastsq_method(markers=markers)
-#centers, axis = center_of_rotation.sphere_method(markers=markers)
-centers, axis = center_of_rotation.rotation_method(markers=markers)
+centers, axis = center_of_rotation.sphere_method(markers=markers)
+#centers, axis = center_of_rotation.rotation_method(markers=markers)
 
 x = []
 y = []
@@ -33,22 +33,25 @@ for center in centers:
     z.append(center[2])
 
 
-fs = 100.0
-fc = 30.0  # Cut-off frequency of the filter
-w = fc / (fs / 2.) # Normalize the frequency
-b, a = signal.butter(30, w, 'low')
+# fs = 100.0
+# fc = 30.0  # Cut-off frequency of the filter
+# w = fc / (fs / 2.) # Normalize the frequency
+# b, a = signal.butter(30, w, 'low')
+#
+# x = signal.filtfilt(b, a, x)
+# x = moving_average(x, 20)
+#
+# y = signal.filtfilt(b, a, y)
+# y = moving_average(y, 20)
+#
+# z = signal.filtfilt(b, a, z)
+# z = moving_average(z, 20)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(x, y, z, c='r', marker='o')
 
-x = signal.filtfilt(b, a, x)
-x = moving_average(x, 20)
-
-y = signal.filtfilt(b, a, y)
-y = moving_average(y, 20)
-
-z = signal.filtfilt(b, a, z)
-z = moving_average(z, 20)
-
-plt.plot(x)
-plt.plot(y)
-plt.plot(z)
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
 plt.legend(["x", "y", "z"])
 plt.show()

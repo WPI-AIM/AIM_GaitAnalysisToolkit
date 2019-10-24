@@ -21,8 +21,8 @@ angles = []
 offset = 10
 
 #centers, axis = center_of_rotation.leastsq_method(markers=markers)
-#centers, axis, frame_index = center_of_rotation.sphere_method(markers=markers)
-centers, axis = center_of_rotation.rotation_method(markers=markers)
+centers, axis= center_of_rotation.sphere_method(markers=markers)
+#centers, axis = center_of_rotation.rotation_method(markers=markers)
 
 x_center = []
 y_center = []

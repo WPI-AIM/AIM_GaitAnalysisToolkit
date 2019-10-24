@@ -109,7 +109,7 @@ def rotation_method(markers,offset=1):
 
     return centers, axises
 
-def sphere_method(markers, offset=10):
+def sphere_method(markers, offset=1):
 
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
     T_Th = markers.get_frame("ben:RightThigh")
@@ -145,4 +145,4 @@ def sphere_method(markers, offset=10):
         C = np.dot(np.linalg.pinv(T_Th[frame_index[ii]]),C)
         centers.append(C[0:3])
     print frame_index
-    return centers, axises, frame_index
+    return centers, axises

@@ -78,16 +78,18 @@ def animate(frame):
     z = []
 
     T1 = np.dot(np.linalg.pinv(T_thigh[frame]), T_shank[frame])
-    # T2 = np.dot(np.linalg.pinv(T_thigh[frame+1]), T_shank[frame+1])
+    T2 = np.dot(np.linalg.pinv(T_thigh[frame+1]), T_shank[frame+1])
     m = markers.get_rigid_body("ben:RightShank")
 
     f1 = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
-    f2 = [m[0][frame+1], m[1][frame+1], m[2][frame+1], m[3][frame+1]]
+    f2 = [m[0][frame+5], m[1][frame+5], m[2][frame+5], m[3][frame+5]]
 
     T, err = Markers.cloud_to_cloud(f1, f2)
     xc = Markers.get_center([f1,f2], T[:3,:3])
-    print xc
-    axis, angle = Markers.R_to_axis_angle(T1[0:3, 0:3])
+    xc = xc +  T[3,0:3].reshape((-1,1))
+    xc = np.append(xc, [[1.0]], axis=0)
+    xc = np.dot(T_shank[frame], xc)
+    axis, angle = Markers.R_to_axis_angle(T[0:3, 0:3])
 
     #sol = Markers.minimize_center([thigh, shank], axis=axis, initial=(core[0][0], core[1][0], core[2][0]))
 
@@ -106,7 +108,9 @@ def animate(frame):
     y += [m[0][frame].y, m[1][frame].y, m[2][frame].y, m[3][frame].y]
     z += [m[0][frame].z, m[1][frame].z, m[2][frame].z, m[3][frame].z]
 
-
+    x_center = [ xc[0]]
+    y_center =  [xc[1]]
+    z_center = [xc[2]]
 
     ax.clear()
     ax.set_xlabel('X Label')
@@ -115,11 +119,14 @@ def animate(frame):
     ax.axis([-500, 500, -750, 1500])
     ax.set_zlim3d(0, 1250)
     ax.scatter(x, y, z, c='r', marker='o')
+    ax.scatter(x_center, y_center, z_center, c='g', marker='o')
+    axis_x = [( axis[0] * 1000).item(0), (-axis[0] * 1000).item(0)]
+    axis_y = [(axis[1] * 1000).item(0),  ( -axis[1] * 1000).item(0)]
+    axis_z = [( axis[2] * 1000).item(0), ( -axis[2] * 1000).item(0)]
+    ax.plot(axis_x, axis_y, axis_z, 'b')
 
+ani = animation.FuncAnimation(fig, animate, interval=100)
+# for i in xrange(1000):
+#     animate(i)
 
-
-#ani = animation.FuncAnimation(fig, animate, interval=100)
-for i in xrange(1000):
-    animate(i)
-
-#plt.show()
+plt.show()

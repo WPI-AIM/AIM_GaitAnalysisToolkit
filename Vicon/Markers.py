@@ -277,8 +277,7 @@ def calc_AoR(markers):
     :rtype np.array
     """
     A = calc_A(markers)  # calculates the A matrix
-    E_vals, E_vecs = np.linalg.eig(
-        A)  # I believe that the np function eig has a different output than the matlab function eigs
+    E_vals, E_vecs = np.linalg.eig(A)  # I believe that the np function eig has a different output than the matlab function eigs
     min_E_val_idx = np.argmin(E_vals)
     axis = E_vecs[:, min_E_val_idx]
     return axis
@@ -527,6 +526,22 @@ def get_rmse(marker_set, body):
         f = [body[0][frame], body[1][frame], body[2][frame], body[frame]]
         T, err = Markers.cloud_to_cloud(marker_set, f)
         error.append(err)
+
+
+def fit_to_plane(points):
+    # do fit
+    tmp_A = []
+    tmp_b = []
+    for i in range(len(xs)):
+        tmp_A.append([xs[i], ys[i], 1])
+        tmp_b.append(zs[i])
+    b = np.matrix(tmp_b).T
+    A = np.matrix(tmp_A)
+    fit = (A.T * A).I * A.T * b
+    errors = b - A * fit
+    residual = np.linalg.norm(errors)
+    return fit, residual
+
 
 if __name__ == '__main__':
 
