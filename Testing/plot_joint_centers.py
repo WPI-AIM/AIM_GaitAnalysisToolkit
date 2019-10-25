@@ -19,8 +19,10 @@ markers.smart_sort()
 markers.auto_make_frames()
 
 #centers, axis = center_of_rotation.leastsq_method(markers=markers)
-centers, axis = center_of_rotation.sphere_method(markers=markers)
+#centers, axis = center_of_rotation.sphere_method(markers=markers)
 #centers, axis = center_of_rotation.rotation_method(markers=markers)
+centers = center_of_rotation.rotation_method2(markers=markers)
+centers, axis = center_of_rotation.leastsq_method2(markers=markers)
 
 x = []
 y = []
@@ -48,10 +50,39 @@ for center in centers:
 # z = moving_average(z, 20)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
+ax.axis([-500, 500, -750, 1500])
+ax.set_zlim3d(0, 1250)
+
 ax.scatter(x, y, z, c='r', marker='o')
+print x
+axis_x = [(x+ axis[0] * 1000).item(0),x , (x-axis[0] * 1000).item(0)]
+axis_y = [(y+axis[1] * 1000).item(0), y, (y-axis[1] * 1000).item(0)]
+axis_z = [(z+axis[2] * 1000).item(0), z, (z-axis[2] * 1000).item(0)]
+ax.plot(axis_x, axis_y, axis_z, 'b')
+
+
+x = []
+y = []
+z = []
+frame = 10
+m = markers.get_rigid_body("ben:hip")[0:]
+x += [m[0][frame].x, m[1][frame].x, m[2][frame].x, m[3][frame].x]
+y += [m[0][frame].y, m[1][frame].y, m[2][frame].y, m[3][frame].y]
+z += [m[0][frame].z, m[1][frame].z, m[2][frame].z, m[3][frame].z]
+
+m = markers.get_rigid_body("ben:RightThigh")[0:]
+x += [m[0][frame].x, m[1][frame].x, m[2][frame].x, m[3][frame].x]
+y += [m[0][frame].y, m[1][frame].y, m[2][frame].y, m[3][frame].y]
+z += [m[0][frame].z, m[1][frame].z, m[2][frame].z, m[3][frame].z]
+
+m = markers.get_rigid_body("ben:RightShank")[0:]
+x += [m[0][frame].x, m[1][frame].x, m[2][frame].x, m[3][frame].x]
+y += [m[0][frame].y, m[1][frame].y, m[2][frame].y, m[3][frame].y]
+z += [m[0][frame].z, m[1][frame].z, m[2][frame].z, m[3][frame].z]
+ax.scatter(x, y, z, c='g', marker='o')
 
 ax.set_xlabel('X Label')
 ax.set_ylabel('Y Label')
 ax.set_zlabel('Z Label')
-plt.legend(["x", "y", "z"])
+
 plt.show()
