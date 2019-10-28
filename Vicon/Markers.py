@@ -529,18 +529,21 @@ def get_rmse(marker_set, body):
 
 
 def fit_to_plane(points):
-    # do fit
+    # https://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
     tmp_A = []
     tmp_b = []
-    for i in range(len(xs)):
-        tmp_A.append([xs[i], ys[i], 1])
-        tmp_b.append(zs[i])
+    for point in points:
+        tmp_A.append([point.x, point.y, 1])
+        tmp_b.append(point.z)
     b = np.matrix(tmp_b).T
     A = np.matrix(tmp_A)
     fit = (A.T * A).I * A.T * b
+
     errors = b - A * fit
     residual = np.linalg.norm(errors)
+    fit = unit_vector(fit)
     return fit, residual
+
 
 
 if __name__ == '__main__':

@@ -18,11 +18,14 @@ markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_frames()
 
-#centers, axis = center_of_rotation.leastsq_method(markers=markers)
-#centers, axis = center_of_rotation.sphere_method(markers=markers)
-#centers, axis = center_of_rotation.rotation_method(markers=markers)
-centers = center_of_rotation.rotation_method2(markers=markers)
-centers, axis = center_of_rotation.leastsq_method2(markers=markers)
+#centers, axes = center_of_rotation.leastsq_method(markers=markers)
+centers, axes = center_of_rotation.sphere_method(markers=markers)
+center_of_rotation.projection(markers)
+#centers, axes = center_of_rotation.sphere_method2(markers=markers)
+
+#centers, axes = center_of_rotation.rotation_method2(markers=markers)
+#centers, axes = center_of_rotation.rotation_method2(markers=markers)
+#centers, axes = center_of_rotation.leastsq_method2(markers=markers)
 
 x = []
 y = []
@@ -54,11 +57,14 @@ ax.axis([-500, 500, -750, 1500])
 ax.set_zlim3d(0, 1250)
 
 ax.scatter(x, y, z, c='r', marker='o')
-print x
-axis_x = [(x+ axis[0] * 1000).item(0),x , (x-axis[0] * 1000).item(0)]
-axis_y = [(y+axis[1] * 1000).item(0), y, (y-axis[1] * 1000).item(0)]
-axis_z = [(z+axis[2] * 1000).item(0), z, (z-axis[2] * 1000).item(0)]
-ax.plot(axis_x, axis_y, axis_z, 'b')
+# print x
+
+for ii, axis in enumerate(axes):
+    axis_x = [(x[ii]+ axis[0] * 1000).item(0), x[ii].item(0), (x[ii]-axis[0] * 1000).item(0)]
+    axis_y = [(y[ii] +axis[1] * 1000).item(0), y[ii].item(0), (y[ii]-axis[1] * 1000).item(0)]
+    axis_z = [(z[ii]+axis[2] * 1000).item(0), z[ii].item(0) , (z[ii]-axis[2] * 1000).item(0)]
+
+    ax.plot(axis_x, axis_y, axis_z, 'b')
 
 
 x = []

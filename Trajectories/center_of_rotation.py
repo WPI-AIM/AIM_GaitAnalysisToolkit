@@ -8,7 +8,6 @@ hip_marker = [core.Point(0.0, 0.0, 0.0),
               core.Point(0, 42.0, 0),
               core.Point(35.0, 70.0, 0.0)]
 
-
 thigh_marker = [core.Point(0.0, 0.0, 0.0),
                 core.Point(56.0, 0, 0.0),
                 core.Point(0, 49.0, 0),
@@ -26,8 +25,9 @@ def leastsq_method2(markers, offset=10):
     T_thigh = []
     T_shank = []
     centers = []
+    axes = []
 
-    for frame in xrange(1000):
+    for frame in xrange(200,325):
         m = markers.get_rigid_body("ben:hip")
         f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
         T, err = Markers.cloud_to_cloud(hip_marker, f)
@@ -48,17 +48,22 @@ def leastsq_method2(markers, offset=10):
 
     axises = []
     centers = []
-    shank_markers = markers.get_rigid_body("ben:RightShank")[0:1000]
+    shank_markers = markers.get_rigid_body("ben:RightShank")
+    m1 = markers.get_rigid_body("ben:RightShank")[0][200:325]
+    m2 = markers.get_rigid_body("ben:RightShank")[1][200:325]
+    m3 = markers.get_rigid_body("ben:RightShank")[2][200:325]
+    m4 = markers.get_rigid_body("ben:RightShank")[3][200:325]
+
     adjusted = Markers.transform_markers(T_thigh, shank_markers)
-
-    core = Markers.calc_CoR(shank_markers)
-    axis = Markers.calc_AoR(shank_markers)
+    m = [m1,m2,m3,m4]
+    core = Markers.calc_CoR(m)
+    axis = Markers.calc_AoR(m)
     print "axis ", axis
-    return [core], axis
+    return [core], [axis]
 
 
 
-def leastsq_method(markers, offset=10):
+def leastsq_method(markers, offset=1):
 
     axises = []
     centers = []
@@ -70,7 +75,7 @@ def leastsq_method(markers, offset=10):
     cor_filter = Mean_filter.Mean_Filter(20)
     aor_filter = Mean_filter.Mean_Filter(20)
 
-    for frame in xrange(offset, len(adjusted[0]) - offset):
+    for frame in xrange(200, 325):
 
         m1 = shank_markers[0][frame:frame + 2]
         m2 = shank_markers[1][frame:frame + 2]
@@ -94,6 +99,7 @@ def leastsq_method(markers, offset=10):
         sol = Markers.minimize_center([thigh, shank], axis=axis, initial=(core[0][0], core[1][0], core[2][0]))
 
         #centers.append((core[0][0], core[1][0], core[2][0]))
+
         centers.append(sol.x)
         axises.append(axis)
 
@@ -115,7 +121,7 @@ def rotation_method(markers,offset=1):
     centers = []
     axises = []
 
-    for frame in xrange(1000):
+    for frame in xrange(200,350):
 
         T_TH_SH_1 = np.dot(np.linalg.pinv(T_Th[frame]), T_Sh[frame])  # Markers.get_all_transformation_to_base(T_Th, T_Sh)[frame]
         T_TH_SH_2 = np.dot(np.linalg.pinv(T_Th[frame + offset]), T_Sh[frame + offset])
@@ -187,11 +193,12 @@ def rotation_method(markers,offset=1):
         T_thigh.append(T)
 
 
-def rotation_method2(markers,offset=10):
+def rotation_method2(markers,offset=1):
     T_hip = []
     T_thigh = []
     T_shank = []
     centers = []
+    axis = []
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
     thigh_markers = markers.get_rigid_body("ben:RightThigh")[0:]
     print len(thigh_marker[0])
@@ -215,7 +222,7 @@ def rotation_method2(markers,offset=10):
         T_thigh.append(T)
 
 
-    for frame in xrange(250, 499):
+    for frame in xrange(200, 325):
 
         T_TH_SH_1 = np.dot( T_shank[frame], np.transpose( T_thigh[frame]))  # Markers.get_all_transformation_to_base(T_Th, T_Sh)[frame]
         T_TH_SH_2 = np.dot( T_shank[frame+1], np.transpose(T_thigh[frame+offset]))
@@ -253,8 +260,14 @@ def rotation_method2(markers,offset=10):
         rc = np.dot(np.linalg.pinv(P), Q)
         Rc = rp_1 + np.dot(np.transpose(T_thigh[frame][:3, :3]), rc)
         centers.append(Rc)
+        T1 = [shank_markers[0][frame], shank_markers[1][frame], shank_markers[2][frame], shank_markers[3][frame]]
+        T2 = [shank_markers[0][frame+1], shank_markers[1][frame+1], shank_markers[2][frame+1], shank_markers[3][frame+1]]
+        print T2
+        T, err = Markers.cloud_to_cloud(T1,T2)
+        ax, angle = Markers.R_to_axis_angle(T)
+        axis.append(ax)
 
-    return centers
+    return centers, axis
 
 def sphere_method(markers, offset=1):
     T_hip = []
@@ -284,7 +297,7 @@ def sphere_method(markers, offset=1):
         T_thigh.append(T)
 
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
-    adjusted = Markers.transform_markers( np.linalg.pinv(T_thigh), shank_markers)
+    adjusted = Markers.transform_markers(np.linalg.pinv(T_thigh), shank_markers)
 
     centers = []
     axises = []
@@ -292,28 +305,114 @@ def sphere_method(markers, offset=1):
     CoM_fixed = []
 
     # Get all the mass centers of the frame
-    for ii in xrange(len(adjusted[0])):
+    for ii in xrange(1000):
         temp = Markers.calc_mass_vect([adjusted[0][ii],
                                        adjusted[1][ii],
                                        adjusted[2][ii],
                                        adjusted[3][ii]])
         CoM.append(np.asarray(temp))
 
-    fixed = CoM[0]
-    CoM_fixed.append(fixed)
-    frame_index = []
-    thresh = 0.0
-    for ii, center in enumerate(CoM):
-        dist = np.sqrt(np.sum(np.power(fixed-center,2)))
-        if dist >= thresh:
-            frame_index.append(ii)
-            fixed = center
-            CoM_fixed.append(fixed)
-
-    for ii in xrange(len(CoM_fixed)-5):
-        raduis, C = Markers.sphereFit(CoM_fixed[ii:ii+5])
+    for ii in xrange(200,325):
+        raduis, C = Markers.sphereFit(CoM_fixed[ii:ii+2])
+        T1 = [shank_markers[0][frame], shank_markers[1][frame], shank_markers[2][frame], shank_markers[3][frame]]
+        T2 = [shank_markers[0][frame + 1], shank_markers[1][frame + 1], shank_markers[2][frame + 1],
+              shank_markers[3][frame + 1]]
+        T, err = Markers.cloud_to_cloud(T1, T2)
+        ax, angle = Markers.R_to_axis_angle(T)
         C = np.row_stack((C,[1]))
-        C = np.dot(T_thigh[frame_index[ii]],C)
+        C = np.dot(T_thigh[ii],C)
         centers.append(C[0:3])
-    print frame_index
+        axises.append(ax)
+
     return centers, axises
+
+
+
+def sphere_method2(markers, offset=1):
+    T_hip = []
+    T_thigh = []
+    T_shank = []
+    centers = []
+    shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
+    thigh_markers = markers.get_rigid_body("ben:RightThigh")[0:]
+    print len(thigh_marker[0])
+    for frame in xrange(1000):
+        m = markers.get_rigid_body("ben:hip")
+        f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
+        T, err = Markers.cloud_to_cloud(hip_marker, f)
+        T_hip.append(T)
+
+        m = markers.get_rigid_body("ben:RightShank")
+        f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
+        T, err = Markers.cloud_to_cloud(shank_marker, f)
+        T_shank.append(T)
+
+        m = markers.get_rigid_body("ben:RightThigh")
+        f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
+        T, err = Markers.cloud_to_cloud(thigh_marker, f)
+        T_thigh.append(T)
+
+    shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
+    adjusted = Markers.transform_markers(np.linalg.pinv(T_thigh), shank_markers)
+
+    centers = []
+    axises = []
+    CoM = []
+    CoM_fixed = []
+
+    #Get all the mass centers of the frame
+
+    for ii in xrange(200,325):
+
+        C = np.array([[0.0],[0.0],[0.0]])
+        for jj in xrange(4):
+            arr1 = np.array([adjusted[jj][ii].x, adjusted[jj][ii].y, adjusted[jj][ii].z ])
+            arr2 = np.array([adjusted[jj][ii+1].x, adjusted[jj][ii+1].y, adjusted[jj][ii+1].z])
+            raduis, C_ = Markers.sphereFit([arr1,arr2])
+            C += 0.25*C_
+
+        T1 = [shank_markers[0][frame], shank_markers[1][frame], shank_markers[2][frame], shank_markers[3][frame]]
+        T2 = [shank_markers[0][frame + 1], shank_markers[1][frame + 1], shank_markers[2][frame + 1],
+              shank_markers[3][frame + 1]]
+        T, err = Markers.cloud_to_cloud(T1, T2)
+        ax, angle = Markers.R_to_axis_angle(T)
+        C = np.row_stack((C,[1]))
+        C = np.dot(T_thigh[ii],C)
+        centers.append(C[0:3])
+        axises.append(ax)
+
+    return centers, axises
+
+
+def projection(markers):
+    T_hip = []
+    T_shank = []
+    T_thigh = []
+    for frame in xrange(1000):
+        m = markers.get_rigid_body("ben:hip")
+        f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
+        T, err = Markers.cloud_to_cloud(hip_marker, f)
+        T_hip.append(T)
+
+        m = markers.get_rigid_body("ben:RightShank")
+        f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
+        T, err = Markers.cloud_to_cloud(shank_marker, f)
+        T_shank.append(T)
+
+        m = markers.get_rigid_body("ben:RightThigh")
+        f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
+        T, err = Markers.cloud_to_cloud(thigh_marker, f)
+        T_thigh.append(T)
+
+    shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
+    adjusted = Markers.transform_markers(np.linalg.pinv(T_thigh), shank_markers)
+
+    for ii in xrange(200, 325):
+        points = []
+        for jj in xrange(4):
+            points.append(adjusted[jj][ii])
+            points.append(adjusted[jj][ii+1])
+
+        fit, residual = Markers.fit_to_plane(points)
+
+

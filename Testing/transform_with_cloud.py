@@ -10,12 +10,6 @@ from Utilities import Mean_filter
 import time
 
 
-
-
-
-
-
-
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.set_autoscale_on(False)
