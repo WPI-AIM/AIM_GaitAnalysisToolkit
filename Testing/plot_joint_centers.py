@@ -13,19 +13,19 @@ def moving_average(a, n=3) :
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
-data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_leg_bend.csv")
+data = Vicon.Vicon("/home/nathanielgoldfarb/gait_analysis_toolkit/testing_data/ben_leg_bend.csv")
 markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_frames()
 
 #centers, axes = center_of_rotation.leastsq_method(markers=markers)
-centers, axes = center_of_rotation.sphere_method(markers=markers)
-center_of_rotation.projection(markers)
+#centers, axes = center_of_rotation.sphere_method(markers=markers)
+#center_of_rotation.projection(markers)
 #centers, axes = center_of_rotation.sphere_method2(markers=markers)
 
 #centers, axes = center_of_rotation.rotation_method2(markers=markers)
 #centers, axes = center_of_rotation.rotation_method2(markers=markers)
-#centers, axes = center_of_rotation.leastsq_method2(markers=markers)
+centers, axes = center_of_rotation.leastsq_method2(markers=markers)
 
 x = []
 y = []

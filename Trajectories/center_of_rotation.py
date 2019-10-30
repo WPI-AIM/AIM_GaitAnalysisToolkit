@@ -297,6 +297,7 @@ def sphere_method(markers, offset=1):
         T_thigh.append(T)
 
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
+    print T_thigh
     adjusted = Markers.transform_markers(np.linalg.pinv(T_thigh), shank_markers)
 
     centers = []
@@ -325,7 +326,6 @@ def sphere_method(markers, offset=1):
         axises.append(ax)
 
     return centers, axises
-
 
 
 def sphere_method2(markers, offset=1):

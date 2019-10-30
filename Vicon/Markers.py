@@ -123,7 +123,7 @@ class Markers(object):
         :return:
         """
         for name, value in self._rigid_body.iteritems():
-            frame = self.make_frame(value[0], value[3], value[2], value[1])
+            frame = self.make_frame(value[0], value[1], value[2], value[3])
             self.add_frame(name, frame)
 
     def auto_make_transform(self, bodies):
@@ -133,8 +133,10 @@ class Markers(object):
         :return:
         """
         for name, value in self._rigid_body.iteritems():
-            frame = cloud_to_cloud(bodies[name], value)
-            self.add_frame(name, frame)
+            frames = []
+            for ii in enumerate(value[0]):
+                frames.append(cloud_to_cloud(bodies[name], [value[0][ii], value[1][ii], value[2][ii], value[3][ii]]))
+            self.add_frame(name, frames)
 
     def get_frame(self, name):
         """
@@ -147,8 +149,33 @@ class Markers(object):
     def get_rigid_body(self, name):
         return self._rigid_body[name]
 
+    def calc_joint_center(self, child_name, start, end):
+        """
+        Get the joint center between two frames
+
+        :param parent_name:
+        :param child_name:
+        :return:
+        """
+
+        m1 = self.get_rigid_body(child_name)[0][start:end]
+        m2 = self.get_rigid_body(child_name)[1][start:end]
+        m3 = self.get_rigid_body(child_name)[2][start:end]
+        m4 = self.get_rigid_body(child_name)[3][start:end]
+        m = [m1, m2, m3, m4]
+
+        core = calc_CoR(m)
+        axis = calc_AoR(m)
+
+        return core, axis
 
 def transform_markers(transforms, markers):
+    """
+
+    :param transforms:
+    :param markers:
+    :return:
+    """
     trans_markers = []
     for marker in markers:
         adjusted_locations = []
