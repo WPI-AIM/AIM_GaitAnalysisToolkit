@@ -28,19 +28,19 @@ def leastsq_method2(markers, offset=10):
     axes = []
 
     for frame in xrange(200,325):
-        m = markers.get_rigid_body("ben:hip")
+        m = markers.get_rigid_body("hip")
         f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
         T, err = Markers.cloud_to_cloud(hip_marker, f)
 
         T_hip.append(T)
 
-        m = markers.get_rigid_body("ben:RightShank")
+        m = markers.get_rigid_body("RightShank")
         f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
         T, err = Markers.cloud_to_cloud(shank_marker, f)
 
         T_shank.append(T)
 
-        m = markers.get_rigid_body("ben:RightThigh")
+        m = markers.get_rigid_body("RightThigh")
         f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
         T, err = Markers.cloud_to_cloud(thigh_marker, f)
 
@@ -48,14 +48,14 @@ def leastsq_method2(markers, offset=10):
 
     axises = []
     centers = []
-    shank_markers = markers.get_rigid_body("ben:RightShank")
-    m1 = markers.get_rigid_body("ben:RightShank")[0][200:325]
-    m2 = markers.get_rigid_body("ben:RightShank")[1][200:325]
-    m3 = markers.get_rigid_body("ben:RightShank")[2][200:325]
-    m4 = markers.get_rigid_body("ben:RightShank")[3][200:325]
+    shank_markers = markers.get_rigid_body("RightShank")
+    m1 = markers.get_rigid_body("RightShank")[0][200:325]
+    m2 = markers.get_rigid_body("RightShank")[1][200:325]
+    m3 = markers.get_rigid_body("RightShank")[2][200:325]
+    m4 = markers.get_rigid_body("RightShank")[3][200:325]
 
     adjusted = Markers.transform_markers(T_thigh, shank_markers)
-    m = [m1,m2,m3,m4]
+    m = [m1, m2, m3, m4]
     core = Markers.calc_CoR(m)
     axis = Markers.calc_AoR(m)
     print "axis ", axis

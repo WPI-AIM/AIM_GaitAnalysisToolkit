@@ -4,7 +4,10 @@ from scipy.optimize import minimize
 import math
 from numpy import *
 from math import sqrt
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
+import matplotlib.animation as animation
 # TODO add rigid body frame information
 
 class Markers(object):
@@ -55,9 +58,10 @@ class Markers(object):
         :return:
         """
         for key_name, value_name in self._data_dict.iteritems():
-            self._marker_names.append(key_name)
-            self._raw_markers[key_name] = []
-            self._filtered_markers[key_name] = []
+            fixed_name = key_name[1 + key_name.find(":"):]
+            self._marker_names.append(fixed_name)
+            self._raw_markers[fixed_name] = []
+            self._filtered_markers[fixed_name] = []
             x_arr = value_name["X"]["data"]
             y_arr = value_name["Y"]["data"]
             z_arr = value_name["Z"]["data"]
@@ -66,18 +70,18 @@ class Markers(object):
             z_filt = np.convolve(z_arr, np.ones((self._filter_window,)) / self._filter_window, mode='valid')
             for inx in xrange(len(x_filt)):
                 point = core.Point(x_arr[inx], y_arr[inx], z_arr[inx])
-                self._raw_markers[key_name].append(point)
+                self._raw_markers[fixed_name].append(point)
                 point = core.Point(x_filt[inx], y_filt[inx], z_filt[inx])
-                self._filtered_markers[key_name].append(point)
+                self._filtered_markers[fixed_name].append(point)
 
     def smart_sort(self,filter=False):
         """
         Gather all the frames and attempt to sort the markers into the rigid markers
         :return:
         """
-        no_digits = [''.join(x for x in i if not x.isdigit()) for i in self._data_dict.keys()]  # removes digits
+        no_digits = [''.join(x for x in i if not x.isdigit()) for i in self._marker_names]  # removes digits
         single_item = list(set(no_digits))  # removes redundent items
-        keys = self._data_dict.keys()
+        keys = self._marker_names
         for name in single_item:
             markers_keys = [s for s in keys if name in s]
             markers_keys.sort()
@@ -123,6 +127,7 @@ class Markers(object):
         :return:
         """
         for name, value in self._rigid_body.iteritems():
+            print value
             frame = self.make_frame(value[0], value[1], value[2], value[3])
             self.add_frame(name, frame)
 
@@ -147,6 +152,11 @@ class Markers(object):
         return self._frames[name]
 
     def get_rigid_body(self, name):
+        """
+
+        :param name:
+        :return:
+        """
         return self._rigid_body[name]
 
     def calc_joint_center(self, child_name, start, end):
@@ -168,6 +178,54 @@ class Markers(object):
         axis = calc_AoR(m)
 
         return core, axis
+
+
+    def play(self, joints=None):
+        # TODO get number of from
+        """
+
+        :param joints:
+        :return:
+        """
+        x_total = []
+        y_total = []
+        z_total = []
+        key = self._rigid_body.keys()
+        nfr = len(self.get_rigid_body(key[0])[0]) # Number of frames
+        print nfr
+        fps = 100  # Frame per sec
+        for frame in xrange(nfr):
+            x = []
+            y = []
+            z = []
+            for key in self._rigid_body.keys():
+                m = self.get_rigid_body(key)[0:]
+                x += [item[frame].x for item in m]
+                y += [item[frame].y for item in m]
+                z += [item[frame].z for item in m]
+
+            x_total.append(x)
+            y_total.append(y)
+            z_total.append(z)
+
+
+        self._fig = plt.figure()
+        self._ax = self._fig.add_subplot(111, projection='3d')
+        self._ax.set_autoscale_on(False)
+        ani = animation.FuncAnimation(self._fig, self.__animate, nfr, fargs=(x_total, y_total, z_total), interval=100/ fps)
+        plt.show()
+
+    def __animate(self, frame, x, y, z, centers=None):
+
+        self._ax.clear()
+        self._ax.set_xlabel('X Label')
+        self._ax.set_ylabel('Y Label')
+        self._ax.set_zlabel('Z Label')
+        self._ax.axis([-500, 500, -750, 1500])
+        self._ax.set_zlim3d(0, 1250)
+        self._ax.scatter(x[frame], y[frame], z[frame], c='r', marker='o')
+
+
 
 def transform_markers(transforms, markers):
     """
@@ -208,6 +266,7 @@ def make_frame(markers):
     p[-1] = 1
     F = np.column_stack((xo, yo, zo, p))
     return F
+
 def get_all_transformation_to_base(parent_frames, child_frames):
     """
 
@@ -218,7 +277,6 @@ def get_all_transformation_to_base(parent_frames, child_frames):
     """
 
     frames = []
-    count = 0
     for parent, child in zip(parent_frames, child_frames):
         frames.append(get_transform_btw_two_frames(parent, child))
 
