@@ -62,6 +62,9 @@ class Markers(object):
             self._marker_names.append(fixed_name)
             self._raw_markers[fixed_name] = []
             self._filtered_markers[fixed_name] = []
+            if value_name.keys()[0] == "Magnitude( X )" or value_name.keys()[0] == "Count" :
+                continue
+            print value_name.keys()
             x_arr = value_name["X"]["data"]
             y_arr = value_name["Y"]["data"]
             z_arr = value_name["Z"]["data"]
@@ -127,7 +130,7 @@ class Markers(object):
         :return:
         """
         for name, value in self._rigid_body.iteritems():
-            print value
+
             frame = self.make_frame(value[0], value[1], value[2], value[3])
             self.add_frame(name, frame)
 
@@ -139,8 +142,8 @@ class Markers(object):
         """
         for name, value in self._rigid_body.iteritems():
             frames = []
-            for ii in enumerate(value[0]):
-                frames.append(cloud_to_cloud(bodies[name], [value[0][ii], value[1][ii], value[2][ii], value[3][ii]]))
+            for ii in xrange(len(value[0])):
+                frames.append(cloud_to_cloud(bodies[name], [value[0][ii], value[1][ii], value[2][ii], value[3][ii]])[0])
             self.add_frame(name, frames)
 
     def get_frame(self, name):
@@ -159,7 +162,7 @@ class Markers(object):
         """
         return self._rigid_body[name]
 
-    def calc_joint_center(self, child_name, start, end):
+    def calc_joint_center(self, parent_name, child_name, start, end):
         """
         Get the joint center between two frames
 
@@ -167,7 +170,7 @@ class Markers(object):
         :param child_name:
         :return:
         """
-
+        T = self.get_frame(parent_name)[0:]
         m1 = self.get_rigid_body(child_name)[0][start:end]
         m2 = self.get_rigid_body(child_name)[1][start:end]
         m3 = self.get_rigid_body(child_name)[2][start:end]
@@ -176,8 +179,13 @@ class Markers(object):
 
         core = calc_CoR(m)
         axis = calc_AoR(m)
-
-        return core, axis
+        p = np.vstack((core, [1]))
+        P_prime = np.dot(T[end] , p)
+        center = []
+        for ii in xrange(len(T)):
+            center.append(np.dot( np.linalg.pinv(T[ii]), P_prime))
+            #center.append(core)
+        return center, axis
 
 
     def play(self, joints=None):
@@ -191,6 +199,7 @@ class Markers(object):
         y_total = []
         z_total = []
         key = self._rigid_body.keys()
+        print self.get_rigid_body(key[0])
         nfr = len(self.get_rigid_body(key[0])[0]) # Number of frames
         print nfr
         fps = 100  # Frame per sec
@@ -204,6 +213,11 @@ class Markers(object):
                 y += [item[frame].y for item in m]
                 z += [item[frame].z for item in m]
 
+            for joint in joints:
+                x += [joint[frame][0]]
+                y += [joint[frame][1]]
+                z += [joint[frame][2]]
+
             x_total.append(x)
             y_total.append(y)
             z_total.append(z)
@@ -212,7 +226,7 @@ class Markers(object):
         self._fig = plt.figure()
         self._ax = self._fig.add_subplot(111, projection='3d')
         self._ax.set_autoscale_on(False)
-        ani = animation.FuncAnimation(self._fig, self.__animate, nfr, fargs=(x_total, y_total, z_total), interval=100/ fps)
+        ani = animation.FuncAnimation(self._fig, self.__animate, nfr, fargs=(x_total, y_total, z_total), interval=100/fps)
         plt.show()
 
     def __animate(self, frame, x, y, z, centers=None):
@@ -307,7 +321,7 @@ def transform_vector(frame, vector):
     """
     p = np.pad(vector, (0, 1), 'constant')
     p[-1] = 1
-    return frame * p
+    return  np.dot(frame , p)
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
