@@ -162,7 +162,7 @@ class Markers(object):
         """
         return self._rigid_body[name]
 
-    def calc_joint_center(self, parent_name, child_name, start, end):
+    def calc_joint_center(self, child_name, start, end):
         """
         Get the joint center between two frames
 
@@ -170,7 +170,7 @@ class Markers(object):
         :param child_name:
         :return:
         """
-        T = self.get_frame(parent_name)[0:]
+        # T = self.get_frame(parent_name)[0:]
         m1 = self.get_rigid_body(child_name)[0][start:end]
         m2 = self.get_rigid_body(child_name)[1][start:end]
         m3 = self.get_rigid_body(child_name)[2][start:end]
@@ -179,14 +179,14 @@ class Markers(object):
 
         core = calc_CoR(m)
         axis = calc_AoR(m)
-        p = np.vstack((core, [1]))
-        P_prime = np.dot(T[end] , p)
-        center = []
-        for ii in xrange(len(T)):
-            center.append(np.dot( np.linalg.pinv(T[ii]), P_prime))
-            #center.append(core)
-        return center, axis
+        # p = np.vstack((core, [1]))
+        # P_prime = np.dot(T[end] , p)
+        # center = []
+        #
+        # for ii in xrange(len(T)):
+        #     center.append(np.dot( np.linalg.pinv(T[ii]), P_prime))
 
+        return core, axis
 
     def play(self, joints=None):
         # TODO get number of from
@@ -238,8 +238,6 @@ class Markers(object):
         self._ax.axis([-500, 500, -750, 1500])
         self._ax.set_zlim3d(0, 1250)
         self._ax.scatter(x[frame], y[frame], z[frame], c='r', marker='o')
-
-
 
 def transform_markers(transforms, markers):
     """
@@ -297,6 +295,12 @@ def get_all_transformation_to_base(parent_frames, child_frames):
     return frames
 
 def get_transform_btw_two_frames(parent_frame, child_frame):
+    """
+
+    :param parent_frame:
+    :param child_frame:
+    :return:
+    """
     return np.linalg.inv(parent_frame) * child_frame
 
 def get_angle_between_vects(v1, v2):
@@ -319,12 +323,15 @@ def transform_vector(frame, vector):
     :param vector:
     :return:
     """
-    p = np.pad(vector, (0, 1), 'constant')
-    p[-1] = 1
-    return  np.dot(frame , p)
+    p = np.vstack((core, [1]))
+    return np.dot(frame , p)
 
 def unit_vector(vector):
-    """ Returns the unit vector of the vector.  """
+    """
+    Returns the unit vector of the vector.
+    :param vector:
+    :return:
+    """
     return vector / np.linalg.norm(vector)
 
 def avg_vector(markers):
@@ -425,6 +432,7 @@ def calc_b(markers):
 
 def cloud_to_cloud(A_,B_):
     """
+    Get the transformation between two frames of marker sets.
     http://nghiaho.com/?page_id=671
     :param A_: ,rigid body markers set
     :param B_: currnet position of the markers
@@ -433,9 +441,7 @@ def cloud_to_cloud(A_,B_):
     A = np.asmatrix(points_to_matrix(A_))
     B = np.asmatrix(points_to_matrix(B_))
 
-    # A = np.matrix([[0., 0., 0.], [70., 0., 0.], [0., 42., 0.], [35., 70., 0.]])
-    # B = np.matrix([[136.851, 561.396, 1079.93], [66.226, 558.551, 1088.34], [140.598, 567.399, 1121.59],
-    #             [108.485, 570.347, 1152.85]])
+
     assert len(A) == len(B)
 
     N = A.shape[0];  # total points
@@ -492,8 +498,14 @@ def get_center(markers, R):
 
 
 def minimize_center(vectors, axis, initial):
-    # optimize
-
+    """
+    Optimize the center of the rotation of the axis by finding the closest point
+    in the line to the frames
+    :param vectors:
+    :param axis:
+    :param initial:
+    :return:
+    """
     def objective(x):
         C = 0
         for vect in vectors:
@@ -527,18 +539,30 @@ def calc_mass_vect(markers):
         y += point.y
         z += point.z
 
-    vect = np.array((x / len(markers), y / len(markers), z / len(markers)))
+    vect = np.array((x / len(markers),
+                     y / len(markers),
+                     z / len(markers)))
     return vect
 
 
-def calc_vector(start_point, end_point):
+def calc_vector_between_points(start_point, end_point):
     """
     calculate the vector between two points
-    :param start_point:
-    :param end_point:
+    :param start_point: first point
+    :param end_point: sencound point
     :return:
     """
     return end_point - start_point
+
+def get_distance(point1, point2):
+    """
+    Get the distance between two points
+    :param point1: first point
+    :param point2: secound point
+    :return:
+    """
+    return np.sum(np.sqrt(np.power(calc_vector_between_points(point1, point2), 2)))
+
 
 def R_to_axis_angle(matrix):
     """Convert the rotation matrix into the axis-angle notation.
@@ -576,7 +600,11 @@ def R_to_axis_angle(matrix):
 
 
 def sphereFit(frames):
-    #   Assemble the A matrix
+    """
+    Fit a sphere to a serise of transformations
+    :param frames:
+    :return:
+    """
     spX = []
     spY = []
     spZ = []
@@ -619,7 +647,12 @@ def points_to_matrix(points):
     return cloud
 
 def get_rmse(marker_set, body):
-
+    """
+    Get the RMSE of the transform and a body location
+    :param marker_set:
+    :param body:
+    :return:
+    """
     error = []
     for frame in xrange(1000):
         f = [body[0][frame], body[1][frame], body[2][frame], body[frame]]
@@ -628,7 +661,13 @@ def get_rmse(marker_set, body):
 
 
 def fit_to_plane(points):
-    # https://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
+    """
+    fit a plan to an array of points using regression
+    https://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
+    :param points: list of points
+    :return:
+    """
+
     tmp_A = []
     tmp_b = []
     for point in points:
