@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from Trajectories import center_of_rotation
 from lib.Exoskeleton.Robot import core
 from scipy import signal
+from Vicon import Markers
 
 def moving_average(a, n=10) :
     ret = np.cumsum(a, dtype=float)
@@ -31,9 +32,21 @@ data = Vicon.Vicon("/home/nathanielgoldfarb/gait_analysis_toolkit/testing_data/b
 markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_transform(frames)
-markers.play()
+global_joint, axis, local_joint = markers.calc_joint_center("RightThigh", "RightShank", 200, 325)
+Tp = markers.get_frame("RightThigh")
+# all_global = []
+#
+# for T in Tp:
+#     p = np.dot(T, local_joint )
+#     all_global.append(p)
+
+all_global = Markers.batch_transform_vector(Tp, local_joint)
+
+markers.play([all_global], save=True)
 # # TODO need to get all the joint centers now using the new rebase
-# core, axis = markers.calc_joint_center("RightThigh", "RightShank", 200, 325)
+
+
+
 # x = []
 # y = []
 # z = []

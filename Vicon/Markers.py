@@ -9,6 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import matplotlib.animation as animation
 
+
 class Markers(object):
     """
     Creates an object to hold marker values
@@ -81,7 +82,7 @@ class Markers(object):
                 point = core.Point(x_filt[inx], y_filt[inx], z_filt[inx])
                 self._filtered_markers[fixed_name].append(point)
 
-    def smart_sort(self,filter=False):
+    def smart_sort(self, filter=False):
         """
         Gather all the frames and attempt to sort the markers into the rigid markers
         :return:
@@ -142,7 +143,6 @@ class Markers(object):
         :return:
         """
         for name, value in self._rigid_body.iteritems():
-
             frame = self.make_frame(value[0], value[1], value[2], value[3])
             self.add_frame(name, frame)
 
@@ -174,7 +174,7 @@ class Markers(object):
         """
         return self._rigid_body[name]
 
-    def calc_joint_center(self, child_name, start, end):
+    def calc_joint_center(self, parent_name, child_name, start, end):
         """
         Calculate the joint center between two frames
         :param child_name:
@@ -182,33 +182,39 @@ class Markers(object):
         :param end:
         :return:
         """
-        # T = self.get_frame(parent_name)[0:]
+
+        Tp = self.get_frame(parent_name)[start:end]
         m1 = self.get_rigid_body(child_name)[0][start:end]
         m2 = self.get_rigid_body(child_name)[1][start:end]
         m3 = self.get_rigid_body(child_name)[2][start:end]
         m4 = self.get_rigid_body(child_name)[3][start:end]
         m = [m1, m2, m3, m4]
 
-        core = calc_CoR(m)
+        global_joint = calc_CoR(m)
         axis = calc_AoR(m)
-        # p = np.vstack((core, [1]))
-        # P_prime = np.dot(T[end] , p)
-        # center = []
-        #
-        # for ii in xrange(len(T)):
-        #     center.append(np.dot( np.linalg.pinv(T[ii]), P_prime))
+        local_joint = np.array([[0.0], [0.0], [0.0], [0.0]])
 
-        return core, axis
+        for T in Tp:
+            local_joint += transform_vector(np.linalg.pinv(T), global_joint )/len(Tp)
 
-    def play(self, joints=None):
+        return global_joint, axis, local_joint
+
+    def play(self, joints=None, save=False, name="im"):
+        """
+        play the markers 
+        :param joints:
+        :param save:
+        :return:
+        """
 
         x_total = []
         y_total = []
         z_total = []
+        joints_points = []
         fps = 100  # Frame per sec
         keys = self._filtered_markers.keys()
         nfr = len(self._filtered_markers[keys[0]])  # Number of frames
-        print nfr
+
         for frame in xrange(nfr):
             x = []
             y = []
@@ -221,15 +227,41 @@ class Markers(object):
             x_total.append(x)
             y_total.append(y)
             z_total.append(z)
+            x = []
+            y = []
+            z = []
+            if joints is not None:
+                for joint in joints:
+                    x.append(joint[frame][0])
+                    y.append(joint[frame][1])
+                    z.append(joint[frame][2])
+                joints_points.append([x, y, z])
 
         self._fig = plt.figure()
         self._ax = self._fig.add_subplot(111, projection='3d')
         self._ax.set_autoscale_on(False)
-        ani = animation.FuncAnimation(self._fig, self.__animate, nfr, fargs=(x_total, y_total, z_total), interval=100/fps)
-        plt.show()
+
+        ani = animation.FuncAnimation(self._fig,
+                                      self.__animate, nfr,
+                                      fargs=(x_total, y_total, z_total, joints_points),
+                                      interval=100 / fps)
+        if save:
+            Writer = animation.writers['ffmpeg']
+            writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+            ani.save(name + '.mp4', writer=writer)
+        else:
+            plt.show()
 
     def __animate(self, frame, x, y, z, centers=None):
+        """
 
+        :param frame:
+        :param x:
+        :param y:
+        :param z:
+        :param centers:
+        :return:
+        """
         self._ax.clear()
         self._ax.set_xlabel('X Label')
         self._ax.set_ylabel('Y Label')
@@ -237,6 +269,9 @@ class Markers(object):
         self._ax.axis([-500, 500, -750, 1500])
         self._ax.set_zlim3d(0, 1250)
         self._ax.scatter(x[frame], y[frame], z[frame], c='r', marker='o')
+        if len(centers) > 0:
+            self._ax.scatter(centers[frame][0], centers[frame][1], centers[frame][2], c='g', marker='o')
+
 
 def transform_markers(transforms, markers):
     """
@@ -277,6 +312,7 @@ def make_frame(markers):
     p[-1] = 1
     return np.column_stack((xo, yo, zo, p))
 
+
 def get_all_transformation_to_base(parent_frames, child_frames):
     """
 
@@ -292,6 +328,7 @@ def get_all_transformation_to_base(parent_frames, child_frames):
 
     return frames
 
+
 def get_transform_btw_two_frames(parent_frame, child_frame):
     """
 
@@ -300,6 +337,7 @@ def get_transform_btw_two_frames(parent_frame, child_frame):
     :return:
     """
     return np.linalg.inv(parent_frame) * child_frame
+
 
 def get_angle_between_vects(v1, v2):
     """
@@ -321,8 +359,25 @@ def transform_vector(frame, vector):
     :param vector:
     :return:
     """
-    p = np.vstack((core, [1]))
-    return np.dot(frame , p)
+    p = np.vstack((vector, [1]))
+    return np.dot(frame, p)
+
+
+def batch_transform_vector(frames, vector):
+    """
+
+    :param frames: list of frames
+    :param vector: vector to transform
+    :return:
+    """
+
+    trans_vectors = []
+
+    for T in frames:
+        p = np.dot(T, vector)
+        trans_vectors.append(p)
+
+    return trans_vectors
 
 def unit_vector(vector):
     """
@@ -331,6 +386,7 @@ def unit_vector(vector):
     :return:
     """
     return vector / np.linalg.norm(vector)
+
 
 def avg_vector(markers):
     """
@@ -346,6 +402,7 @@ def avg_vector(markers):
         vp /= len(marker)
         vp_norm.append(vp)
     return vp_norm
+
 
 def calc_CoR(markers):
     '''
@@ -381,7 +438,8 @@ def calc_AoR(markers):
     :rtype np.array
     """
     A = calc_A(markers)  # calculates the A matrix
-    E_vals, E_vecs = np.linalg.eig(A)  # I believe that the np function eig has a different output than the matlab function eigs
+    E_vals, E_vecs = np.linalg.eig(
+        A)  # I believe that the np function eig has a different output than the matlab function eigs
     min_E_val_idx = np.argmin(E_vals)
     axis = E_vecs[:, min_E_val_idx]
     return axis
@@ -428,7 +486,8 @@ def calc_b(markers):
 
     return b.reshape((-1, 1))
 
-def cloud_to_cloud(A_,B_):
+
+def cloud_to_cloud(A_, B_):
     """
     Get the transformation between two frames of marker sets.
     http://nghiaho.com/?page_id=671
@@ -438,7 +497,6 @@ def cloud_to_cloud(A_,B_):
     """
     A = np.asmatrix(points_to_matrix(A_))
     B = np.asmatrix(points_to_matrix(B_))
-
 
     assert len(A) == len(B)
 
@@ -480,6 +538,7 @@ def cloud_to_cloud(A_,B_):
 
     return T, err
 
+
 def get_center(markers, R):
     """
     Get the marker set
@@ -504,6 +563,7 @@ def minimize_center(vectors, axis, initial):
     :param initial:
     :return:
     """
+
     def objective(x):
         C = 0
         for vect in vectors:
@@ -551,6 +611,7 @@ def calc_vector_between_points(start_point, end_point):
     :return:
     """
     return end_point - start_point
+
 
 def get_distance(point1, point2):
     """
@@ -638,11 +699,12 @@ def points_to_matrix(points):
     :return:
     """
 
-    cloud = np.zeros((len(points),3))
+    cloud = np.zeros((len(points), 3))
     for index, point in enumerate(points):
-        cloud[index,:] = [point.x, point.y, point.z]
+        cloud[index, :] = [point.x, point.y, point.z]
 
     return cloud
+
 
 def get_rmse(marker_set, body):
     """
@@ -681,9 +743,7 @@ def fit_to_plane(points):
     return fit, residual
 
 
-
 if __name__ == '__main__':
-
     DataSets1 = [core.Point(531.6667, - 508.9951, 314.4273),
                  core.Point(510.5082, - 457.7791, 357.1969),
                  core.Point(463.9945, - 476.0904, 356.1137),
@@ -696,14 +756,13 @@ if __name__ == '__main__':
                  [-84.8805, 394.2636, - 393.6067],
                  [-67.3354, 347.3059, - 393.7805]]
 
-    marker = [core.Point(0.0,   50.0,  0.0),
-              core.Point(-70.0, 50.0,  0.0),
-              core.Point(-70, 0,   0),
-              core.Point(0.0,  50.0,  100.0),
-              core.Point(0.0,   0.0,   100.0)]
+    marker = [core.Point(0.0, 50.0, 0.0),
+              core.Point(-70.0, 50.0, 0.0),
+              core.Point(-70, 0, 0),
+              core.Point(0.0, 50.0, 100.0),
+              core.Point(0.0, 0.0, 100.0)]
 
-
-    #print cloudtocloud(marker, DataSets1)
+    # print cloudtocloud(marker, DataSets1)
 
     # marker0 = np.asarray([3.6, 5.4, 1.69]).transpose()
     # marker1 = np.asarray([4.0, 6.0, 1.75]).transpose()
