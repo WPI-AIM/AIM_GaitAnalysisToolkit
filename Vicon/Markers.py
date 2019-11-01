@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 import matplotlib.animation as animation
-# TODO add rigid body frame information
 
 class Markers(object):
     """
@@ -57,20 +56,25 @@ class Markers(object):
         Convert the dictioanry into something a that can be easy read
         :return:
         """
+        # TODO need to ensure that the frame are being created correctly and fill in missing data with a flag
         for key_name, value_name in self._data_dict.iteritems():
             fixed_name = key_name[1 + key_name.find(":"):]
             self._marker_names.append(fixed_name)
             self._raw_markers[fixed_name] = []
             self._filtered_markers[fixed_name] = []
-            if value_name.keys()[0] == "Magnitude( X )" or value_name.keys()[0] == "Count" :
+
+            # TODO improve this shit
+            if value_name.keys()[0] == "Magnitude( X )" or value_name.keys()[0] == "Count":
                 continue
-            print value_name.keys()
+
             x_arr = value_name["X"]["data"]
             y_arr = value_name["Y"]["data"]
             z_arr = value_name["Z"]["data"]
+
             x_filt = np.convolve(x_arr, np.ones((self._filter_window,)) / self._filter_window, mode='valid')
             y_filt = np.convolve(y_arr, np.ones((self._filter_window,)) / self._filter_window, mode='valid')
             z_filt = np.convolve(z_arr, np.ones((self._filter_window,)) / self._filter_window, mode='valid')
+
             for inx in xrange(len(x_filt)):
                 point = core.Point(x_arr[inx], y_arr[inx], z_arr[inx])
                 self._raw_markers[fixed_name].append(point)
@@ -97,7 +101,15 @@ class Markers(object):
             self._rigid_body[name] = markers
 
     def make_frame(self, _origin, _x, _y, _extra):
-        Frames = []
+        """
+
+        :param _origin:
+        :param _x:
+        :param _y:
+        :param _extra:
+        :return:
+        """
+        frames = []
         for o_ii, x_ii, y_ii in zip(_origin, _x, _y):
             o = np.array([o_ii.x, o_ii.y, o_ii.z]).transpose()
             x = np.array([x_ii.x, x_ii.y, x_ii.z]).transpose()
@@ -111,8 +123,8 @@ class Markers(object):
             p = np.pad(o, (0, 1), 'constant')
             p[-1] = 1
             F = np.column_stack((xo, yo, zo, p))
-            Frames.append(F)
-        return Frames
+            frames.append(F)
+        return frames
 
     def add_frame(self, name, frame):
         """
@@ -164,10 +176,10 @@ class Markers(object):
 
     def calc_joint_center(self, child_name, start, end):
         """
-        Get the joint center between two frames
-
-        :param parent_name:
+        Calculate the joint center between two frames
         :param child_name:
+        :param start:
+        :param end:
         :return:
         """
         # T = self.get_frame(parent_name)[0:]
@@ -189,39 +201,26 @@ class Markers(object):
         return core, axis
 
     def play(self, joints=None):
-        # TODO get number of from
-        """
 
-        :param joints:
-        :return:
-        """
         x_total = []
         y_total = []
         z_total = []
-        key = self._rigid_body.keys()
-        print self.get_rigid_body(key[0])
-        nfr = len(self.get_rigid_body(key[0])[0]) # Number of frames
-        print nfr
         fps = 100  # Frame per sec
+        keys = self._filtered_markers.keys()
+        nfr = len(self._filtered_markers[keys[0]])  # Number of frames
+        print nfr
         for frame in xrange(nfr):
             x = []
             y = []
             z = []
-            for key in self._rigid_body.keys():
-                m = self.get_rigid_body(key)[0:]
-                x += [item[frame].x for item in m]
-                y += [item[frame].y for item in m]
-                z += [item[frame].z for item in m]
-
-            for joint in joints:
-                x += [joint[frame][0]]
-                y += [joint[frame][1]]
-                z += [joint[frame][2]]
-
+            for key in keys:
+                point = self._filtered_markers[key][frame]
+                x += [point.x]
+                y += [point.y]
+                z += [point.z]
             x_total.append(x)
             y_total.append(y)
             z_total.append(z)
-
 
         self._fig = plt.figure()
         self._ax = self._fig.add_subplot(111, projection='3d')
@@ -276,8 +275,7 @@ def make_frame(markers):
     zo = np.pad(zo, (0, 1), 'constant')
     p = np.pad(origin, (0, 1), 'constant')
     p[-1] = 1
-    F = np.column_stack((xo, yo, zo, p))
-    return F
+    return np.column_stack((xo, yo, zo, p))
 
 def get_all_transformation_to_base(parent_frames, child_frames):
     """

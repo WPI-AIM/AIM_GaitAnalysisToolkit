@@ -31,44 +31,46 @@ data = Vicon.Vicon("/home/nathanielgoldfarb/gait_analysis_toolkit/testing_data/b
 markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_transform(frames)
-core, axis = markers.calc_joint_center("RightThigh", "RightShank", 200, 325)
-x = []
-y = []
-z = []
-
-for c in core:
-    x.append(c[0].item(0))
-    y.append(c[1].item(0))
-    z.append(c[2].item(0))
-
-# fs = 100.0
-# fc = 10.0  # Cut-off frequency of the filter
-# w = fc / (fs / 2.) # Normalize the frequency
-# print
-# b, a = signal.butter(30, w, 'low')
-# x = signal.filtfilt(b, a, x, axis=0)
-# y = signal.filtfilt(b, a, y, axis=0)
-# z = signal.filtfilt(b, a, z, axis=0)
-# N = 10
-
-
-def smooth(y, box_pts):
-    box = np.ones(box_pts)/box_pts
-    y_smooth = np.convolve(y, box, mode='same')
-    return y_smooth
-
-fig, ax = plt.subplots()
-
-ax.plot(x, 'r-')
-ax.plot(y, 'r-')
-ax.plot(z, 'r-')
-
-plt.plot(smooth(x, 19), 'g-')
-plt.plot(smooth(y, 19), 'g-')
-plt.plot(smooth(z, 19), 'g-')
-
-
-plt.show()
+markers.play()
+# # TODO need to get all the joint centers now using the new rebase
+# core, axis = markers.calc_joint_center("RightThigh", "RightShank", 200, 325)
+# x = []
+# y = []
+# z = []
+#
+# for c in core:
+#     x.append(c[0].item(0))
+#     y.append(c[1].item(0))
+#     z.append(c[2].item(0))
+#
+# # fs = 100.0
+# # fc = 10.0  # Cut-off frequency of the filter
+# # w = fc / (fs / 2.) # Normalize the frequency
+# # print
+# # b, a = signal.butter(30, w, 'low')
+# # x = signal.filtfilt(b, a, x, axis=0)
+# # y = signal.filtfilt(b, a, y, axis=0)
+# # z = signal.filtfilt(b, a, z, axis=0)
+# # N = 10
+#
+#
+# def smooth(y, box_pts):
+#     box = np.ones(box_pts)/box_pts
+#     y_smooth = np.convolve(y, box, mode='same')
+#     return y_smooth
+#
+# fig, ax = plt.subplots()
+#
+# ax.plot(x, 'r-')
+# ax.plot(y, 'r-')
+# ax.plot(z, 'r-')
+#
+# plt.plot(smooth(x, 19), 'g-')
+# plt.plot(smooth(y, 19), 'g-')
+# plt.plot(smooth(z, 19), 'g-')
+#
+#
+# plt.show()
 #centers = [core]
 #markers.play([center])
 
