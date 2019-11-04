@@ -6,6 +6,13 @@ import ForcePlate
 import IMU
 import ModelOutput
 import Markers
+from collections import namedtuple
+
+Point = namedtuple('Point', 'x y z')
+Newton = namedtuple('Newton', 'angle force moment power')
+Data = namedtuple('Data', 'data time')
+Side = namedtuple("Side", "left right")
+Leg = namedtuple("Leg", "hip knee ankle" )
 
 class Vicon(object):
 
