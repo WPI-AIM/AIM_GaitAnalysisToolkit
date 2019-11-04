@@ -57,7 +57,13 @@ class Markers(object):
         Convert the dictioanry into something a that can be easy read
         :return:
         """
+
         # TODO need to ensure that the frame are being created correctly and fill in missing data with a flag
+        to_remove = [ item for item in self._data_dict.keys() if "|" in item ]
+        to_remove += [item for item in self._data_dict.keys() if "Trajectory Count" == item]
+        for rr in to_remove:
+            self._data_dict.pop(rr, None)
+
         for key_name, value_name in self._data_dict.iteritems():
             fixed_name = key_name[1 + key_name.find(":"):]
             self._marker_names.append(fixed_name)
@@ -90,6 +96,7 @@ class Markers(object):
         no_digits = [''.join(x for x in i if not x.isdigit()) for i in self._marker_names]  # removes digits
         single_item = list(set(no_digits))  # removes redundent items
         keys = self._marker_names
+
         for name in single_item:
             markers_keys = [s for s in keys if name in s]
             markers_keys.sort()
@@ -201,7 +208,7 @@ class Markers(object):
 
     def play(self, joints=None, save=False, name="im"):
         """
-        play the markers 
+        play the markers
         :param joints:
         :param save:
         :return:
@@ -249,6 +256,7 @@ class Markers(object):
             Writer = animation.writers['ffmpeg']
             writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
             ani.save(name + '.mp4', writer=writer)
+            plt.show()
         else:
             plt.show()
 
@@ -266,7 +274,7 @@ class Markers(object):
         self._ax.set_xlabel('X Label')
         self._ax.set_ylabel('Y Label')
         self._ax.set_zlabel('Z Label')
-        self._ax.axis([-500, 500, -750, 1500])
+        self._ax.axis([-500, 500, -750, 3000])
         self._ax.set_zlim3d(0, 1250)
         self._ax.scatter(x[frame], y[frame], z[frame], c='r', marker='o')
         if len(centers) > 0:
