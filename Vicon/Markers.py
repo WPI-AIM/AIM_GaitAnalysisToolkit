@@ -52,6 +52,14 @@ class Markers(object):
     def filtered_markers(self, value):
         self._filtered_markers = value
 
+    @property
+    def rigid_body(self):
+        return self._rigid_body
+
+    @filtered_markers.setter
+    def rigid_body(self, value):
+        self._rigid_body = value
+
     def make_markers(self):
         """
         Convert the dictioanry into something a that can be easy read
@@ -59,7 +67,7 @@ class Markers(object):
         """
 
         # TODO need to ensure that the frame are being created correctly and fill in missing data with a flag
-        to_remove = [ item for item in self._data_dict.keys() if "|" in item ]
+        to_remove = [item for item in self._data_dict.keys() if "|" in item]
         to_remove += [item for item in self._data_dict.keys() if "Trajectory Count" == item]
         for rr in to_remove:
             self._data_dict.pop(rr, None)
@@ -161,9 +169,11 @@ class Markers(object):
         """
         for name, value in self._rigid_body.iteritems():
             frames = []
-            for ii in xrange(len(value[0])):
-                frames.append(cloud_to_cloud(bodies[name], [value[0][ii], value[1][ii], value[2][ii], value[3][ii]])[0])
-            self.add_frame(name, frames)
+            if name in bodies:
+                print name
+                for ii in xrange(len(value[0])):
+                        frames.append(cloud_to_cloud(bodies[name], [value[0][ii], value[1][ii], value[2][ii], value[3][ii]])[0])
+                self.add_frame(name, frames)
 
     def get_frame(self, name):
         """
@@ -270,11 +280,12 @@ class Markers(object):
         :param centers:
         :return:
         """
+        print frame
         self._ax.clear()
         self._ax.set_xlabel('X Label')
         self._ax.set_ylabel('Y Label')
         self._ax.set_zlabel('Z Label')
-        self._ax.axis([-500, 500, -750, 3000])
+        self._ax.axis([-500, 500, -200, 3000])
         self._ax.set_zlim3d(0, 1250)
         self._ax.scatter(x[frame], y[frame], z[frame], c='r', marker='o')
         if len(centers) > 0:
@@ -544,7 +555,8 @@ def cloud_to_cloud(A_, B_):
         T[ii, 3] = p[ii]
     T[3, 3] = 1.0
 
-    return T, err
+
+    return T, rmse
 
 
 def get_center(markers, R):
