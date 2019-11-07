@@ -64,18 +64,19 @@ for frame in xrange(0, 3000):
     f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
     T, err = Markers.cloud_to_cloud(frames["R_Femur"], f)
     print frame, " ", err
-#
-global_r_hip, axis_r_hip, local_r_hip = markers.calc_joint_center("Root", "R_Femur", 380, 1000)
+
+global_r_hip, axis_r_hip, local_r_hip = markers.calc_joint_center("Root", "R_Femur", 300, 450)
 r_hip = Markers.batch_transform_vector(markers.get_frame("Root"), local_r_hip)
 joints.append(r_hip)
-# #
+
 # global_l_hip, axis_l_hip, local_l_hip = markers.calc_joint_center("Root", "L_Femur", 1900, 2500)
 # l_hip = Markers.batch_transform_vector(markers.get_frame("Root"), local_l_hip)
 # joints.append(l_hip)
 
-global_r_knee, axis_r_knee, local_r_knee = markers.calc_joint_center("Root", "R_Tibia", 1200, 1400)
+global_r_knee, axis_r_knee, local_r_knee = markers.calc_joint_center("Root", "R_Tibia", 1300, 1400)
 r_knee = Markers.batch_transform_vector(markers.get_frame("Root"), local_r_knee)
 joints.append(r_knee)
+
 # global_l_knee, axis_l_knee, local_l_knee = markers.calc_joint_center("Root", "L_Tibia", 2800, 3000)
 # l_knee = Markers.batch_transform_vector(markers.get_frame("Root"), local_l_knee)
 # joints.append(l_knee)
@@ -86,4 +87,4 @@ joints.append(r_knee)
 # l_ankle = Markers.batch_transform_vector(markers.get_frame("L_Foot"), local_l_ankle)
 # joints.append(l_ankle)
 
-markers.play(joints=joints )
+markers.play(joints=joints)

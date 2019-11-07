@@ -208,13 +208,14 @@ class Markers(object):
         m = [m1, m2, m3, m4]
 
         global_joint = calc_CoR(m)
+
         axis = calc_AoR(m)
         local_joint = np.array([[0.0], [0.0], [0.0], [0.0]])
 
         for T in Tp:
             local_joint += transform_vector(np.linalg.pinv(T), global_joint )/len(Tp)
 
-        return global_joint, axis, local_joint
+        return np.vstack((global_joint, [1])), axis, local_joint
 
     def play(self, joints=None, save=False, name="im"):
         """
@@ -394,6 +395,7 @@ def batch_transform_vector(frames, vector):
 
     for T in frames:
         p = np.dot(T, vector)
+        #p = np.dot(np.eye(4), vector)
         trans_vectors.append(p)
 
     return trans_vectors
