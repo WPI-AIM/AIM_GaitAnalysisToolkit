@@ -22,6 +22,7 @@ all_core = []
 
 def animate(frame):
     frame = frame
+    print frame
     x = []
     y = []
     z = []

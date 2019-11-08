@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import math
 
 import numpy as np
 
@@ -38,7 +38,7 @@ class Trial(object):
         vicon = []
         exo = []
         theta = float(self._exoskeleton.length) / float(self._vicon.length)
-
+        print "thtea", theta
         model = self.vicon.get_model_output()
         hip = model.get_right_joint("RHipAngles").angle.x
         N = 10
@@ -51,7 +51,6 @@ class Trial(object):
         for start in xrange(0, len(max_peakind) - 2):
             error = 10000000
             offset = 0
-            starting_value = model.get_left_joint("LHipAngles").angle.x[max_peakind[start]]
             for ii in xrange(0, 25):
                 temp_error = model.get_left_joint("LKneeAngles").angle.x[max_peakind[start + 1] + ii]
                 if temp_error < error:
@@ -62,6 +61,7 @@ class Trial(object):
         for ii, start in enumerate(xrange(0, len(max_peakind) - 2)):
             begin = max_peakind[start]
             end = max_peakind[start + 1] + offsets[ii]
+            # TODO need to find out if i need to round up or down
             vicon.append((begin, end))
             exo.append((int(math.ceil(theta * begin)), int(math.ceil(theta * end))))
 
@@ -203,8 +203,10 @@ class Trial(object):
         left_cop = self.exoskeleton.left_leg.calc_CoP()
         right_cop = self.exoskeleton.right_leg.calc_CoP()
 
-        for inc in self.exo_set_points:
+        left = []
+        right = []
 
+        for inc in self.exo_set_points:
             left_data = left_cop[inc[0]:inc[1]]
             right_data = right_cop[inc[0]:inc[1]]
 
@@ -234,9 +236,9 @@ class Trial(object):
 
         left_fsr = self.exoskeleton.left_leg.ankle.FSRs
         right_fsr = self.exoskeleton.right_leg.ankle.FSRs
+
         left = []
         right = []
-        count = 0
 
         for inc in self.exo_set_points:
             left_data = np.array(
@@ -274,6 +276,7 @@ class Trial(object):
         """
         left_leg = self.exoskeleton.left_leg
         right_leg = self.exoskeleton.right_leg
+
         left = []
         right = []
         count = 0
@@ -474,11 +477,11 @@ class Trial(object):
 
 
 if __name__ == '__main__':
-    vicon_file = "/media/nathaniel/Data/LowerLimb_HealthyGait/Subject02/walking/Walking01.csv"
+    vicon_file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
     config_file = "/home/nathaniel/git/exoserver/Config/sensor_list.yaml"
     exo_file = "/home/nathaniel/git/exoserver/Main/subject_1234_trial_1.csv"
     trial = Trial(vicon_file, config_file, exo_file)
-    joints = trial.get_joint_trajectories()
-    plate = trial.get_force_plates()
-    #left, right = trial.get_CoP()
-    emg = trial.get_emg()
+    joints = trial.seperate_joint_trajectories()
+    plate = trial.seperate_force_plates()
+    left, right = trial.seperate_CoP()
+

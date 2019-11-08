@@ -5,7 +5,7 @@ import EMG
 import ForcePlate
 import IMU
 import ModelOutput
-
+import Markers
 
 class Vicon(object):
 
@@ -20,14 +20,13 @@ class Vicon(object):
         self._IMUs = {}
         self._accels = {}
         self.data_dict = self.open_vicon_file(self._file_path, self.output_names)
-        self._make_Accelerometers()
-        self._make_EMGs()
-        self._make_force_plates()
-        self._make_IMUs()
-        self._make_markers()
-        self._model_output = ModelOutput.ModelOutput(self.data_dict["Model Outputs"], self.joint_names)
-        self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
-
+        # self._make_Accelerometers()
+        # self._make_EMGs()
+        # self._make_force_plates()
+        # self._make_IMUs()
+        self._make_marker_trajs()
+        #self._make_model()
+        # self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
 
     def _find_number_of_frames(self, col):
         """
@@ -332,11 +331,11 @@ class Vicon(object):
         return data
 
     def _seperate_csv_sections(self, all_data):
-
+        print all_data[0][0]
         raw_col = [row[0] for row in all_data]
         fitlered_col = [item for item in raw_col if not item.isdigit()]
         fitlered_col = filter(lambda a: a != 'Frame', fitlered_col)
-        fitlered_col =filter(lambda a: a != "", fitlered_col)
+        fitlered_col = filter(lambda a: a != "", fitlered_col)
         inx = []
         for name in fitlered_col:
             inx.append(raw_col.index(name))
@@ -395,6 +394,7 @@ class Vicon(object):
         last_frame = None
 
         column_names = self._fix_col_names(raw_data[start + 2])
+
         # column_names = raw_data[start + 2]
         remove_numbers = lambda str: ''.join([i for i in str if not i.isdigit()])
         axis = map(remove_numbers, raw_data[start + 3])
@@ -432,6 +432,8 @@ class Vicon(object):
         return data
 
 
+
+
 if __name__ == '__main__':
-    file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
+    file = "/home/nathaniel/gait_analysis_toolkit/Utilities/Walking01.csv"
     data = Vicon(file)

@@ -8,8 +8,8 @@ def transform_markers(transforms, markers):
     for marker in markers:
         adjusted_locations = []
         for transform, frame in zip(transforms, marker):
-            v = np.array([[frame.x, frame.y,frame.z,1.0]]).T
-            v_prime = np.dot( np.linalg.inv(transform),v)
+            v = np.array([[frame.x, frame.y,frame.z, 1.0]]).T
+            v_prime = np.dot(transform,v)
             new_marker = core.Point(v_prime[0][0],v_prime[1][0],v_prime[2][0])
             adjusted_locations.append(new_marker)
         trans_markers.append(adjusted_locations)

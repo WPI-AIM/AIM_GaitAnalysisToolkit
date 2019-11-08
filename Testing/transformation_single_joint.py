@@ -13,7 +13,7 @@ ax = fig.add_subplot(111, projection='3d')
 ax.set_autoscale_on(False)
 data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_leg_bend.csv")
 markers = data.get_markers()
-markers.smart_sort()
+markers.smart_sort(True)
 markers.auto_make_frames()
 cor_filter = Mean_filter.Mean_Filter(20)
 cor_filter2 = Mean_filter.Mean_Filter(20)
@@ -46,13 +46,13 @@ def animate(frame):
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
     ax.set_zlabel('Z Label')
-    ax.axis([-200, 200, 0, 1000])
+    ax.axis([-500, 500, -750, 1500])
     ax.set_zlim3d(0, 1250)
     ax.scatter(x, y, z, c='r', marker='o')
     offset = 3
+
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
     thigh_markers = markers.get_rigid_body("ben:RightThigh")[0:]
-
     shank_markers = markers.get_rigid_body("ben:RightShank")[0:1000]
 
     m1 = shank_markers[0][frame:frame + 2]
@@ -76,6 +76,7 @@ def animate(frame):
                                     shank_markers[1][frame],
                                     shank_markers[2][frame],
                                     shank_markers[3][frame]])
+
     axis[0], axis[2] = axis[2], axis[0]
     sol = Markers.minimize_center([thigh, shank], axis=axis, initial=(core[0][0], core[1][0], core[2][0]))
     temp_center = sol.x

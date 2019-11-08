@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 def transform_btw_two_frames(from_frame, to_frame):
     return np.matmul(np.linalg.inv(from_frame), to_frame)
 
-
-# TODO
 def rotation_angle_from_transformation_mat(trans):
     return 0
 

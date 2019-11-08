@@ -23,7 +23,6 @@ class Session(object):
         self._trials = self.seperate_trials(self._subject["trials"])
         self._trial_names = []
 
-
     @property
     def gender(self):
         return self._gender
