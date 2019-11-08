@@ -21,6 +21,7 @@ class Session(object):
         self._leg_length = float(self._subject["LegLength"])
         self._gender = self._subject["Gender"]
         self._trials = self.seperate_trials(self._subject["trials"])
+        self._trial_names = []
 
 
     @property
@@ -79,12 +80,38 @@ class Session(object):
     def trials(self, value):
         self._trials = value
 
+
     def seperate_trials(self, trials_names):
+        """
+        sperates the trial into the dictionaries
+        :param trials_names:
+        :return:
+        """
         trials = {}
         for key, value in trials_names.iteritems():
+            self._trial_names.append(key)
             trials[key] = Trial.Trial(self._config_file, value["output"], value["vicon"], value["dt"], value["notes"])
 
         return trials
+
+    def black_list_trial_cycle(self, trial_number, black):
+        """
+        blacklist the trials
+        :param trial_number:
+        :param black:
+        :return:
+        """
+        self._trials[trial_number].add_to_blacklist(black)
+
+    def black_list_trial(self, trial_number):
+        """
+        blacklist the trials
+        :param trial_number:
+        :param black:
+        :return:
+        """
+        del self._trials[trial_number]
+
 
     def collect_exo_accel(self):
         """
@@ -93,7 +120,7 @@ class Session(object):
         """
         trials = {}
         for key, value in self.trials.iteritems():
-            trials[key] = self.trials[key].seperate_accel()
+            trials[key] = self.trials[key].get_accel()
         return trials
 
     def collect_exo_CoP(self):
@@ -103,7 +130,7 @@ class Session(object):
         """
         trials = {}
         for key, value in self.trials.iteritems():
-            trials[key] = self.trials[key].seperate_CoP()
+            trials[key] = self.trials[key].get_CoP()
         return trials
 
     def collect_exo_pots(self):
@@ -112,7 +139,8 @@ class Session(object):
     def collect_frame(self):
         pass
 
-
+    def see_trial(self, number):
+        pass
 # if __name__ == "__main__":
 #     session = Session("/home/nathaniel/git/exoserver/Main/subject_1234.yaml")
 #     print session.mass

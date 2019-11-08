@@ -140,6 +140,8 @@ def open_exo_file(file_path):
     return data
 
 
+
+
 if __name__ == '__main__':
     # file = "/home/nathaniel/git/exoserver/Main/subject_37_trial_1.csv"
     # print open_exo_file(file)["Pot_Left_Ankle"]

@@ -5,7 +5,7 @@ import numpy as np
 from lib.dmp_experiments.Python import train_rmp, RMP_runner
 from math import radians
 
-file = "/home/nathaniel/git/AMBF_Walker/config/joint_data_edited.csv"
+file = "/home/nathaniel/ambf_walker/config/joint_data_edited.csv"
 name = "LHipAngles"
 
 joints = trajecectory_helper.sperate_joints(file)

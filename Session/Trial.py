@@ -1,24 +1,28 @@
-import math
+import matplotlib.pyplot as plt
 
 import numpy as np
 
 from Exoskeleton import Exoskeleton
 from Vicon import Vicon
 from lib.Exoskeleton.Robot import core
+import lib.Plotting_Tools as PT
+import TrialExaminer
+import math
 
 
 class Trial(object):
 
-    def __init__(self, vicon_file, config_file=None, exo_file=None, dt=None, notes_file=None):
+    def __init__(self, vicon_file, config_file=None, exo_file=None, dt=100, notes_file=None):
 
         # self._notes_file = notes_file
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
-        self._dt = 100
+        self._dt = dt
         self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
         self._vicon = Vicon.Vicon(vicon_file)
         self.vicon_set_points = {}
         self._joint_trajs = None
         self._black_list = []
+        self._use_black_list = False
         self.create_index_seperators()
 
     def create_index_seperators(self):
@@ -34,34 +38,37 @@ class Trial(object):
         vicon = []
         exo = []
         theta = float(self._exoskeleton.length) / float(self._vicon.length)
-        print "thtea", theta
+
         model = self.vicon.get_model_output()
         hip = model.get_right_joint("RHipAngles").angle.x
+        N = 10
+        hip = np.convolve(hip, np.ones((N,)) / N, mode='valid')
+
         max_peakind = np.diff(np.sign(np.diff(hip))).flatten()  # the one liner
         max_peakind = np.pad(max_peakind, (1, 10), 'constant', constant_values=(0, 0))
         max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
 
-        for start in xrange(2, len(max_peakind) - 2):
+        for start in xrange(0, len(max_peakind) - 2):
             error = 10000000
             offset = 0
-            for ii in xrange(0, 25):  # TODO why is this 25??????????????
+            starting_value = model.get_left_joint("LHipAngles").angle.x[max_peakind[start]]
+            for ii in xrange(0, 25):
                 temp_error = model.get_left_joint("LKneeAngles").angle.x[max_peakind[start + 1] + ii]
                 if temp_error < error:
                     error = temp_error
                     offset = ii
             offsets.append(offset)
 
-        for ii, start in enumerate(xrange(2, len(max_peakind) - 2)):
+        for ii, start in enumerate(xrange(0, len(max_peakind) - 2)):
             begin = max_peakind[start]
             end = max_peakind[start + 1] + offsets[ii]
-            # TODO need to find out if i need to round up or down
             vicon.append((begin, end))
             exo.append((int(math.ceil(theta * begin)), int(math.ceil(theta * end))))
 
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
         self.exo_set_points = exo  # varible that holds the setpoints for the exo
 
-    def seperate_force_plates(self):
+    def get_force_plates(self):
         """
         Seperates then force plate data
         :return: Force plate data
@@ -82,6 +89,9 @@ class Trial(object):
 
         for p in (p1, p2):
             key = p[0]
+            if self._use_black_list:
+                if key in self._black_list:
+                    continue
             plateF = p[1]
             plateM = p[2]
             for inc in self.vicon_set_points:
@@ -96,18 +106,20 @@ class Trial(object):
                 f = core.Point(Fx, Fy, Fz)
                 m = core.Point(Mx, My, Mz)
                 data = core.Newton(None, f, m, None)
-                time = (len(Fx) / self.vicon.length) * self.dt
-                joints[key].append((data, np.linspace(0, time, len(Fx))))
+                time = (len(Fx) / float(self.vicon.length)) * self.dt
+                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                joints[key].append(stamp)
 
         return joints
 
-    def seperate_joint_trajectories(self):
+    def get_joint_trajectories(self):
         """
         Seperates then joint trajs data
         :return: joint trajectory data
         :rtype: Dict
         """
         joints = {}
+        count = 0
         model = self.vicon.get_model_output()
         for fnc, side in zip((model.get_left_joint, model.get_right_joint), ("R", "L")):
             for joint_name in self.names:
@@ -115,18 +127,24 @@ class Trial(object):
                 joints[name] = []
                 for inc in self.vicon_set_points:
                     data = np.array(fnc(name).angle.x[inc[0]:inc[1]])
-                    time = (len(data) / self.vicon.length) * self.dt
-                    joints[name].append((data, np.linspace(0, time, len(data))))
+                    time = (len(data) / float(self.vicon.length)) * self.dt
+                    stamp = core.Data(data, np.linspace(0, time, len(data)))
+                    if self._use_black_list:
+                        if count in self._black_list:
+                            continue
+                    joints[name].append(stamp)
+                    count+=1
 
         return joints
 
-    def seperate_emg(self):
+    def get_emg(self):
         """
        Seperates then EMGs data
        :return: EMGs data
-       :rtype: Dict
+       :rtype: Core.side
         """
         joints = {}
+        count = 0
         emgs = self.vicon.get_all_emgs()
 
         for key, emg in emgs.iteritems():
@@ -135,34 +153,79 @@ class Trial(object):
                 start = emg.get_offset_index(inc[0])
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
-                time = (len(data) / self.vicon.length) * self.dt
-                joints[key].append((data, np.linspace(0, time, len(data))))
+                time = (len(data) / float(self.vicon.length)) * self.dt
+                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                if self._use_black_list:
+                    if count in self._black_list:
+                        continue
+                joints[key].append(stamp)
+
+                count += 1
 
         return joints
 
-    def seperate_CoP(self):
+    def get_T_emgs(self):
+        """
+       Seperates then EMGs data
+       :return: EMGs data
+       :rtype: Core.side
+        """
+        joints = {}
+        count = 0
+        emgs = self.vicon.get_all_t_emg()
+
+        for key, emg in emgs.iteritems():
+            joints[key] = []
+            for inc in self.vicon_set_points:
+                start = emg.get_offset_index(inc[0])
+                end = emg.get_offset_index(inc[1])
+                data = np.array(emg.get_values())[start:end]
+                time = (len(data) / float(self.vicon.length)) * self.dt
+                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                if self._use_black_list:
+                    if count in self._black_list:
+                        continue
+                joints[key].append(stamp)
+                count += 1
+
+        return joints
+
+    def get_CoPs(self):
         """
        Seperates then CoP data
        :return: CoP data
        :rtype: Dict
         """
-        left_cop = self.exoskeleton.left_leg.calc_CoP()
-        right_cop = self.exoskeleton.right_leg.calc_CoP()
 
         left = []
         right = []
+        count = 0
+        left_cop = self.exoskeleton.left_leg.calc_CoP()
+        right_cop = self.exoskeleton.right_leg.calc_CoP()
 
         for inc in self.exo_set_points:
+
             left_data = left_cop[inc[0]:inc[1]]
             right_data = right_cop[inc[0]:inc[1]]
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
+            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-        return left, right
+            if self._use_black_list:
+                if count in self._black_list:
+                    continue
+                else:
+                    left.append(stamp_left)
+                    right.append(stamp_right)
 
-    def seperate_FSR(self):
+            count += 1
+
+        side = core.Side(left, right)
+
+        return side
+
+    def get_FSRs(self):
         """
                Seperates FSR data
                :return: FSR data
@@ -171,9 +234,9 @@ class Trial(object):
 
         left_fsr = self.exoskeleton.left_leg.ankle.FSRs
         right_fsr = self.exoskeleton.right_leg.ankle.FSRs
-
         left = []
         right = []
+        count = 0
 
         for inc in self.exo_set_points:
             left_data = np.array(
@@ -186,13 +249,24 @@ class Trial(object):
                  [right_fsr[1].get_values()[inc[0]:inc[1]]],
                  [right_fsr[2].get_values()[inc[0]:inc[1]]]])
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
+            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-        return left, right
+            if self._use_black_list:
+                if count in self._black_list:
+                    continue
+                else:
+                    left.append(stamp_left)
+                    right.append(stamp_right)
 
-    def seperate_pots(self):
+            count += 1
+
+        side = core.Side(left, right)
+
+        return side
+
+    def get_pots(self):
         """
        Seperates Pot data
        :return: Pot data
@@ -200,9 +274,9 @@ class Trial(object):
         """
         left_leg = self.exoskeleton.left_leg
         right_leg = self.exoskeleton.right_leg
-
         left = []
         right = []
+        count = 0
 
         for inc in self.exo_set_points:
             left_data = np.array(
@@ -215,13 +289,27 @@ class Trial(object):
                  [right_leg.knee.pot.get_values()[inc[0]:inc[1]]],
                  [right_leg.ankle.pot.get_values()[inc[0]:inc[1]]]])
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
 
-        return left, right
+            stamp_left = core.Data()
+            stamp_right = core.Data()
+            stamp_right.data = right_data
+            stamp_left.data = left_data
+            stamp_left.time = np.linspace(0, time, len(left_data))
+            stamp_right.time = np.linspace(0, time, len(right_data))
 
-    def seperate_accel(self):
+            if self._use_black_list:
+                if count in self._black_list:
+                    continue
+                else:
+                    left.append(stamp_left)
+                    right.append(stamp_right)
+            count+=1
+
+        side = core.Side(left, right)
+        return side
+
+    def get_accels(self):
         """
                 Seperates then force plate data
                 :return: Force plate data
@@ -232,7 +320,7 @@ class Trial(object):
 
         left = []
         right = []
-
+        count = 0
         for inc in self.exo_set_points:
             left_data = np.array(
                 [[left_leg.hip.IMU.accel.get_values()[inc[0]:inc[1]]],
@@ -244,13 +332,24 @@ class Trial(object):
                  [right_leg.knee.IMU.accel.get_values()[inc[0]:inc[1]]],
                  [right_leg.ankle.IMU.accel.get_values()[inc[0]:inc[1]]]])
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
 
-        return left, right
+            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-    def seperate_gyro(self):
+            if self._use_black_list:
+                if count in self._black_list:
+                    continue
+                else:
+                    left.append(stamp_left)
+                    right.append(stamp_right)
+            count+=1
+
+        side = core.Side(left, right)
+
+        return side
+
+    def get_gyros(self):
         """
                 Seperates then force plate data
                 :return: Force plate data
@@ -261,6 +360,7 @@ class Trial(object):
 
         left = []
         right = []
+        count = 0
 
         for inc in self.exo_set_points:
             left_data = np.array(
@@ -273,11 +373,20 @@ class Trial(object):
                  [right_leg.knee.IMU.gyro.get_values()[inc[0]:inc[1]]],
                  [right_leg.ankle.IMU.gyro.get_values()[inc[0]:inc[1]]]])
 
-            time = (len(left_data) / self.exoskeleton.length) * self.dt
-            left.append((left_data, np.linspace(0, time, len(left_data))))
-            right.append((right_data, np.linspace(0, time, len(right_data))))
+            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
+            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-        return left, right
+            if self._use_black_list:
+                if count in self._black_list:
+                    continue
+                else:
+                    left.append(stamp_left)
+                    right.append(stamp_right)
+            count+=1
+
+        side = core.Side(left, right)
+        return side
 
     @property
     def dt(self):
@@ -312,12 +421,64 @@ class Trial(object):
         self._joint_trajs = value
 
 
+    def add_to_blacklist(self, black_indexs):
+        """
+        Add a  blacklist
+        :param index: index to add
+        :return:
+        """
+        self._use_black_list = True
+        self._black_list = black_indexs
+
+    def remove_from_blacklist(self):
+        """
+        Remove the blacklist
+        :param index: index to add
+        :return:
+        """
+        self._use_black_list = False
+        self._black_list = []
+
+    # def plot(self):
+    #
+    #     plotter = TrialExaminer.TrialExaminer()
+    #     joints = self.get_joint_trajectories()
+    #     plates = self.get_force_plates()
+    #     cops = self.get_CoPs()
+    #     emgs = self.get_emgs()
+    #
+    #     accel = self.robot.get_accel
+    #     gyro = self.robot.get_gyro
+    #     pot = self.robot.get_pot
+    #     fsr = self.robot.get_fsr
+    #     left_fsr = [fsr["FSR1_Left"], fsr["FSR2_Left"], fsr["FSR3_Left"]]
+    #     right_fsr = [fsr["FSR1_Right"], fsr["FSR2_Right"], fsr["FSR3_Right"]]
+    #
+    #     for key, sensor in accel.items():
+    #         accel = PT.Line_Graph.Line_Graph(sensor.name, sensor, 3, ["x", "y", "z"])
+    #         plotter.addfig(accel)
+    #
+    #     for key, sensor in gyro.items():
+    #         gyro = PT.Line_Graph.Line_Graph(sensor.name, sensor, 3, ["x", "y", "z"])
+    #         plotter.addfig(gyro)
+    #
+    #     for key, sensor in pot.items():
+    #         pot = PT.Line_Graph.Line_Graph(sensor.name, sensor, 1, ["z"])
+    #         plotter.addfig(pot)
+    #
+    #     fsr_plot = PT.FSR_BarGraph.FSR_BarGraph("FSR", fsr.values())
+    #     plotter.addfig(fsr_plot)
+    #     #
+    #     cop_plot = PT.CoP_Plotter.CoP_Plotter("CoP", left_fsr, right_fsr)
+    #     plotter.addfig(cop_plot)
+
+
 if __name__ == '__main__':
-    vicon_file = "/home/nathaniel/git/Gait_Analysis_Toolkit/Utilities/Walking01.csv"
+    vicon_file = "/media/nathaniel/Data/LowerLimb_HealthyGait/Subject02/walking/Walking01.csv"
     config_file = "/home/nathaniel/git/exoserver/Config/sensor_list.yaml"
     exo_file = "/home/nathaniel/git/exoserver/Main/subject_1234_trial_1.csv"
     trial = Trial(vicon_file, config_file, exo_file)
-    joints = trial.seperate_joint_trajectories()
-    plate = trial.seperate_force_plates()
-    left, right = trial.seperate_CoP()
-
+    joints = trial.get_joint_trajectories()
+    plate = trial.get_force_plates()
+    #left, right = trial.get_CoP()
+    emg = trial.get_emg()
