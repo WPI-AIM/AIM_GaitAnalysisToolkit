@@ -1,12 +1,10 @@
 import math
 
 import numpy as np
-
 from Exoskeleton import Exoskeleton
 from Vicon import Vicon
 from lib.Exoskeleton.Robot import core
 import lib.Plotting_Tools as PT
-import TrialExaminer
 import math
 
 

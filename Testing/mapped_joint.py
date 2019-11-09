@@ -13,7 +13,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 ax.set_autoscale_on(False)
-data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ben_leg_bend.csv")
+data = Vicon.Vicon("/home/nathanielgoldfarb/gait_analysis_toolkit/testing_data/ben_leg_bend.csv")
 markers = data.get_markers()
 markers.smart_sort()
 markers.auto_make_frames()

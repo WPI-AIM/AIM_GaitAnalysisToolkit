@@ -136,7 +136,7 @@ class Vicon(object):
         :return: markers
         :type: dict
         """
-        return self.data_dict["Trajectories"]
+        return self.markers
 
     def get_joints(self):
         """
