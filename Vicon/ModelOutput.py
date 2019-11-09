@@ -5,9 +5,11 @@ class ModelOutput(object):
     def __init__(self, data, joint_name):
 
         self.phyics = ["Angles", "Force", "Moment", "Power"]
+        self._legs = core.Side()
         self.joint_names = joint_name
         self._left_joints = {}
         self._right_joints = {}
+
 
         for side, joint in zip(("R", "L"), (self._left_joints, self._right_joints)):
             for output in joint_name:
@@ -23,6 +25,8 @@ class ModelOutput(object):
                 power = core.Point(data[side + output + "Power"]["X"]["data"],
                                    data[side + output + "Power"]["Y"]["data"],
                                    data[side + output + "Power"]["Z"]["data"])
+                if side
+
                 joint[output] = core.Newton(angle, force, moment, power)
 
 

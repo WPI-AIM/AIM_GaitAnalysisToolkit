@@ -20,12 +20,12 @@ class Vicon(object):
         self._IMUs = {}
         self._accels = {}
         self.data_dict = self.open_vicon_file(self._file_path, self.output_names)
-        # self._make_Accelerometers()
-        # self._make_EMGs()
-        # self._make_force_plates()
-        # self._make_IMUs()
+        self._make_Accelerometers()
+        self._make_EMGs()
+        self._make_force_plates()
+        self._make_IMUs()
         self._make_marker_trajs()
-        #self._make_model()
+        self._make_model()
         # self._length = len(self.get_model_output().get_right_joint("Hip").angle.x)
 
     def _find_number_of_frames(self, col):
@@ -352,7 +352,12 @@ class Vicon(object):
                     [i for i in name.replace("Subject", "").replace(":", "").replace("|", "") if
                      not i.isdigit()]).strip()
                 fixed_names.append(fixed)
-                continue
+
+            elif  ":" in name:
+                print name
+                index = name.index(":")
+                print name[index+1:]
+                fixed_names.append(name[index+1:])
 
             elif "AMTI" in name:
 
@@ -397,6 +402,7 @@ class Vicon(object):
 
         # column_names = raw_data[start + 2]
         remove_numbers = lambda str: ''.join([i for i in str if not i.isdigit()])
+
         axis = map(remove_numbers, raw_data[start + 3])
         unit = raw_data[start + 4]
 
@@ -408,6 +414,7 @@ class Vicon(object):
             else:
                 if len(name) > 0:
                     current_name = name
+
                     data[current_name] = {}
                 dir = axis[index]
                 indices[(current_name, dir)] = index

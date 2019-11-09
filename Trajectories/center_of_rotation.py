@@ -274,29 +274,29 @@ def sphere_method(markers, offset=1):
     T_thigh = []
     T_shank = []
     centers = []
-    shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
-    thigh_markers = markers.get_rigid_body("ben:RightThigh")[0:]
+    shank_markers = markers.get_rigid_body("RightShank")[0:]
+    thigh_markers = markers.get_rigid_body("RightThigh")[0:]
     print len(thigh_marker[0])
     for frame in xrange(1000):
-        m = markers.get_rigid_body("ben:hip")
+        m = markers.get_rigid_body("hip")
         f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
         T, err = Markers.cloud_to_cloud(hip_marker, f)
 
         T_hip.append(T)
 
-        m = markers.get_rigid_body("ben:RightShank")
+        m = markers.get_rigid_body("RightShank")
         f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
         T, err = Markers.cloud_to_cloud(shank_marker, f)
 
         T_shank.append(T)
 
-        m = markers.get_rigid_body("ben:RightThigh")
+        m = markers.get_rigid_body("RightThigh")
         f = [m[0][frame], m[1][frame], m[2][frame], m[3][frame]]
         T, err = Markers.cloud_to_cloud(thigh_marker, f)
 
         T_thigh.append(T)
 
-    shank_markers = markers.get_rigid_body("ben:RightShank")[0:]
+    shank_markers = markers.get_rigid_body("RightShank")[0:]
     print T_thigh
     adjusted = Markers.transform_markers(np.linalg.pinv(T_thigh), shank_markers)
 

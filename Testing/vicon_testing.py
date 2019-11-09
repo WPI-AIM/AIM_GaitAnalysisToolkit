@@ -1,54 +1,49 @@
-from Vicon import Vicon
-from Trajectories import rigid_marker
-import numpy as np
 import matplotlib.pyplot as plt
-data = Vicon.Vicon("/home/nathaniel/gait_analysis_toolkit/testing_data/ridgid_markers.csv")
-markers = data.get_markers()
-markers.smart_sort()
-markers.auto_make_frames()
-thigh_markers = markers.get_rigid_body("LowerLegs_Healthy:RightThigh")[0:300]
-shank_markers = markers.get_rigid_body("LowerLegs_Healthy:RightShank")[0:300]
-print shank_markers
+import numpy as np
+from EMG import EMG_Toolkit
+from Session import Trial
 
-T_Th =  markers.get_frame("LowerLegs_Healthy:RightThigh")[0:300]
-T_Sh = markers.get_frame("LowerLegs_Healthy:RightShank")[0:300]
-T_H = markers.get_frame("LowerLegs_Healthy:Hip")[0:300]
-T_H_Sh = rigid_marker.get_all_transformation_to_base(T_H, T_Sh)
-T_H_Th = rigid_marker.get_all_transformation_to_base(T_H, T_Th)
-T_TH_SH = rigid_marker.get_all_transformation_to_base(T_Th, T_Sh)
+vicon_file = "/home/nathaniel/Downloads/Walking01.csv"
+config_file = "/home/nathaniel/exoserver/Config/sensor_list.yaml"
+exo_file = "/home/nathaniel/exoserver/Main/subject_1234_trial_1.csv"
+trial = Trial.Trial(vicon_file, config_file, exo_file)
+joints = trial.get_joint_trajectories()
+plate = trial.get_force_plates()
+#cop = trial.get_CoP()
+emgs = trial.get_emg()
+#trial.plot()
 
-adjusted = rigid_marker.transform_markers( np.linalg.inv(T_Th), shank_markers)
-CoR = []
+fig = plt.figure()
+ax1 = fig.add_subplot(311)
+ax2 = fig.add_subplot(312)
+ax3 = fig.add_subplot(313)
 
+#joint = joints["LKneeAngles"]
+for joint in joints["RKneeAngles"]:
+    ax1.plot( 100.0 * joint.time/max(joint.time), joint.data )
 
-for ii in xrange(2, 250):
-    current_points = []
-    for marker in adjusted:
-        points = marker[ii:ii+2]
-        current_points.append(points)
-    center = rigid_marker.find_CoR(current_points)
+for emg in emgs[1]:
+    data = EMG_Toolkit.remove_mean(emg.data)
+    data = EMG_Toolkit.butterworth(data)
+    data = EMG_Toolkit.rectify(data)
+    data = EMG_Toolkit.low_pass(data)
+    time = np.linspace(0, 100, len(data))
+    ax2.plot(time, data)
+for emg in emgs[7]:
+    data = EMG_Toolkit.remove_mean(emg.data)
+    data = EMG_Toolkit.butterworth(data)
+    data = EMG_Toolkit.rectify(data)
+    data = EMG_Toolkit.low_pass(data)
+    time = np.linspace(0,100,len(data))
+    ax3.plot(time, data)
 
-    CoR.append( np.sqrt(np.sum(center**2)))
-#
-# shank = []
-# for vect in CoR:
-#     v = np.vstack([vect, 1])
-#     v_prime = np.dot(T_TH_SH,v)
-#     shank.append(v_prime[0,0:3])
-#
-# angles = []
-# for vect1, vect2 in zip(CoR, shank):
-#     print "vect1 ", vect1.T[0]
-#     print "vect2 ",  vect2.T[0]
-#     angle = rigid_marker.get_angle_between_vects(vect1.T[0],vect2.T[0])
-#     angles.append(angle)
+ax1.title.set_text('Knee Angle')
+ax2.title.set_text('EMG Thigh')
+ax3.title.set_text('EMG Shank')
 
-plt.plot(CoR)
+ax1.set_ylabel("degs")
+
+ax2.set_ylabel("mv")
+ax3.set_xlabel("% of gait cycle")
+ax3.set_ylabel("mV")
 plt.show()
-
-
-
-
-
-data = Vicon.Vicon("/home/nathaniel/git/Gait_Analysis_Toolkit/testing_data/Walking01.csv")
-print data.get_model_output()
