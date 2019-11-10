@@ -4,4 +4,4 @@ data = Vicon.Vicon("/home/nathaniel/git/Gait_Analysis_Toolkit/testing_data/stair
 model = data.get_model_output()
 model.get_left_leg().hip.angle.x
 fp = data.get_force_plate(1).get_forces()
-print fp
+

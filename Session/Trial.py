@@ -38,7 +38,7 @@ class Trial(object):
         theta = float(self._exoskeleton.length) / float(self._vicon.length)
         print "thtea", theta
         model = self.vicon.get_model_output()
-        hip = model.get_right_joint("RHipAngles").angle.x
+        hip = model.get_right_leg().hip.angle.x
         N = 10
         hip = np.convolve(hip, np.ones((N,)) / N, mode='valid')
 
@@ -50,7 +50,7 @@ class Trial(object):
             error = 10000000
             offset = 0
             for ii in xrange(0, 25):
-                temp_error = model.get_left_joint("LKneeAngles").angle.x[max_peakind[start + 1] + ii]
+                temp_error = model.get_left_leg().hip.angle.x[max_peakind[start + 1] + ii]
                 if temp_error < error:
                     error = temp_error
                     offset = ii
@@ -119,12 +119,12 @@ class Trial(object):
         joints = {}
         count = 0
         model = self.vicon.get_model_output()
-        for fnc, side in zip((model.get_left_joint, model.get_right_joint), ("R", "L")):
-            for joint_name in self.names:
+        for fnc, side in zip((model.get_left_leg(), model.get_right_leg()), ("R", "L")):
+            for joint_name in ["hip", "knee", "ankle"]:
                 name = side + joint_name
                 joints[name] = []
                 for inc in self.vicon_set_points:
-                    data = np.array(fnc(name).angle.x[inc[0]:inc[1]])
+                    data = np.array(fnc._asdict[joint_name].angle.x[inc[0]:inc[1]])
                     time = (len(data) / float(self.vicon.length)) * self.dt
                     stamp = core.Data(data, np.linspace(0, time, len(data)))
                     if self._use_black_list:
@@ -253,14 +253,14 @@ class Trial(object):
             stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
             stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
 
-            if self._use_black_list:
-                if count in self._black_list:
-                    continue
-                else:
-                    left.append(stamp_left)
-                    right.append(stamp_right)
-
-            count += 1
+            # if self._use_black_list:
+            #     if count in self._black_list:
+            #         continue
+            #     else:
+            #         left.append(stamp_left)
+            #         right.append(stamp_right)
+            #
+            # count += 1
 
         side = core.Side(left, right)
 
