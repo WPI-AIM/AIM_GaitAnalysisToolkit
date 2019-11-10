@@ -232,14 +232,18 @@ class Vicon(object):
         :return: None
         """
         if "Devices" in self.data_dict:
-            sensors = self.data_dict["Devices"]
-            if "Force_Plate" in sensors:
-                keys = self._filter_dict(sensors, 'Force_Plate')  # + ['Combined Moment'] + ['Combined CoP']
 
-                self._force_plates[1] = ForcePlate.ForcePlate("Force_Plate_1", sensors["Force_Plate__Force_1"],
+            sensors = self.data_dict["Devices"]
+            keys = self._filter_dict(sensors, 'Force_Plate')  # + ['Combined Moment'] + ['Combined CoP']
+
+            if any("Force_Plate" in word for word in keys) :
+
+                self._force_plates[1] = ForcePlate.ForcePlate("Force_Plate_1",
+                                                              sensors["Force_Plate__Force_1"],
                                                               sensors["Force_Plate__Moment_1"])
 
-                self._force_plates[2] = ForcePlate.ForcePlate("Force_Plate_2", sensors["Force_Plate__Force_2"],
+                self._force_plates[2] = ForcePlate.ForcePlate("Force_Plate_2",
+                                                              sensors["Force_Plate__Force_2"],
                                                               sensors["Force_Plate__Moment_2"])
             else:
                 print "No force plates"
@@ -248,7 +252,6 @@ class Vicon(object):
 
     def _make_markers(self):
         markers = self.data_dict["Trajectories"]
-        print markers['RTIB'].keys()
 
     def _make_EMGs(self):
         """
@@ -331,7 +334,8 @@ class Vicon(object):
         return data
 
     def _seperate_csv_sections(self, all_data):
-        print all_data[0][0]
+        """"""
+
         raw_col = [row[0] for row in all_data]
         fitlered_col = [item for item in raw_col if not item.isdigit()]
         fitlered_col = filter(lambda a: a != 'Frame', fitlered_col)
