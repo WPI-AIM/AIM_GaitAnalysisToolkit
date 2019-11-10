@@ -4,15 +4,12 @@ class ModelOutput(object):
 
     def __init__(self, data, joint_name):
 
-        self.phyics = ["Angles", "Force", "Moment", "Power"]
-        self._legs = core.Side()
         self.joint_names = joint_name
-        self._left_joints = {}
-        self._right_joints = {}
+        left_joints = {}
+        right_joints = {}
 
-
-        for side, joint in zip(("R", "L"), (self._left_joints, self._right_joints)):
-            for output in joint_name:
+        for side, joint in zip(("R", "L"), (left_joints, right_joints)):
+            for output in self.joint_names:
                 angle = core.Point(data[side + output + "Angles"]["X"]["data"],
                                    data[side + output + "Angles"]["Y"]["data"],
                                    data[side + output + "Angles"]["Z"]["data"])
@@ -25,32 +22,32 @@ class ModelOutput(object):
                 power = core.Point(data[side + output + "Power"]["X"]["data"],
                                    data[side + output + "Power"]["Y"]["data"],
                                    data[side + output + "Power"]["Z"]["data"])
-                if side
 
                 joint[output] = core.Newton(angle, force, moment, power)
 
+        left_leg = core.Leg(left_joints["Hip"], left_joints["Knee"], left_joints["Ankle"])
+        right_leg = core.Leg(right_joints["Hip"], right_joints["Knee"], right_joints["Ankle"])
+        self._legs = core.Side(left_leg, right_leg)
 
-    def get_right_joint(self, joint_name):
+    def get_legs(self):
         """
 
-        :param joint_name:
         :return:
-        :rtype: self._Newton
         """
-        if "Hip" in joint_name:
-            name = 'Hip'
-        elif "Knee" in joint_name:
-            name = "Knee"
-        elif "Ankle" in joint_name:
-            name = "Ankle"
-        return self._right_joints[name]
+        return self._legs
 
-    def get_left_joint(self, joint_name):
+    def get_right_leg(self):
+        """
 
-        if "Hip" in joint_name:
-            name = 'Hip'
-        elif "Knee" in joint_name:
-            name = "Knee"
-        elif "Ankle" in joint_name:
-            name = "Ankle"
-        return self._left_joints[name]
+        :return:
+        """
+        return self._legs.right
+
+    def get_left_leg(self):
+        """
+
+        :return:
+        """
+        return self._legs.left
+
+
