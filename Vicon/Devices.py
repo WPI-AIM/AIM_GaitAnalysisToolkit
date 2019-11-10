@@ -32,3 +32,6 @@ class Devices(object):
 
     def get_offset_index(self, dx):
         return dx * self.offset
+
+    def get(self):
+        pass

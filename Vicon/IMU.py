@@ -1,34 +1,30 @@
 import Devices
-
+from lib.Exoskeleton.Robot import core
 
 class IMU(Devices.Devices):
 
     def __init__(self, name, sensor):
+
+        self._accel = core.Point(self.sensor["ACCX"],
+                                 self.sensor["ACCZ"],
+                                 self.sensor["ACCY"])
+        self._gyro = core.Point(self.sensor["GYROX"],
+                                 self.sensor["GYROZ"],
+                                 self.sensor["GYROY"])
+
         super(IMU, self).__init__(name, sensor, "IMU")
 
-    def get_accel_x(self):
-        return self.sensor["ACCX"]
 
-    def get_accel_y(self):
-        return self.sensor["ACCY"]
+    def get_accel(self):
+        """
 
-    def get_accel_z(self):
-        return self.sensor["ACCZ"]
+        :return:
+        """
+        return self._accel
 
-    def get_gyro_x(self):
-        return self.sensor["GYROX"]
+    def get_gyro(self):
+        """
 
-    def get_gyro_y(self):
-        return self.sensor["GYROY"]
-
-    def get_gyro_z(self):
-        return self.sensor["GYROZ"]
-
-    def get_mag_x(self):
-        return self.sensor["MAGX"]
-
-    def get_mag_y(self):
-        return self.sensor["MAGY"]
-
-    def get_mag_z(self):
-        return self.sensor["MAGZ"]
+        :return:
+        """
+        return self._gyro

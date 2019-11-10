@@ -1,16 +1,13 @@
 import Devices
-
+from lib.Exoskeleton.Robot import core
 
 class Accel(Devices.Devices):
 
     def __init__(self, name, sensor):
+        self._accel = core.Point(self.sensor["ACCX"],
+                                self.sensor["ACCZ"],
+                                self.sensor["ACCY"])
         super(Accel, self).__init__(name, sensor, "Accel")
 
-    def get_x(self):
-        return self.sensor["ACCX"]
-
-    def get_y(self):
-        return self.sensor["ACCY"]
-
-    def get_z(self):
-        return self.sensor["ACCZ"]
+    def get(self):
+        return self._accel
