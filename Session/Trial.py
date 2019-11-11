@@ -15,7 +15,11 @@ class Trial(object):
         # self._notes_file = notes_file
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
         self._dt = dt
-        self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
+        if config_file is not None and exo_file is not None:
+            self._using_exo = True
+            self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
+        else:
+            self._using_exo = False
         self._vicon = Vicon.Vicon(vicon_file)
         self.vicon_set_points = {}
         self._joint_trajs = None
@@ -35,8 +39,11 @@ class Trial(object):
         offsets = []
         vicon = []
         exo = []
-        theta = float(self._exoskeleton.length) / float(self._vicon.length)
-        print "thtea", theta
+        if self._using_exo:
+            theta = float(self._exoskeleton.length) / float(self._vicon.length)
+        else:
+            theta = 0
+
         model = self.vicon.get_model_output()
         hip = model.get_right_leg().hip.angle.x
         N = 10
@@ -124,7 +131,7 @@ class Trial(object):
                 name = side + joint_name
                 joints[name] = []
                 for inc in self.vicon_set_points:
-                    data = np.array(fnc._asdict[joint_name].angle.x[inc[0]:inc[1]])
+                    data = np.array(fnc._asdict()[joint_name].angle.x[inc[0]:inc[1]])
                     time = (len(data) / float(self.vicon.length)) * self.dt
                     stamp = core.Data(data, np.linspace(0, time, len(data)))
                     if self._use_black_list:
@@ -439,6 +446,28 @@ class Trial(object):
         """
         self._use_black_list = False
         self._black_list = []
+
+def calc_kinematics(trajectory):
+
+    y = trajectory.data
+    time = trajectory.time
+    yp = [0.0]
+    ypp = [0.0]
+    T = []
+
+    for ii in xrange(len(y) -1 ):
+        yp.append( (y[ii+1] - y[ii])/(time[ii+1] - time[ii]))
+
+    for ii in xrange(len(yp) -1 ):
+        ypp.append( (yp[ii+1] - yp[ii])/ np.power( (time[ii+1] - time[ii]), 2))
+
+    T.append( np.array(y))
+    T.append( np.array(yp))
+    T.append(np.array(ypp))
+
+    return T
+
+
 
     # def plot(self):
     #
