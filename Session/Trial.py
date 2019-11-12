@@ -10,7 +10,7 @@ import math
 
 class Trial(object):
 
-    def __init__(self, vicon_file, config_file=None, exo_file=None, dt=100, notes_file=None):
+    def __init__(self, vicon_file, config_file=None, exo_file=None, dt=.01, notes_file=None):
 
         # self._notes_file = notes_file
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
@@ -447,27 +447,23 @@ class Trial(object):
         self._use_black_list = False
         self._black_list = []
 
-def calc_kinematics(trajectory):
+def calc_kinematics(trajectory, dt = 0.01):
 
-    y = trajectory.data
-    time = trajectory.time
-    yp = [0.0]
-    ypp = [0.0]
+    # y = trajectory.data
+    # time = trajectory.time
     T = []
+    y = trajectory
+    #dt = time[1] - time[0]
+    yp = [0.0]
+    ypp = [0.0, 0.0]
+    yp = np.append(yp, np.divide(np.diff(y, 1), np.power(dt, 1)))
+    ypp = np.append(ypp, np.divide(np.diff(y, 2), np.power(dt, 2)))
 
-    for ii in xrange(len(y) -1 ):
-        yp.append( (y[ii+1] - y[ii])/(time[ii+1] - time[ii]))
-
-    for ii in xrange(len(yp) -1 ):
-        ypp.append( (yp[ii+1] - yp[ii])/ np.power( (time[ii+1] - time[ii]), 2))
-
-    T.append( np.array(y))
-    T.append( np.array(yp))
+    T.append(np.array(y))
+    T.append(np.array(yp))
     T.append(np.array(ypp))
 
     return T
-
-
 
     # def plot(self):
     #
