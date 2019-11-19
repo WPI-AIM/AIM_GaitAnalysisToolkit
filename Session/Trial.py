@@ -131,9 +131,13 @@ class Trial(object):
                 name = side + joint_name
                 joints[name] = []
                 for inc in self.vicon_set_points:
-                    data = np.array(fnc._asdict()[joint_name].angle.x[inc[0]:inc[1]])
-                    time = (len(data) / float(self.vicon.length)) * self.dt
-                    stamp = core.Data(data, np.linspace(0, time, len(data)))
+                    time = ((inc[1] - inc[0]) / float(self.vicon.length)) * self.dt
+                    time = np.linspace(0, 1, (inc[1] - inc[0]))
+                    angle = core.Data(np.array(fnc._asdict()[joint_name].angle.x[inc[0]:inc[1]]), time)
+                    power = core.Data(np.array(fnc._asdict()[joint_name].power.z[inc[0]:inc[1]]), time)
+                    torque = core.Data(np.array(fnc._asdict()[joint_name].moment.x[inc[0]:inc[1]]), time)
+                    force = core.Data(np.array(fnc._asdict()[joint_name].force.x[inc[0]:inc[1]]), time)
+                    stamp = core.Newton(angle,force,torque,power)
                     if self._use_black_list:
                         if count in self._black_list:
                             continue
