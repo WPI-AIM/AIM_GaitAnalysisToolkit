@@ -170,7 +170,7 @@ class Markers(object):
         for name, value in self._rigid_body.iteritems():
             frames = []
             if name in bodies:
-                print name
+
                 for ii in xrange(len(value[0])):
                         frames.append(cloud_to_cloud(bodies[name], [value[0][ii], value[1][ii], value[2][ii], value[3][ii]])[0])
                 self.add_frame(name, frames)
@@ -189,7 +189,7 @@ class Markers(object):
         :param name:
         :return:
         """
-        print self._rigid_body.keys()
+
         return self._rigid_body[name]
 
     def calc_joint_center(self, parent_name, child_name, start, end):
@@ -282,7 +282,7 @@ class Markers(object):
         :param centers:
         :return:
         """
-        print frame
+
         self._ax.clear()
         self._ax.set_xlabel('X Label')
         self._ax.set_ylabel('Y Label')

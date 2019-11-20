@@ -358,9 +358,9 @@ class Vicon(object):
                 fixed_names.append(fixed)
 
             elif  ":" in name:
-                print name
+
                 index = name.index(":")
-                print name[index+1:]
+
                 fixed_names.append(name[index+1:])
 
             elif "AMTI" in name:
