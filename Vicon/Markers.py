@@ -282,7 +282,7 @@ class Markers(object):
         :param centers:
         :return:
         """
-
+        print frame
         self._ax.clear()
         self._ax.set_xlabel('X Label')
         self._ax.set_ylabel('Y Label')

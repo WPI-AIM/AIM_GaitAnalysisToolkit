@@ -7,15 +7,63 @@ from Session import Trial
 from Vicon import Vicon
 
 
+def plot_stair_joint(file):
+
+    trial = Trial.Trial(vicon_file=file)
+    joints = trial.vicon.get_model_output().get_right_leg()
+    #trial.vicon.markers.play()
+    #print joints.hip.angle.x
+    plt.plot(joints.hip.angle.x)
+    plt.plot(joints.knee.angle.x)
+    plt.plot(joints.ankle.angle.x)
+    plt.show()
+
+def compare_stair_joints(files, ranges):
+
+    resample = 100000
+    fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
+    hip = []
+    knee = []
+    ankle = []
+    resample = 1000000000
+
+    for rn in ranges:
+        resample = min(resample, abs(rn[0] - rn[1]))
+
+    for file, i in zip(files, ranges):
+        trial = Trial.Trial(vicon_file=file)
+        joints = trial.vicon.get_model_output().get_right_leg()
+        hip = signal.resample(joints.hip.angle.x[rn[0]:rn[1]], resample)
+        knee = signal.resample(joints.knee.angle.x[rn[0]:rn[1]], resample)
+        ankle = signal.resample(joints.ankle.angle.x[rn[0]:rn[1]], resample)
+        ax1.plot(hip)
+        ax2.plot(knee)
+        ax3.plot(ankle)
+
+    plt.show()
+        # hip.append(signal.resample(joints.hip.angle[rn[0]:rn[1]], resample))
+        # knee.append(signal.resample(joints.knee.angle[rn[0]:rn[1]], resample))
+        # ankle.append(signal.resample(joints.ankle.angle[rn[0]:rn[1]], resample))
+
+
+
+
+
 
 def plot_leg_power(files, list_of_index, legend=None):
 
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
-    fig.suptitle('Walking Joint Power')
+    fig.suptitle('Walking Joint Power', fontsize=20)
+
     hip = []
     knee = []
     ankle = []
+    max_joint = []
+    min_joint = []
+    power = []
+    moment = []
+
     time = None
     resample = 100000
     for file, i in zip(files, list_of_index):
@@ -41,27 +89,33 @@ def plot_leg_power(files, list_of_index, legend=None):
 
     mean_hip = smooth(np.mean(hip, axis=0), 5)
     mean_knee = smooth(np.mean(knee, axis=0), 5)
-    mean_ankle = smooth(np.mean(ankle, axis=0), 5   )
+    mean_ankle = smooth(np.mean(ankle, axis=0), 5)
 
     std_hip = np.std(hip, axis=0)
     std_knee = np.std(knee, axis=0)
     std_ankle = np.std(ankle, axis=0)
 
+    print "Power: "
+    print "Max Hip: ", np.max(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.max(np.abs(mean_hip)))]
+    print "Max Knee: ", np.max(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(-np.max(np.abs(mean_knee)))]
+    print "Max Ankle: ", np.max(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(-np.max(np.abs(mean_ankle)))]
+
+
     ax1.plot(time, mean_hip, 'k-')
     ax2.plot(time, mean_knee, 'k-')
     ax3.plot(time, mean_ankle, 'k-')
 
-    ax1.fill_between(time, mean_hip - std_hip, mean_hip + std_hip)
-    ax2.fill_between(time, mean_knee - std_knee, mean_knee + std_knee)
-    ax3.fill_between(time, mean_ankle - std_ankle, mean_ankle + std_ankle)
+    ax1.fill_between(time, smooth( mean_hip - std_hip, 5), smooth(mean_hip + std_hip,5))
+    ax2.fill_between(time, smooth(mean_knee - std_knee,5), smooth(mean_knee + std_knee,5))
+    ax3.fill_between(time, smooth(mean_ankle - std_ankle,5), smooth(mean_ankle + std_ankle,5))
 
-    ax1.set_ylabel("W/KG")
-    ax2.set_ylabel("W/KG")
-    ax3.set_ylabel("W/KG")
-    ax1.set_title("Hip")
-    ax2.set_title("Knee")
-    ax3.set_title("Ankle")
-    plt.xlabel("Gait %")
+    ax1.set_ylabel("W/KG", fontsize=20),
+    ax2.set_ylabel("W/KG", fontsize=20)
+    ax3.set_ylabel("W/KG", fontsize=20)
+    ax1.set_title("Hip", fontsize=20)
+    ax2.set_title("Knee", fontsize=20)
+    ax3.set_title("Ankle", fontsize=20)
+    plt.xlabel("Gait %", fontsize=20)
 
     plt.show()
 
@@ -71,7 +125,7 @@ def plot_leg_moments(files, list_of_index, legend=None):
 
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
-    fig.suptitle('Walking Joint Moments')
+    fig.suptitle('Walking Joint Moments', fontsize=20)
     hip = []
     knee = []
     ankle = []
@@ -106,21 +160,27 @@ def plot_leg_moments(files, list_of_index, legend=None):
     std_knee = np.std(knee, axis=0)
     std_ankle = np.std(ankle, axis=0)
 
+
+    print "Moment: "
+    print "Max Hip: ", np.max(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.max(np.abs(mean_hip)))]
+    print "Max Knee: ", np.max(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(-np.max(np.abs(mean_knee)))]
+    print "Max Ankle: ", np.max(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.max(np.abs(mean_ankle)))]
+
     ax1.plot(time, mean_hip, 'k-')
     ax2.plot(time, mean_knee, 'k-')
     ax3.plot(time, mean_ankle, 'k-')
 
-    ax1.fill_between(time, mean_hip - std_hip, mean_hip + std_hip)
-    ax2.fill_between(time, mean_knee - std_knee, mean_knee + std_knee)
-    ax3.fill_between(time, mean_ankle - std_ankle, mean_ankle + std_ankle)
+    ax1.fill_between(time, smooth(mean_hip - std_hip, 5), smooth(mean_hip + std_hip, 5))
+    ax2.fill_between(time, smooth(mean_knee - std_knee, 5), smooth(mean_knee + std_knee, 5))
+    ax3.fill_between(time, smooth(mean_ankle - std_ankle, 5), smooth(mean_ankle + std_ankle, 5))
 
-    ax1.set_ylabel("Nmm/KG")
-    ax2.set_ylabel("Nmm/KG")
-    ax3.set_ylabel("Nmm/KG")
-    ax1.set_title("Hip")
-    ax2.set_title("Knee")
-    ax3.set_title("Ankle")
-    plt.xlabel("Gait %")
+    ax1.set_ylabel("Nmm/KG", fontsize=20)
+    ax2.set_ylabel("Nmm/KG", fontsize=20)
+    ax3.set_ylabel("Nmm/KG", fontsize=20)
+    ax1.set_title("Hip", fontsize=20)
+    ax2.set_title("Knee", fontsize=20)
+    ax3.set_title("Ankle", fontsize=20)
+    plt.xlabel("Gait %", fontsize=20)
 
     plt.show()
 
@@ -129,7 +189,7 @@ def plot_leg_joints(files, list_of_index, legend=None):
 
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
-    fig.suptitle('Walking Joint Angles')
+    fig.suptitle('Walking Joint Angles', fontsize=20)
     hip = []
     knee = []
     ankle = []
@@ -164,21 +224,33 @@ def plot_leg_joints(files, list_of_index, legend=None):
     std_knee = np.std(knee, axis=0)
     std_ankle = np.std(ankle, axis=0)
 
+
+
+
+    print "Ankle: "
+    print "Max Hip: ", np.max(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.max(mean_hip))]
+    print "Max Knee: ", np.max(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(np.max(mean_knee))]
+    print "Max Ankle: ", np.max(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.max(mean_ankle))]
+
+    print "Min Hip: ", np.min(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.min(mean_hip))]
+    print "Min Knee: ", np.min(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(np.min(mean_knee))]
+    print "Min Ankle: ", np.min(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.min(mean_ankle))]
+
     ax1.plot(time, mean_hip, 'k-')
     ax2.plot(time, mean_knee, 'k-')
     ax3.plot(time, mean_ankle, 'k-')
 
-    ax1.fill_between(time, mean_hip - std_hip, mean_hip + std_hip)
-    ax2.fill_between(time, mean_knee - std_knee, mean_knee + std_knee)
-    ax3.fill_between(time, mean_ankle - std_ankle, mean_ankle + std_ankle)
+    ax1.fill_between(time, smooth(mean_hip - std_hip, 5), smooth(mean_hip + std_hip, 5))
+    ax2.fill_between(time, smooth(mean_knee - std_knee, 5), smooth(mean_knee + std_knee, 5))
+    ax3.fill_between(time, smooth(mean_ankle - std_ankle, 5), smooth(mean_ankle + std_ankle, 5))
 
-    ax1.set_ylabel("Degrees")
-    ax2.set_ylabel("Degrees")
-    ax3.set_ylabel("Degrees")
-    ax1.set_title("Hip")
-    ax2.set_title("Knee")
-    ax3.set_title("Ankle")
-    plt.xlabel("Gait %")
+    ax1.set_ylabel("Degrees", fontsize=20)
+    ax2.set_ylabel("Degrees", fontsize=20)
+    ax3.set_ylabel("Degrees", fontsize=20)
+    ax1.set_title("Hip", fontsize=20)
+    ax2.set_title("Knee", fontsize=20)
+    ax3.set_title("Ankle", fontsize=20)
+    plt.xlabel("Gait %", fontsize=20)
 
     plt.show()
 
@@ -197,7 +269,7 @@ def plot_knee(files, list_of_index, legend=None):
 
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
-    fig.suptitle('Walking data')
+    fig.suptitle('Walking data', fontsize=20)
     max_joint = []
     min_joint = []
     max_power = []
@@ -229,13 +301,13 @@ def plot_knee(files, list_of_index, legend=None):
 
     if legend:
         ax1.legend(legend)
-    ax1.set_ylabel("Degrees")
-    ax2.set_ylabel("Nmm/Kg")
-    ax3.set_ylabel("W/Kg")
-    ax1.set_title("Angle")
-    ax2.set_title("Torque")
-    ax3.set_title("Power")
-    plt.xlabel("Gait %")
+    ax1.set_ylabel("Degrees", fontsize=20)
+    ax2.set_ylabel("Nmm/Kg", fontsize=20)
+    ax3.set_ylabel("W/Kg", fontsize=20)
+    ax1.set_title("Angle", fontsize=20)
+    ax2.set_title("Torque", fontsize=20)
+    ax3.set_title("Power", fontsize=20)
+    plt.xlabel("Gait %", fontsize=20)
 
     plt.show()
 
@@ -250,16 +322,33 @@ def smooth(y, box_pts):
 
 
 if __name__ == "__main__":
-    plot_leg_power(["/home/nathaniel/Documents/MoCap_Participants/subject_00/subject_00_walk_00.csv",
-                     "/home/nathaniel/Documents/MoCap_Participants/subject_01/subject_01_walk_00.csv",
-                     "/home/nathaniel/Documents/MoCap_Participants/subject_02/subject_02_walk_00.csv",
-                     "/home/nathaniel/Documents/MoCap_Participants/subject_03/subject_03_walk_00.csv",
-                     "/home/nathaniel/Documents/MoCap_Participants/subject_04/subject_04_walk_00.csv",
-                      "/home/nathaniel/Documents/MoCap_Participants/subject_05/subject_05_walk_00.csv",
-                      "/home/nathaniel/Documents/MoCap_Participants/subject_06/subject_06_walk_00.csv",
-                      "/home/nathaniel/Documents/MoCap_Participants/subject_07/subject_07_walk_00.csv"],
-                     [1, 8, 16, 2, 11, 4, 4, 11],
-                     ["Subject0", "Subject1", "Subject2", "Subject3", "Subject4", "Subject5", "Subject6", "Subject7"])
+
+    plot_stair_joint("/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv")
+    #
+    # compare_stair_joints(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv",
+    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv"],
+    #                      [(500, 800), (850, 1150) ])
+
+
+    # compare_stair_joints(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv",
+    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv",
+    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_03/subject_03_stair_config0_00.csv",
+    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_04/subject_04_stair_config1_00.csv",
+    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_05/subject_05_stair_config1_00.csv",
+    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_06/subject_06 stairclimbing_config1_01.csv",
+    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07 stairclimbing_config1_00.csv"],
+    #                       [(500, 800),(850, 1200), (680, 980), (630, 920), (450, 720), (650, 980), (680, 1020)] )
+
+    # plot_leg_joints(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00_walk_00.csv",
+    #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_01/subject_01_walk_00.csv",
+    #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_walk_00.csv",
+    #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_03/subject_03_walk_00.csv",
+    #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_04/subject_04_walk_00.csv",
+    #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_05/subject_05_walk_00.csv",
+    #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_06/subject_06_walk_00.csv",
+    #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07_walk_00.csv"],
+    #                  [1, 8, 16, 2, 11, 4, 4, 11],
+    #                  ["Subject0", "Subject1", "Subject2", "Subject3", "Subject4", "Subject5", "Subject6", "Subject7"])
 
     # plot_leg_joints(["/home/nathaniel/Documents/MoCap_Participants/subject_00/subject_00_walk_00.csv",
     #            "/home/nathaniel/Documents/MoCap_Participants/subject_01/subject_01_walk_00.csv",
@@ -287,6 +376,6 @@ if __name__ == "__main__":
     #           ["Subject1"])
     #plot_signle_knee("/home/nathaniel/Documents/MoCap_Participants/subject_07/subject_07_walk_00.csv")
 
-    plot_knee(["/home/nathaniel/Documents/MoCap_Participants/subject_07/subject_07_walk_00.csv"],
-              [10],
-              [ "Subject7"])
+    # plot_knee(["/home/nathaniel/Documents/MoCap_Participants/subject_07/subject_07_walk_00.csv"],
+    #           [10],
+    #           [ "Subject7"])
