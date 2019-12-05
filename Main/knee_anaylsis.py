@@ -10,15 +10,52 @@ from Vicon import Vicon
 def plot_stair_joint(file):
 
     trial = Trial.Trial(vicon_file=file)
-    joints = trial.vicon.get_model_output().get_right_leg()
-    #trial.vicon.markers.play()
-    #print joints.hip.angle.x
+    joints = trial.vicon.get_model_output().get_left_leg()
     plt.plot(joints.hip.angle.x)
     plt.plot(joints.knee.angle.x)
     plt.plot(joints.ankle.angle.x)
+    print get_stair_ranges(file)
+    plt.legend(["x", "y", "z"])
     plt.show()
 
-def compare_stair_joints(files, ranges):
+
+def get_stair_ranges(file, side="R"):
+
+    trial = Trial.Trial(vicon_file=file)
+    if side == "R":
+        m = trial.vicon.markers.get_marker("RTOE")
+    else:
+        m = trial.vicon.markers.get_marker("LTOE")
+
+    z = []
+    for i in xrange(len(m)):
+        z.append(m[i].z)
+
+    N = 10
+    z = smooth(map(int, z) ,5)
+    z = np.convolve(z, np.ones((N,)) / N, mode='valid')
+
+    max_peakind = np.diff(np.sign(np.diff(z))).flatten()  # the one liner
+    max_peakind = np.pad(max_peakind, (1, 1), 'constant', constant_values=(0, 0))
+    max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
+    print max_peakind
+    secound_step = max_peakind[-1]
+    first_step = max_peakind[-2]
+
+    index = secound_step
+    while z[index] != z[index+1]:
+        index += 1
+    final_index = index
+
+    index = first_step
+    while z[index] != z[index - 1]:
+        index -= 1
+    start_index = index
+    #plt.plot(z)
+    return (start_index, final_index)
+
+
+def compare_stair_joints(files, side, legend):
 
     resample = 100000
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
@@ -27,19 +64,28 @@ def compare_stair_joints(files, ranges):
     ankle = []
     resample = 1000000000
 
-    for rn in ranges:
-        resample = min(resample, abs(rn[0] - rn[1]))
+    count = 0
+    indiecs = {}
+    for file, s in zip(files, side):
+        rn = get_stair_ranges(file,s)
+        indiecs[file] = rn
+        resample = min(resample, rn[1] - rn[0])
 
-    for file, i in zip(files, ranges):
+    for file, s in zip(files,side):
         trial = Trial.Trial(vicon_file=file)
-        joints = trial.vicon.get_model_output().get_right_leg()
+        if s == "R":
+            joints = trial.vicon.get_model_output().get_right_leg()
+        else:
+            joints = trial.vicon.get_model_output().get_left_leg()
+        rn = indiecs[file]
         hip = signal.resample(joints.hip.angle.x[rn[0]:rn[1]], resample)
         knee = signal.resample(joints.knee.angle.x[rn[0]:rn[1]], resample)
         ankle = signal.resample(joints.ankle.angle.x[rn[0]:rn[1]], resample)
         ax1.plot(hip)
         ax2.plot(knee)
         ax3.plot(ankle)
-
+    if legend:
+        ax1.legend(legend)
     plt.show()
         # hip.append(signal.resample(joints.hip.angle[rn[0]:rn[1]], resample))
         # knee.append(signal.resample(joints.knee.angle[rn[0]:rn[1]], resample))
@@ -198,7 +244,6 @@ def plot_leg_joints(files, list_of_index, legend=None):
     for file, i in zip(files, list_of_index):
         trial = Trial.Trial(vicon_file=file)
         joints = trial.get_joint_trajectories()
-        print "file ", file
         sample = len(joints["Rhip"][i].angle.data)
         resample = min(resample, sample)
 
@@ -218,14 +263,11 @@ def plot_leg_joints(files, list_of_index, legend=None):
 
     mean_hip = smooth(np.mean(hip, axis=0), 5)
     mean_knee = smooth(np.mean(knee, axis=0), 5)
-    mean_ankle = smooth(np.mean(ankle, axis=0), 5   )
+    mean_ankle = smooth(np.mean(ankle, axis=0), 5)
 
     std_hip = np.std(hip, axis=0)
     std_knee = np.std(knee, axis=0)
     std_ankle = np.std(ankle, axis=0)
-
-
-
 
     print "Ankle: "
     print "Max Hip: ", np.max(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.max(mean_hip))]
@@ -323,12 +365,21 @@ def smooth(y, box_pts):
 
 if __name__ == "__main__":
 
-    plot_stair_joint("/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv")
+    #plot_stair_joint("/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv")
     #
     # compare_stair_joints(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv",
     #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv"],
     #                      [(500, 800), (850, 1150) ])
 
+    compare_stair_joints(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv",
+                          "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv",
+                          "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_03/subject_03_stair_config0_02.csv",
+                          "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_04/subject_04_stair_config1_00.csv",
+                          "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_05/subject_05_stair_config1_00.csv",
+                          "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_06/subject_06 stairclimbing_config1_02.csv",
+                          "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07 stairclimbing_config1_01.csv"],
+                          ["R", "R", "L", "L", "R", "L", "R"],
+                          ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07"])
 
     # compare_stair_joints(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv",
     #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv",
@@ -336,8 +387,7 @@ if __name__ == "__main__":
     #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_04/subject_04_stair_config1_00.csv",
     #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_05/subject_05_stair_config1_00.csv",
     #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_06/subject_06 stairclimbing_config1_01.csv",
-    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07 stairclimbing_config1_00.csv"],
-    #                       [(500, 800),(850, 1200), (680, 980), (630, 920), (450, 720), (650, 980), (680, 1020)] )
+    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07 stairclimbing_config1_00.csv"] )
 
     # plot_leg_joints(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00_walk_00.csv",
     #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_01/subject_01_walk_00.csv",

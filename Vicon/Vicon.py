@@ -44,6 +44,10 @@ class Vicon(object):
         self.number_of_frames = col[index - 1]
 
     @property
+    def markers(self):
+        return self._markers
+
+    @property
     def length(self):
         return self._length
 
@@ -293,8 +297,8 @@ class Vicon(object):
         generate IMU models
         :return: None
         """
-        self.markers = Markers.Markers(self.data_dict["Trajectories"])
-        self.markers.make_markers()
+        self._markers = Markers.Markers(self.data_dict["Trajectories"])
+        self._markers.make_markers()
 
     def _make_Accelerometers(self):
         """

@@ -58,7 +58,17 @@ class Markers(object):
 
     @filtered_markers.setter
     def rigid_body(self, value):
+        """"""
         self._rigid_body = value
+
+    def get_marker(self, key):
+        """
+
+        :param key: name of the marker key
+        :return: the value
+        """
+        print self._filtered_markers.keys()
+        return self._filtered_markers[key]
 
     def make_markers(self):
         """
@@ -96,7 +106,7 @@ class Markers(object):
                 point = core.Point(x_filt[inx], y_filt[inx], z_filt[inx])
                 self._filtered_markers[fixed_name].append(point)
 
-    def smart_sort(self, filter=False):
+    def smart_sort(self, filter=True):
         """
         Gather all the frames and attempt to sort the markers into the rigid markers
         :return:
