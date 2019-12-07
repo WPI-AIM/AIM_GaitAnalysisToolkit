@@ -470,8 +470,7 @@ def calc_AoR(markers):
     :rtype np.array
     """
     A = calc_A(markers)  # calculates the A matrix
-    E_vals, E_vecs = np.linalg.eig(
-        A)  # I believe that the np function eig has a different output than the matlab function eigs
+    E_vals, E_vecs = np.linalg.eig(A)  # I believe that the np function eig has a different output than the matlab function eigs
     min_E_val_idx = np.argmin(E_vals)
     axis = E_vecs[:, min_E_val_idx]
     return axis
