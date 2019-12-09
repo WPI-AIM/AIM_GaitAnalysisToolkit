@@ -276,6 +276,7 @@ def sphere_method(markers, offset=1):
     centers = []
     shank_markers = markers.get_rigid_body("RightShank")[0:]
     thigh_markers = markers.get_rigid_body("RightThigh")[0:]
+
     print len(thigh_marker[0])
     for frame in xrange(1000):
         m = markers.get_rigid_body("hip")
