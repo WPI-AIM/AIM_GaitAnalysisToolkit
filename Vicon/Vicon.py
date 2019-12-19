@@ -339,11 +339,13 @@ class Vicon(object):
 
     def _seperate_csv_sections(self, all_data):
         """"""
-
+        print len(all_data[0])
         raw_col = [row[0] for row in all_data]
         fitlered_col = [item for item in raw_col if not item.isdigit()]
         fitlered_col = filter(lambda a: a != 'Frame', fitlered_col)
         fitlered_col = filter(lambda a: a != "", fitlered_col)
+        fitlered_col = fitlered_col[fitlered_col.index("Devices"):]
+        print fitlered_col
         inx = []
         for name in fitlered_col:
             inx.append(raw_col.index(name))
