@@ -344,7 +344,7 @@ class Vicon(object):
         fitlered_col = [item for item in raw_col if not item.isdigit()]
         fitlered_col = filter(lambda a: a != 'Frame', fitlered_col)
         fitlered_col = filter(lambda a: a != "", fitlered_col)
-        fitlered_col = fitlered_col[fitlered_col.index("Devices"):]
+        #fitlered_col = fitlered_col[fitlered_col.index("Devices"):]
         print fitlered_col
         inx = []
         for name in fitlered_col:
