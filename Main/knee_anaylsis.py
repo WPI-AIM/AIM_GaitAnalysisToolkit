@@ -604,40 +604,15 @@ def smooth(y, box_pts):
     return y_smooth
 
 
+def plot_joint(file, index):
+    trial = Trial.Trial(vicon_file=file)
+    joints = trial.get_joint_trajectories()
+    leg = []
+    plt.plot(joints["Rknee"][index].angle.time, joints["Rknee"][index].angle.data)
+    plt.show()
+
+
 if __name__ == "__main__":
-
-    # data = Vicon.Vicon( "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 stairclimbing_config1_00.csv")
-    # data.markers.play()
-
-    #plot_stair_joint( "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_stair_config1_01.csv")
-    #
-    # compare_stair_joints(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv",
-    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv"],
-    #                      [(500, 800), (850, 1150) ])
-
-    # compare_stair_power(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv",
-    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv",
-    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_03/subject_03_stair_config0_02.csv",
-    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_04/subject_04_stair_config1_00.csv",
-    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_05/subject_05_stair_config1_00.csv",
-    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_06/subject_06 stairclimbing_config1_02.csv",
-    #                       "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07 stairclimbing_config1_01.csv"],
-    #                      ["R", "R", "L", "L", "R", "L", "R"],
-    #                      ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07"])
-
-    # compare_stair_power(["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_stair_config1_01.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv",
-    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 stairclimbing_config1_00.csv"],
-    #                     ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"],
-    #                     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07", "Subject08", "Subject09", "Subject10"])
-
 
     #
     # compare_stair_angles(["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
@@ -653,40 +628,82 @@ if __name__ == "__main__":
     #                     ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"],
     #                     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07", "Subject08", "Subject09", "Subject10"])
     # #
-    # compare_stair_moments([
-    #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00 stairconfig1_01.csv",
-    #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_stair_config1_03.csv",
-    #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_03/subject_03_stair_config0_02.csv",
-    #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_04/subject_04_stair_config1_00.csv",
-    #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_05/subject_05_stair_config1_00.csv",
-    #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_06/subject_06 stairclimbing_config1_02.csv",
-    #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07 stairclimbing_config1_01.csv"],
-    #                     ["R", "R", "L", "L", "R", "L", "R"],
-    #                     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07"])
-    # #
-    # #
-    # # compare_walking_angles(["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00_walk_00.csv",
-    # #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_01/subject_01_walk_00.csv",
-    # #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_walk_00.csv",
-    # #                  "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_03/subject_03_walk_00.csv",
-    # #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_04/subject_04_walk_00.csv",
-    # #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_05/subject_05_walk_00.csv",
-    # #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_06/subject_06_walk_00.csv",
-    # #                         "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07_walk_00.csv"],
-    # #                        [1, 8, 16, 2, 11, 4, 4, 11],
-    # #                        ["Subject0", "Subject1", "Subject2", "Subject3", "Subject4", "Subject5", "Subject6", "Subject7"])
+    # compare_stair_power(
+    #     ["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_stair_config1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 stairclimbing_config1_00.csv"],
+    #     ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"],
+    #     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07", "Subject08",
+    #      "Subject09", "Subject10"])
     #
-    # compare_walking_moments(
-    #     ["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00_walk_00.csv",
-    #      "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_01/subject_01_walk_00.csv",
-    #      "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_02/subject_02_walk_00.csv",
-    #      "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_03/subject_03_walk_00.csv",
-    #      "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_04/subject_04_walk_00.csv",
-    #      "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_05/subject_05_walk_00.csv",
-    #      "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_06/subject_06_walk_00.csv",
-    #      "/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_07/subject_07_walk_00.csv"],
-    #     [1, 8, 16, 2, 11, 4, 4, 11],
-    #     ["Subject0", "Subject1", "Subject2", "Subject3", "Subject4", "Subject5", "Subject6", "Subject7"])
+    # compare_stair_moments(
+    #     ["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_stair_config1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 stairclimbing_config1_00.csv"],
+    #     ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"],
+    #     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07", "Subject08",
+    #      "Subject09", "Subject10"])
+
+
+# compare_walking_moments(
+    #     ["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_01/subject_01_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_walking_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 walk_00.csv"],
+    #     [1, 8, 16, 2, 11, 4, 4, 11, 16, 9, 9],
+    #     ["Subject0", "Subject1", "Subject2", "Subject3", "Subject4", "Subject5", "Subject6", "Subject7", "Subject8", "Subject10"])
+    #
+    # compare_walking_power(
+    #     ["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_01/subject_01_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_walking_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 walk_00.csv"],
+    #     [1, 8, 16, 2, 11, 4, 4, 11, 16, 9, 9],
+    #     ["Subject0", "Subject1", "Subject2", "Subject3", "Subject4", "Subject5", "Subject6", "Subject7", "Subject8",
+    #      "Subject10"])
+
+
+
+    # compare_walking_angles(
+    #     ["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_01/subject_01_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_walking_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 walk_00.csv"],
+    #     [1, 8, 16, 2, 11, 4, 4, 11, 16, 9, 9],
+    #     ["Subject0", "Subject1", "Subject2", "Subject3", "Subject4", "Subject5", "Subject6", "Subject7", "Subject8",
+    #      "Subject10"])
 
     # compare_walking_power(
     #     ["/home/nathanielgoldfarb/Documents/Mocap_Participant/MoCap_Participants/subject_00/subject_00_walk_00.csv",
@@ -700,16 +717,33 @@ if __name__ == "__main__":
     #     [1, 8, 16, 2, 11, 4, 4, 11],
     #     ["Subject0", "Subject1", "Subject2", "Subject3", "Subject4", "Subject5", "Subject6", "Subject7"])
 
+    # compare_stair_power(
+    #     ["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_stair_config1_01.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv",
+    #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 stairclimbing_config1_00.csv"],
+    #     ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"],
+    #     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07", "Subject08",
+    #      "Subject09", "Subject10"])
 
-    plot_knee(["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
-               "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_01/subject_01 walk_00.csv",
-               "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
-               "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
-               "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04 walk_00.csv",
-               "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05 walk_00.csv",
-               "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 walk_00.csv",
-               "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv"],
-              [1, 8, 16, 2, 11, 4, 4, 11])
+    plot_knee(
+        ["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_01/subject_01_walk_00.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_walk_00.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_walk_00.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 walk_00.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_walking_01.csv",
+         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 walk_00.csv"],
+        [1, 8, 16, 2, 11, 4, 4, 11, 16, 9, 9])
 
 
     plot_knee_stairs(["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
@@ -725,11 +759,3 @@ if __name__ == "__main__":
                         ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"] )
 
 
-    # plot_data(["/home/nathanielgoldfarb/stairclimbing/CSV_files/subject_03/11_8_2019/subject_03_walk_00.csv"],
-    #           [22],
-    #           ["Subject1"])
-    #plot_signle_knee("/home/nathaniel/Documents/MoCap_Participants/subject_07/subject_07_walk_00.csv")
-
-    # plot_knee(["/home/nathaniel/Documents/MoCap_Participants/subject_07/subject_07_walk_00.csv"],
-    #           [10],
-    #           [ "Subject7"])

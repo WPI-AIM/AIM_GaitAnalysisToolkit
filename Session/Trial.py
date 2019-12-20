@@ -355,7 +355,7 @@ class Trial(object):
                 else:
                     left.append(stamp_left)
                     right.append(stamp_right)
-            count+=1
+            count += 1
 
         side = core.Side(left, right)
 
