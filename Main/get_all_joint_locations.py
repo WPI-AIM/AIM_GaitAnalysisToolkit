@@ -97,8 +97,8 @@ def get_right_knee(file, start, end):
                                          shank[3][frame]])
 
         sol =  Markers.minimize_center([_thigh, _shank], axis=axis, initial=(point[0][0], point[1][0], point[2][0]))
-        centers.append( sol.x )
-        #centers.append(point)
+        #centers.append( sol.x )
+        centers.append(point)
 
 
     keys = markers._filtered_markers.keys()

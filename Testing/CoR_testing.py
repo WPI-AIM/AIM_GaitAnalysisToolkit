@@ -243,7 +243,7 @@ markers = [ m1, m2, m3, m4]
 #centers = sphere_method(markers)
 #centers = leastsq_method(markers,2)
 centers = rotation_method(markers)
-rotation_method2(markers)
+#rotation_method2(markers)
 x = []
 y = []
 z = []
