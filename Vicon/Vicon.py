@@ -344,26 +344,30 @@ class Vicon(object):
         fitlered_col = [item for item in raw_col if not item.isdigit()]
         fitlered_col = filter(lambda a: a != 'Frame', fitlered_col)
         fitlered_col = filter(lambda a: a != "", fitlered_col)
-        #fitlered_col = fitlered_col[fitlered_col.index("Devices"):]
-        print fitlered_col
+
+        if 'Devices' in fitlered_col:
+            fitlered_col = fitlered_col[fitlered_col.index("Devices"):]
+
         inx = []
         for name in fitlered_col:
             inx.append(raw_col.index(name))
+
         inx.append(len(raw_col))
         return fitlered_col, inx
 
-    def _fix_col_names(self, names):
+    def  _fix_col_names(self, names):
         fixed_names = []
         get_index = lambda x: x.index("Sensor") + 7
+
         for name in names:  # type: str
 
-            if "Subject" in name:
-                fixed = ''.join(
-                    [i for i in name.replace("Subject", "").replace(":", "").replace("|", "") if
-                     not i.isdigit()]).strip()
-                fixed_names.append(fixed)
+            # if "Subject".upper() in name.upper():
+            #     fixed = ''.join(
+            #         [i for i in name.replace("Subject", "").replace(":", "").replace("|", "") if
+            #          not i.isdigit()]).strip()
+            #     fixed_names.append(fixed)
 
-            elif  ":" in name:
+            if ":" in name:
 
                 index = name.index(":")
 

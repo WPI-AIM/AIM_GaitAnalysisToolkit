@@ -67,7 +67,7 @@ class Markers(object):
         :param key: name of the marker key
         :return: the value
         """
-        print self._filtered_markers.keys()
+        # print self._filtered_markers.keys()
         return self._filtered_markers[key]
 
     def make_markers(self):
@@ -77,6 +77,7 @@ class Markers(object):
         """
 
         # TODO need to ensure that the frame are being created correctly and fill in missing data with a flag
+
         to_remove = [item for item in self._data_dict.keys() if "|" in item]
         to_remove += [item for item in self._data_dict.keys() if "Trajectory Count" == item]
         for rr in to_remove:
@@ -120,6 +121,7 @@ class Markers(object):
             markers_keys.sort()
             markers = []
             for marker in markers_keys:
+
                 if filter:
                     markers.append(self._filtered_markers[marker])
                 else:
@@ -292,7 +294,7 @@ class Markers(object):
         :param centers:
         :return:
         """
-        print frame
+
         self._ax.clear()
         self._ax.set_xlabel('X Label')
         self._ax.set_ylabel('Y Label')
@@ -321,7 +323,6 @@ def transform_markers(transforms, markers):
             adjusted_locations.append(new_marker)
         trans_markers.append(adjusted_locations)
     return trans_markers
-
 
 def make_frame(markers):
     """
