@@ -1,25 +1,22 @@
 import math
 
 import numpy as np
-from Exoskeleton import Exoskeleton
-from Vicon import Vicon
-from lib.Exoskeleton.Robot import core
+from lib.vicon import Vicon
+import lib.GaitCore.Core as core
+from lib.GaitCore.Bio import Side
+from  lib.GaitCore.Bio import Leg
 import lib.Plotting_Tools as PT
 import math
 
 
 class Trial(object):
 
-    def __init__(self, vicon_file, config_file=None, exo_file=None, dt=.01, notes_file=None):
+    def __init__(self, vicon_file, dt=.01):
 
         # self._notes_file = notes_file
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
         self._dt = dt
-        if config_file is not None and exo_file is not None:
-            self._using_exo = True
-            self._exoskeleton = Exoskeleton.Exoskeleton(config_file, exo_file)
-        else:
-            self._using_exo = False
+
         self._vicon = Vicon.Vicon(vicon_file)
         self.vicon_set_points = {}
         self._joint_trajs = None
@@ -39,10 +36,8 @@ class Trial(object):
         offsets = []
         vicon = []
         exo = []
-        if self._using_exo:
-            theta = float(self._exoskeleton.length) / float(self._vicon.length)
-        else:
-            theta = 0
+
+        theta = 0
 
         model = self.vicon.get_model_output()
         hip = model.get_right_leg().hip.angle.x
@@ -133,11 +128,11 @@ class Trial(object):
                 for inc in self.vicon_set_points:
                     time = ((inc[1] - inc[0]) / float(self.vicon.length)) * self.dt
                     time = np.linspace(0, 1, (inc[1] - inc[0]))
-                    angle = core.Data(np.array(fnc._asdict()[joint_name].angle.x[inc[0]:inc[1]]), time)
-                    power = core.Data(np.array(fnc._asdict()[joint_name].power.z[inc[0]:inc[1]]), time)
-                    torque = core.Data(np.array(fnc._asdict()[joint_name].moment.x[inc[0]:inc[1]]), time)
-                    force = core.Data(np.array(fnc._asdict()[joint_name].force.x[inc[0]:inc[1]]), time)
-                    stamp = core.Newton(angle,force,torque,power)
+                    angle = core.Data.Data(np.array(fnc._asdict()[joint_name].angle.x[inc[0]:inc[1]]), time)
+                    power = core.Data.Data(np.array(fnc._asdict()[joint_name].power.z[inc[0]:inc[1]]), time)
+                    torque = core.Data.Data(np.array(fnc._asdict()[joint_name].moment.x[inc[0]:inc[1]]), time)
+                    force = core.Data.Data(np.array(fnc._asdict()[joint_name].force.x[inc[0]:inc[1]]), time)
+                    stamp = core.Newton.Newton(angle,force,torque,power)
                     if self._use_black_list:
                         if count in self._black_list:
                             continue
@@ -150,7 +145,7 @@ class Trial(object):
         """
        Seperates then EMGs data
        :return: EMGs data
-       :rtype: Core.side
+       :rtype: Bio.side
         """
         joints = {}
         count = 0
@@ -163,7 +158,7 @@ class Trial(object):
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
                 time = (len(data) / float(self.vicon.length)) * self.dt
-                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                stamp = core.Data.Data(data, np.linspace(0, time, len(data)))
                 if self._use_black_list:
                     if count in self._black_list:
                         continue
@@ -177,7 +172,7 @@ class Trial(object):
         """
        Seperates then EMGs data
        :return: EMGs data
-       :rtype: Core.side
+       :rtype: Bio.side
         """
         joints = {}
         count = 0
@@ -190,7 +185,7 @@ class Trial(object):
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
                 time = (len(data) / float(self.vicon.length)) * self.dt
-                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                stamp = core.Data.Data(data, np.linspace(0, time, len(data)))
                 if self._use_black_list:
                     if count in self._black_list:
                         continue
@@ -220,8 +215,8 @@ class Trial(object):
             right_data = right_cop[inc[0]:inc[1]]
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
+            stamp_left = core.Data.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data.Data(right_data, np.linspace(0, time, len(right_data)))
 
             if self._use_black_list:
                 if count in self._black_list:
@@ -232,7 +227,7 @@ class Trial(object):
 
             count += 1
 
-        side = core.Side(left, right)
+        side = Side.Side(left, right)
 
         return side
 
@@ -261,8 +256,8 @@ class Trial(object):
                  [right_fsr[2].get_values()[inc[0]:inc[1]]]])
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
+            stamp_left = core.Data.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data.Data(right_data, np.linspace(0, time, len(right_data)))
 
             # if self._use_black_list:
             #     if count in self._black_list:
@@ -273,7 +268,7 @@ class Trial(object):
             #
             # count += 1
 
-        side = core.Side(left, right)
+        side = Side.Side(left, right)
 
         return side
 
@@ -303,8 +298,8 @@ class Trial(object):
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
 
-            stamp_left = core.Data()
-            stamp_right = core.Data()
+            stamp_left = core.Data.Data()
+            stamp_right = core.Data.Data()
             stamp_right.data = right_data
             stamp_left.data = left_data
             stamp_left.time = np.linspace(0, time, len(left_data))
@@ -318,7 +313,7 @@ class Trial(object):
                     right.append(stamp_right)
             count+=1
 
-        side = core.Side(left, right)
+        side = Side.Side(left, right)
         return side
 
     def get_accels(self):
@@ -346,8 +341,8 @@ class Trial(object):
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
 
-            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
+            stamp_left = core.Data.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data.Data(right_data, np.linspace(0, time, len(right_data)))
 
             if self._use_black_list:
                 if count in self._black_list:
@@ -357,7 +352,7 @@ class Trial(object):
                     right.append(stamp_right)
             count += 1
 
-        side = core.Side(left, right)
+        side = Side.Side(left, right)
 
         return side
 
@@ -386,8 +381,8 @@ class Trial(object):
                  [right_leg.ankle.IMU.gyro.get_values()[inc[0]:inc[1]]]])
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = core.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = core.Data(right_data, np.linspace(0, time, len(right_data)))
+            stamp_left = core.Data.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = core.Data.Data(right_data, np.linspace(0, time, len(right_data)))
 
             if self._use_black_list:
                 if count in self._black_list:
@@ -397,7 +392,7 @@ class Trial(object):
                     right.append(stamp_right)
             count += 1
 
-        side = core.Side(left, right)
+        side = Side.Side(left, right)
         return side
 
     @property

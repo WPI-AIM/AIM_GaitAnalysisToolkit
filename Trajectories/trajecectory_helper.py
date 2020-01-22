@@ -9,6 +9,7 @@ from lib.dmp_experiments.Python import train_rmp, RMP_runner
 from scipy.signal import find_peaks_cwt
 import pandas
 
+
 def sperate_joints(file_path):
 
     gait_data = pd.read_csv(file_path)
