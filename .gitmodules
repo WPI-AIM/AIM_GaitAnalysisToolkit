@@ -1,12 +1,3 @@
-[submodule "lib/dmp_experiments"]
-	path = lib/dmp_experiments
-	url = http://nagoldfarb@fischerlab2.wpi.edu:7990/scm/exo/dmp_experiments.git
 [submodule "lib/lib/Exoskeleton"]
 	path = lib/lib/Exoskeleton
 	url = http://nagoldfarb@fischerlab2.wpi.edu:7990/scm/exo/exoskeleton.git
-[submodule "lib/Exoskeleton"]
-	path = lib/Exoskeleton
-	url = http://nagoldfarb@fischerlab2.wpi.edu:7990/scm/exo/exoskeleton.git
-[submodule "lib/Plotting_Tools"]
-	path = lib/Plotting_Tools
-	url = http://nagoldfarb@fischerlab2.wpi.edu:7990/scm/exo/plotting_tools.git
