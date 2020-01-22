@@ -615,7 +615,7 @@ def sit_to_stand(file):
     trial = Trial.Trial(vicon_file=file)
     joints = trial.vicon.get_model_output().get_left_leg()
 
-    angles = joints.knee.angle.x
+    angles = joints.knee.angle.x;
     power = joints.knee.power.z
     moment = joints.knee.moment.x
 
