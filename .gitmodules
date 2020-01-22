@@ -1,3 +1,6 @@
-[submodule "lib/lib/Exoskeleton"]
-	path = lib/lib/Exoskeleton
-	url = http://nagoldfarb@fischerlab2.wpi.edu:7990/scm/exo/exoskeleton.git
+[submodule "lib/GaitCore"]
+	path = lib/GaitCore
+	url = https://github.com/nag92/GaitCore.git
+[submodule "lib/vicon"]
+	path = lib/vicon
+	url = https://github.com/nag92/Vicon.git
