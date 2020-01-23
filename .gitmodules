@@ -1,3 +1,6 @@
 [submodule "lib/GaitCore"]
 	path = lib/GaitCore
 	url = https://github.com/nag92/GaitCore.git
+[submodule "lib/Vicon"]
+	path = lib/Vicon
+	url = https://github.com/nag92/Vicon.git
