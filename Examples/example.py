@@ -157,12 +157,8 @@ def compare_walking_moments(files, list_of_index):
 
 if __name__ == "__main__":
 
-    cur_path = os.path.dirname(__file__)
-    print cur_path
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-    rel_path = "ExampleData/subject_00 walk_00.csv"
-    abs_file_path = os.path.join(script_dir, rel_path)
-    print abs_file_path
+
 
     compare_walking_angles(
         [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
