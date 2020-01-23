@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat # loading data from matlab
 import os
-import pbdlib as pbd
+import lib.pbdlib.pbdlib as pbd
 import numpy.matlib
-import pbdlib.plot
+import lib.pbdlib.pbdlib.plot
 #from pbdlib.utils.jupyter_utils import *
-from lib.
+
 
 def getTraj(demos, samples):
 
