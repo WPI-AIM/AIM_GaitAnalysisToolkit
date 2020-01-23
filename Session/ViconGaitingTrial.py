@@ -3,9 +3,11 @@ import math
 import numpy as np
 from lib.Vicon import Vicon
 import lib.GaitCore.Core as core
+import lib.GaitCore.Core.Data as Data
+import lib.GaitCore.Core.Newton as Newton
 from lib.GaitCore.Bio import Side
 from  lib.GaitCore.Bio import Leg
-import lib.Plotting_Tools as PT
+
 import math
 
 
@@ -116,22 +118,23 @@ class ViconGaitingTrial(object):
         count = 0
         model = self.vicon.get_model_output()
         for fnc, side in zip((model.get_left_leg(), model.get_right_leg()), ("R", "L")):
-            for joint_name in ["hip", "knee", "ankle"]:
-                name = side + joint_name
+            for joint_name in ["_hip", "_knee", "_ankle"]:
+                name = side + joint_name[1:]
                 joints[name] = []
                 for inc in self.vicon_set_points:
                     time = ((inc[1] - inc[0]) / float(self.vicon.length)) * self.dt
                     time = np.linspace(0, 1, (inc[1] - inc[0]))
-                    angle = core.Data.Data(np.array(fnc._asdict()[joint_name].angle.x[inc[0]:inc[1]]), time)
-                    power = core.Data.Data(np.array(fnc._asdict()[joint_name].power.z[inc[0]:inc[1]]), time)
-                    torque = core.Data.Data(np.array(fnc._asdict()[joint_name].moment.x[inc[0]:inc[1]]), time)
-                    force = core.Data.Data(np.array(fnc._asdict()[joint_name].force.x[inc[0]:inc[1]]), time)
+                    current_joint = fnc.__dict__[joint_name]
+                    angle = core.Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
+                    power = core.Data.Data(np.array(current_joint.power.z[inc[0]:inc[1]]), time)
+                    torque = core.Data.Data(np.array(current_joint.moment.x[inc[0]:inc[1]]), time)
+                    force = core.Data.Data(np.array(current_joint.force.x[inc[0]:inc[1]]), time)
                     stamp = core.Newton.Newton(angle,force,torque,power)
                     if self._use_black_list:
                         if count in self._black_list:
                             continue
                     joints[name].append(stamp)
-                    count+=1
+                    count += 1
 
         return joints
 

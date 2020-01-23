@@ -2,13 +2,13 @@ import sys
 import matplotlib.pyplot as plt
 from scipy import signal
 import numpy as np
-from Session import Trial
-from Vicon import Vicon
+from Session import ViconGaitingTrial
+from lib.Vicon import Vicon
 
 
 def plot_stair_joint(file):
 
-    trial = Trial.Trial(vicon_file=file)
+    trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
     joints = trial.vicon.get_model_output().get_right_leg()
     plt.plot(joints.hip.angle.x)
     plt.plot(joints.knee.angle.x)
@@ -20,7 +20,7 @@ def plot_stair_joint(file):
 
 def get_stair_ranges(file, side="R"):
     print file
-    trial = Trial.Trial(vicon_file=file)
+    trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
     if side == "R":
         m = trial.vicon.markers.get_marker("RTOE")
     else:
@@ -73,7 +73,7 @@ def compare_stair_angles(files, side, legend):
         resample = min(resample, rn[1] - rn[0])
 
     for file, s in zip(files,side):
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         if s == "R":
             joints = trial.vicon.get_model_output().get_right_leg()
         else:
@@ -130,7 +130,7 @@ def compare_stair_moments(files, side, legend):
         resample = min(resample, rn[1] - rn[0])
 
     for file, s in zip(files, side):
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         if s == "R":
             joints = trial.vicon.get_model_output().get_right_leg()
         else:
@@ -187,7 +187,7 @@ def compare_stair_power(files, side, legend):
 
     for file, s in zip(files, side):
 
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         if s == "R":
             joints = trial.vicon.get_model_output().get_right_leg()
         else:
@@ -235,14 +235,14 @@ def compare_walking_angles(files, list_of_index, legend=None):
     time = None
     resample = 100000
     for file, i in zip(files, list_of_index):
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         sample = len(joints["Rhip"][i].angle.data)
         resample = min(resample, sample)
 
     for file, i in zip(files, list_of_index):
 
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         hip.append( signal.resample( joints["Rhip"][i].angle.data, resample))
         knee.append(signal.resample( joints["Rknee"][i].angle.data, resample))
@@ -302,7 +302,7 @@ def compare_walking_moments(files, list_of_index, legend=None):
     time = None
     resample = 100000
     for file, i in zip(files, list_of_index):
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         print "file ", file
         sample = len(joints["Rhip"][i].angle.data)
@@ -310,7 +310,7 @@ def compare_walking_moments(files, list_of_index, legend=None):
 
     for file, i in zip(files, list_of_index):
 
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         hip.append( signal.resample(  abs(joints["Rhip"][i].moment.data), resample))
         knee.append(signal.resample(abs( joints["Rknee"][i].moment.data), resample))
@@ -361,7 +361,7 @@ def compare_walking_power(files, list_of_index, legend=None):
     time = None
     resample = 100000
     for file, i in zip(files, list_of_index):
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         print "file ", file
         sample = len(joints["Rhip"][i].angle.data)
@@ -369,7 +369,7 @@ def compare_walking_power(files, list_of_index, legend=None):
 
     for file, i in zip(files, list_of_index):
 
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         hip.append( signal.resample( abs(joints["Rhip"][i].power.data), resample))
         knee.append(signal.resample( abs(joints["Rknee"][i].power.data), resample))
@@ -422,14 +422,14 @@ def plot_leg_moments(files, list_of_index, legend=None):
     time = None
     resample = 100000
     for file, i in zip(files, list_of_index):
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         sample = len(joints["Rhip"][i].angle.data)
         resample = min(resample, sample)
 
     for file, i in zip(files, list_of_index):
 
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         hip.append(abs(signal.resample( joints["Rhip"][i].moment.data), resample))
         knee.append(abs(signal.resample( joints["Rknee"][i].moment.data), resample))
@@ -469,7 +469,7 @@ def plot_leg_moments(files, list_of_index, legend=None):
     plt.show()
 
 def plot_signle_knee(file):
-    trial = Trial.Trial(vicon_file=file)
+    trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
     joints = trial.get_joint_trajectories()
     leg = []
     for i in xrange(len(joints["Rknee"])):
@@ -490,7 +490,7 @@ def plot_knee(files, list_of_index):
     time = None
     resample = 100000
     for file, i in zip(files, list_of_index):
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         print file
         joints = trial.get_joint_trajectories()
         sample = len(joints["Rhip"][i].angle.data)
@@ -498,7 +498,7 @@ def plot_knee(files, list_of_index):
 
     for file, i in zip(files, list_of_index):
 
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
         angle.append( signal.resample( joints["Rknee"][i].angle.data, resample))
         power.append(signal.resample( joints["Rknee"][i].power.data, resample))
@@ -553,7 +553,7 @@ def plot_knee_stairs(files, side):
         resample = min(resample, rn[1] - rn[0])
 
     for file, s in zip(files, side):
-        trial = Trial.Trial(vicon_file=file)
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         if s == "R":
             joints = trial.vicon.get_model_output().get_right_leg()
         else:
@@ -604,7 +604,7 @@ def smooth(y, box_pts):
 
 
 def plot_joint(file, index):
-    trial = Trial.Trial(vicon_file=file)
+    trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
     joints = trial.get_joint_trajectories()
     leg = []
     plt.plot(joints["Rknee"][index].angle.time, joints["Rknee"][index].angle.data)
@@ -612,7 +612,7 @@ def plot_joint(file, index):
 
 
 def sit_to_stand(file):
-    trial = Trial.Trial(vicon_file=file)
+    trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
     joints = trial.vicon.get_model_output().get_left_leg()
 
     angles = joints.knee.angle.x;
@@ -641,19 +641,22 @@ def sit_to_stand(file):
 if __name__ == "__main__":
 
     #
-    compare_stair_angles(["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_stair_config1_01.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv",
-                         "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 stairclimbing_config1_00.csv"],
-                        ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"],
-                        ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07", "Subject08", "Subject09", "Subject10"])
-    #
+
+    compare_stair_angles([ "/media/nathaniel/Data01/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv"], ["R"], ["subject00"])
+
+    # compare_stair_angles(["/media/nathaniel/Data01/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_08/subject_08_stair_config1_01.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv",
+    #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 stairclimbing_config1_00.csv"],
+    #                     ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"],
+    #                     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07", "Subject08", "Subject09", "Subject10"])
+    # #
     # compare_stair_power(
     #     ["/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
     #      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
@@ -783,9 +786,6 @@ if __name__ == "__main__":
     #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv",
     #                      "/home/nathanielgoldfarb/Documents/stairclimbing_data/CSVs/subject_10/subject_10 stairclimbing_config1_00.csv"],
     #                     ["R", "R", "L", "L", "R", "L", "R", "L", "R", "R"] )
-<<<<<<< HEAD
-=======
 
->>>>>>> 3a59c8482fd84dea6a4dc90a155563ab6bcf8525
 
-    sit_to_stand("/media/nathaniel/Data02/BioMechanocle_knee/Subject00/12162019/Subject00_Sit_to_stand_00.csv")
+    # sit_to_stand("/media/nathaniel/Data02/BioMechanocle_knee/Subject00/12162019/Subject00_Sit_to_stand_00.csv")
