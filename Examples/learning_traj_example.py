@@ -6,6 +6,7 @@ import pbdlib as pbd
 import numpy.matlib
 import pbdlib.plot
 #from pbdlib.utils.jupyter_utils import *
+from lib.
 
 def getTraj(demos, samples):
 
