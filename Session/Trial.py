@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-from lib.vicon import Vicon
+from lib.Vicon import Vicon
 import lib.GaitCore.Core as core
 from lib.GaitCore.Bio import Side
 from  lib.GaitCore.Bio import Leg
@@ -103,11 +103,11 @@ class Trial(object):
                 Mx = np.array(plateM.x)[start:end]
                 My = np.array(plateM.y)[start:end]
                 Mz = np.array(plateM.z)[start:end]
-                f = core.Point(Fx, Fy, Fz)
-                m = core.Point(Mx, My, Mz)
-                data = core.Newton(None, f, m, None)
+                f = core.Point.Point(Fx, Fy, Fz)
+                m = core.Point.Point(Mx, My, Mz)
+                data = core.Newton.Newton(None, f, m, None)
                 time = (len(Fx) / float(self.vicon.length)) * self.dt
-                stamp = core.Data(data, np.linspace(0, time, len(data)))
+                stamp = core.Data.Data(data, np.linspace(0, time, len(data)))
                 joints[key].append(stamp)
 
         return joints
