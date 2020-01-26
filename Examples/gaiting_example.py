@@ -114,9 +114,9 @@ def compare_stair_angles(files, side, legend):
     for file, s in zip(files, side):
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         if s == "R":
-            joints = trial.vicon.get_model_output().get_right_leg()
+            joints = trial.vicon.get_model_output().right_leg()
         else:
-            joints = trial.vicon.get_model_output().get_left_leg()
+            joints = trial.vicon.get_model_output().left_leg()
         rn = indiecs[file]
         hip = signal.resample(joints.hip.angle.x[rn[0]:rn[1]], resample)
         knee = signal.resample(joints.knee.angle.x[rn[0]:rn[1]], resample)
@@ -155,9 +155,9 @@ def compare_stair_moments(files, side, legend):
     for file, s in zip(files, side):
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         if s == "R":
-            joints = trial.vicon.get_model_output().get_right_leg()
+            joints = trial.vicon.get_model_output().right_leg()
         else:
-            joints = trial.vicon.get_model_output().get_left_leg()
+            joints = trial.vicon.get_model_output().left_leg()
         rn = indiecs[file]
         hip = signal.resample(joints.hip.angle.x[rn[0]:rn[1]], resample)
         knee = signal.resample(joints.knee.angle.x[rn[0]:rn[1]], resample)
@@ -182,7 +182,7 @@ def compare_stair_moments(files, side, legend):
 
 
 if __name__ == "__main__":
-
+    pass
     # script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
 
 
