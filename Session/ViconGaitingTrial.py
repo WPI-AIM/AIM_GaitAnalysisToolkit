@@ -153,7 +153,7 @@ class ViconGaitingTrial(object):
         joints = {}
         count = 0
         model = self.vicon.get_model_output()
-        for fnc, side in zip((model.get_left_leg(), model.get_right_leg()), ("R", "L")):
+        for fnc, side in zip((model.get_left_leg(), model.get_right_leg()), ("L", "R")):
             for joint_name in ["_hip", "_knee", "_ankle"]:
                 name = side + joint_name[1:]
                 joints[name] = []
