@@ -6,6 +6,7 @@ import lib.GaitCore.Core as core
 import lib.GaitCore.Core.Data as Data
 import lib.GaitCore.Core.Newton as Newton
 from lib.GaitCore.Bio import Side
+from lib.GaitCore.Core import utilities as utilities
 from  lib.GaitCore.Bio import Leg
 
 import math
@@ -63,6 +64,41 @@ class ViconGaitingTrial(object):
             vicon.append((begin, end))
 
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
+
+    def get_stair_ranges(self, side="R"):
+
+
+        if side == "R":
+            m = self.vicon.markers.get_marker("RTOE")
+        else:
+            m = self.vicon.markers.get_marker("LTOE")
+
+        z = []
+        for i in xrange(len(m)):
+            z.append(m[i].z)
+
+        N = 10
+        z = utilities.smooth(map(int, z), 5)
+        z = np.convolve(z, np.ones((N,)) / N, mode='valid')
+
+        max_peakind = np.diff(np.sign(np.diff(z))).flatten()  # the one liner
+        max_peakind = np.pad(max_peakind, (1, 1), 'constant', constant_values=(0, 0))
+        max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
+        secound_step = max_peakind[-1]
+        first_step = max_peakind[-2]
+
+        index = secound_step
+        while z[index] != z[index + 1]:
+            print index
+            index += 1
+        final_index = index
+
+        index = first_step
+        while z[index] != z[index - 1]:
+            index -= 1
+        start_index = index
+        # plt.plot(z)
+        return (start_index, final_index)
 
     def get_force_plates(self):
         """

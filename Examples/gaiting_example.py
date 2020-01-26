@@ -24,10 +24,6 @@ def compare_walking_angles(files, list_of_index):
     """
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
     fig.suptitle('Walking Joint Angles', fontsize=20)
-    hip = []
-    knee = []
-    ankle = []
-    time = None
     resample = 100000
 
     # find resample length to use
@@ -41,43 +37,14 @@ def compare_walking_angles(files, list_of_index):
     for file, i in zip(files, list_of_index):
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
-        hip.append( signal.resample( joints["Rhip"][i].angle.data, resample))
-        knee.append(signal.resample( joints["Rknee"][i].angle.data, resample))
-        ankle.append(signal.resample( joints["Rankle"][i].angle.data, resample))
-
-    # make into arrays and smooth
-    time = np.linspace(0,1, resample)
-    hip = np.array(hip)
-    knee = np.array(knee)
-    ankle = np.array(ankle)
-
-    mean_hip = utilities.smooth(np.mean(hip, axis=0), 5)
-    mean_knee = utilities.smooth(np.mean(knee, axis=0), 5)
-    mean_ankle = utilities.smooth(np.mean(ankle, axis=0), 5)
-
-    std_hip = np.std(hip, axis=0)
-    std_knee = np.std(knee, axis=0)
-    std_ankle = np.std(ankle, axis=0)
-
-    print "Ankle: "
-    print "Max Hip: ", np.max(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.max(mean_hip))]
-    print "Max Knee: ", np.max(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(np.max(mean_knee))]
-    print "Max Ankle: ", np.max(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.max(mean_ankle))]
-
-    print "Min Hip: ", np.min(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.min(mean_hip))]
-    print "Min Knee: ", np.min(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(np.min(mean_knee))]
-    print "Min Ankle: ", np.min(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.min(mean_ankle))]
+        hip = signal.resample( joints["Rhip"][i].angle.data, resample)
+        knee = signal.resample(joints["Rknee"][i].angle.data, resample)
+        ankle = signal.resample(joints["Rankle"][i].angle.data, resample)
+        ax1.plot(hip)
+        ax2.plot(knee)
+        ax3.plot(ankle)
 
 
-    # plot everything
-    ax1.plot(time, mean_hip, 'k-', linewidth=4)
-    ax2.plot(time, mean_knee, 'k-', linewidth=4)
-    ax3.plot(time, mean_ankle, 'k-', linewidth=4)
-
-
-    ax1.fill_between(time, utilities.smooth(mean_hip - std_hip, 5), utilities.smooth(mean_hip + std_hip, 5))
-    ax2.fill_between(time, utilities.smooth(mean_knee - std_knee, 5), utilities.smooth(mean_knee + std_knee, 5))
-    ax3.fill_between(time, utilities.smooth(mean_ankle - std_ankle, 5), utilities.smooth(mean_ankle + std_ankle, 5))
     font_size = 25
     ax1.set_ylabel("Degrees", fontsize=font_size)
     ax2.set_ylabel("Degrees", fontsize=font_size)
@@ -92,62 +59,77 @@ def compare_walking_angles(files, list_of_index):
 
 def compare_walking_moments(files, list_of_index):
     """
-    Plots the joint angle during walking
-    :param files: sting of file name
-    :param list_of_index: which traj to use
-    """
-
+      Plots the joint angle during walking
+      :param files: sting of file name
+      :param list_of_index: which traj to use
+      """
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
-    fig.suptitle('Walking Joint Moments', fontsize=20)
-    hip = []
-    knee = []
-    ankle = []
-    time = None
+    fig.suptitle('Walking Joint Angles', fontsize=20)
     resample = 100000
+
+    # find resample length to use
     for file, i in zip(files, list_of_index):
-        print "i ", i
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
-        print joints["Rhip"]
-        print "file ", file
-        sample = len(joints["Rhip"][i].angle.data)
+        sample = len(joints["Rhip"][i].moment.data)
         resample = min(resample, sample)
 
+    # grab all the trajs and resample
     for file, i in zip(files, list_of_index):
-
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
-        hip.append( signal.resample(  abs(joints["Rhip"][i].moment.data), resample))
-        knee.append(signal.resample(abs( joints["Rknee"][i].moment.data), resample))
-        ankle.append(signal.resample( abs(joints["Rankle"][i].moment.data), resample))
+        hip = signal.resample(joints["Rhip"][i].moment.data, resample)
+        knee = signal.resample(joints["Rknee"][i].moment.data, resample)
+        ankle = signal.resample(joints["Rankle"][i].moment.data, resample)
+        ax1.plot(utilities.smooth(hip, 10))
+        ax2.plot(utilities.smooth(knee, 10))
+        ax3.plot( utilities.smooth(ankle,10))
 
-
-    time = np.linspace(0,1, resample)
-    hip = np.array(hip)
-    knee = np.array(knee)
-    ankle = np.array(ankle)
-
-    mean_hip = utilities.smooth(np.mean(hip, axis=0), 5)
-    mean_knee = utilities.smooth(np.mean(knee, axis=0), 5)
-    mean_ankle = utilities.smooth(np.mean(ankle, axis=0), 5   )
-
-    std_hip = np.std(hip, axis=0)
-    std_knee = np.std(knee, axis=0)
-    std_ankle = np.std(ankle, axis=0)
-
-
-    ax1.plot(time, mean_hip, 'k-', linewidth=4)
-    ax2.plot(time, mean_knee, 'k-', linewidth=4)
-    ax3.plot(time, mean_ankle, 'k-', linewidth=4)
-
-
-    ax1.fill_between(time, utilities.smooth(mean_hip - std_hip, 5), utilities.smooth(mean_hip + std_hip, 5))
-    ax2.fill_between(time, utilities.smooth(mean_knee - std_knee, 5), utilities.smooth(mean_knee + std_knee, 5))
-    ax3.fill_between(time, utilities.smooth(mean_ankle - std_ankle, 5), utilities.smooth(mean_ankle + std_ankle, 5))
     font_size = 25
-    ax1.set_ylabel("Nmm/KG", fontsize=font_size)
-    ax2.set_ylabel("Nmm/KG", fontsize=font_size)
-    ax3.set_ylabel("Nmm/KG", fontsize=font_size)
+    ax1.set_ylabel("Nmm/Kg", fontsize=font_size)
+    ax2.set_ylabel("Nmm/Kg", fontsize=font_size)
+    ax3.set_ylabel("Nmm/Kg", fontsize=font_size)
+    ax1.set_title("Hip", fontsize=font_size)
+    ax2.set_title("Knee", fontsize=font_size)
+    ax3.set_title("Ankle", fontsize=font_size)
+    plt.xlabel("Gait %", fontsize=font_size)
+
+
+    plt.show()
+
+
+def compare_stair_angles(files, side, legend):
+
+    resample = 100000
+    fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
+    fig.suptitle('Stair Joint Angles', fontsize=20)
+
+    indiecs = {}
+    for file, s in zip(files, side):
+        trial = ViconGaitingTrial.ViconGaitingTrial(file)
+        rn = trial.get_stair_ranges(s)
+        indiecs[file] = rn
+        resample = min(resample, rn[1] - rn[0])
+
+    for file, s in zip(files, side):
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
+        if s == "R":
+            joints = trial.vicon.get_model_output().get_right_leg()
+        else:
+            joints = trial.vicon.get_model_output().get_left_leg()
+        rn = indiecs[file]
+        hip = signal.resample(joints.hip.angle.x[rn[0]:rn[1]], resample)
+        knee = signal.resample(joints.knee.angle.x[rn[0]:rn[1]], resample)
+        ankle = signal.resample(joints.ankle.angle.x[rn[0]:rn[1]], resample)
+        ax1.plot(hip)
+        ax2.plot(knee)
+        ax3.plot(ankle)
+
+    plt.legend(legend)
+    font_size = 25
+    ax1.set_ylabel("Degrees", fontsize=font_size)
+    ax2.set_ylabel("Degrees", fontsize=font_size)
+    ax3.set_ylabel("Degrees", fontsize=font_size)
     ax1.set_title("Hip", fontsize=font_size)
     ax2.set_title("Knee", fontsize=font_size)
     ax3.set_title("Ankle", fontsize=font_size)
@@ -155,17 +137,116 @@ def compare_walking_moments(files, list_of_index):
 
     plt.show()
 
+
+def compare_stair_moments(files, side, legend):
+    resample = 100000
+    fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
+    fig.suptitle('Stair Joint Moments', fontsize=20)
+
+    resample = 1000000000
+
+    indiecs = {}
+    for file, s in zip(files, side):
+        trial = ViconGaitingTrial.ViconGaitingTrial(file)
+        rn = trial.get_stair_ranges(s)
+        indiecs[file] = rn
+        resample = min(resample, rn[1] - rn[0])
+
+    for file, s in zip(files, side):
+        trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
+        if s == "R":
+            joints = trial.vicon.get_model_output().get_right_leg()
+        else:
+            joints = trial.vicon.get_model_output().get_left_leg()
+        rn = indiecs[file]
+        hip = signal.resample(joints.hip.angle.x[rn[0]:rn[1]], resample)
+        knee = signal.resample(joints.knee.angle.x[rn[0]:rn[1]], resample)
+        ankle = signal.resample(joints.ankle.angle.x[rn[0]:rn[1]], resample)
+        ax1.plot(utilities.smooth(hip,10))
+        ax2.plot( utilities.smooth(knee,10))
+        ax3.plot(utilities.smooth(ankle,10))
+
+    #plt.legend(legend)
+    font_size = 25
+    ax1.set_ylabel("Nmm/kg", fontsize=font_size)
+    ax2.set_ylabel("Nmm/kg", fontsize=font_size)
+    ax3.set_ylabel("Nmm/Kg", fontsize=font_size)
+    ax1.set_title("Hip", fontsize=font_size)
+    ax2.set_title("Knee", fontsize=font_size)
+    ax3.set_title("Ankle", fontsize=font_size)
+    plt.xlabel("Gait %", fontsize=font_size)
+
+    plt.show()
+
+
+
+
 if __name__ == "__main__":
 
-    script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+    # script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
 
 
-    compare_walking_angles(
-        [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
-         os.path.join(script_dir, "ExampleData/subject_01 walk_00.csv")],
-        [1, 8])
+    # compare_walking_angles(
+    #     [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
+    #      os.path.join(script_dir, "ExampleData/subject_01 walk_00.csv")],
+    #     [1, 8])
+    #
+    # compare_walking_moments(
+    #     [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
+    #      os.path.join(script_dir, "ExampleData/subject_01 walk_00.csv")],
+    #     [1, 8])
 
-    compare_walking_moments(
-        [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
-         os.path.join(script_dir, "ExampleData/subject_01 walk_00.csv")],
-        [1, 8])
+
+    # compare_walking_angles(
+    #     ["/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_01/subject_01 walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_04/subject_04_walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_05/subject_05_walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_08/subject_08_walking_01.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_09/subject_09 walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_10/subject_10 walk_00.csv"],
+    #     [1, 8, 16, 2, 11, 4,  11, 16, 9, 9]
+    #     )
+    #
+    # compare_walking_moments(
+    #     ["/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_01/subject_01 walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_04/subject_04_walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_05/subject_05_walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_08/subject_08_walking_01.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_09/subject_09 walk_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_10/subject_10 walk_00.csv"],
+    #     [1, 8, 16, 2, 11, 4, 11, 16, 9, 9 ]
+    # )
+
+    # compare_stair_angles(
+    #     ["/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv" ],
+    #     ["R", "R", "L", "L", "R", "L", "R", "R"],
+    #     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07",
+    #      "Subject09" ])
+    #
+    # compare_stair_moments(
+    #     ["/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
+    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv" ],
+    #     ["R", "R", "L", "L", "R", "L", "R", "R"],
+    #     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07",
+    #      "Subject09" ])
