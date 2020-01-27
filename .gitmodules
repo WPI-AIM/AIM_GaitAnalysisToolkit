@@ -4,6 +4,4 @@
 [submodule "lib/Vicon"]
 	path = lib/Vicon
 	url = https://github.com/nag92/Vicon.git
-[submodule "lib/pbdlib"]
-	path = lib/pbdlib
-	url = https://github.com/nag92/pbdlib-python.git
+
