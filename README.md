@@ -27,7 +27,7 @@ All packages are installed in the `lib` folder
 This package as level submoduls that need to be installed
 
 ````bash
-git clone 
-cd Gait_Analysis_toolkit
+git clone https://github.com/WPI-AIM/AIM_GaitAnalysisToolkit.git
+cd AIM_GaitAnalysisToolkit
 git submodule update --init --recursive
 git submodule update --recursive
