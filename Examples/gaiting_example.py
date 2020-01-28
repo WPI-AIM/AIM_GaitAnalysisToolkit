@@ -228,71 +228,17 @@ def compare_stair_moments(files, side, legend):
 
 
 if __name__ == "__main__":
-    pass
-    # script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+
+    script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+
+    compare_walking_angles(
+        [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
+         os.path.join(script_dir, "ExampleData/subject_01 walk_00.csv")],
+        [1, 8])
+
+    compare_walking_moments(
+        [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
+         os.path.join(script_dir, "ExampleData/subject_01 walk_00.csv")],
+        [1, 8])
 
 
-    # compare_walking_angles(
-    #     [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
-    #      os.path.join(script_dir, "ExampleData/subject_01 walk_00.csv")],
-    #     [1, 8])
-    #
-    # compare_walking_moments(
-    #     [os.path.join(script_dir, "ExampleData/subject_00 walk_00.csv"),
-    #      os.path.join(script_dir, "ExampleData/subject_01 walk_00.csv")],
-    #     [1, 8])
-
-
-    # compare_walking_angles(
-    #     ["/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_01/subject_01 walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_04/subject_04_walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_05/subject_05_walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_08/subject_08_walking_01.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_09/subject_09 walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_10/subject_10 walk_00.csv"],
-    #     [1, 8, 16, 2, 11, 4,  11, 16, 9, 9]
-    #     )
-    #
-    # compare_walking_moments(
-    #     ["/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_00/subject_00 walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_01/subject_01 walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_02/subject_02_walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_03/subject_03_walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_04/subject_04_walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_05/subject_05_walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_07/subject_07 walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_08/subject_08_walking_01.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_09/subject_09 walk_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_10/subject_10 walk_00.csv"],
-    #     [1, 8, 16, 2, 11, 4, 11, 16, 9, 9 ]
-    # )
-
-    # compare_stair_angles(
-    #     ["/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv" ],
-    #     ["R", "R", "L", "L", "R", "L", "R", "R"],
-    #     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07",
-    #      "Subject09" ])
-    #
-    # compare_stair_moments(
-    #     ["/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_00/subject_00 stairconfig1_01.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_02/subject_02_stair_config1_03.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_03/subject_03_stair_config0_02.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_04/subject_04_stair_config1_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_05/subject_05_stair_config1_00.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_06/subject_06 stairclimbing_config1_02.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_07/subject_07 stairclimbing_config1_01.csv",
-    #      "/media/nathanielgoldfarb/New Volume/stairclimbing_data/CSVs/subject_09/subject_09 stairclimbing_config1_00.csv" ],
-    #     ["R", "R", "L", "L", "R", "L", "R", "R"],
-    #     ["subject00", "subject02", "Subject03", "Subject04", "Subject05", "Subject06", "Subject07",
-    #      "Subject09" ])
