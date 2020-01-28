@@ -46,7 +46,8 @@
 
 from termcolor import colored
 
-import lib.pbdlib.pbdlib.gmm as gmm
+
+from lib.pbdlib.pbdlib import gmm
 from lib.pbdlib.pbdlib.model import *
 import copy
 
