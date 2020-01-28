@@ -1,27 +1,29 @@
 
-
-
-# About 
+# AIM Gait Anaylsis Toolkit
 This is a tool kit for Gait Analysis to work with the Vicon tool kit.
+It provides tool to anaylsis gaiting including seperating the gait cycle
 
-# Dependence
+## Authors
+- [Nathaniel Goldfarb](https://github.com/nag92) (nagoldfarb@wpi.edu)
+
+
+## Dependence
 * python 2.7
 * numpy
 * scipy
 * matplotlib
 
 
-# External Dependence 
+## External Dependence 
 All packages are installed in the `lib` folder
 
-* Vicon
-* GaitCore
-* pbdlib-python (https://gitlab.idiap.ch/rli/pbdlib-python)
+* [AIM_Vicon](https://github.com/WPI-AIM/AIM_Vicon)
+* [AIM_GaitCore](https://github.com/WPI-AIM/AIM_GaitCore.git)
 
 
 
 
-# Install
+## Install
 This package as level submoduls that need to be installed
 
 ````bash
