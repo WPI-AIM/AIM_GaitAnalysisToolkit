@@ -45,13 +45,10 @@
 
 import math
 import numpy as np
-from lib.Vicon import Vicon
-import lib.GaitCore.Core as core
-import lib.GaitCore.Core.Data as Data
-import lib.GaitCore.Core.Newton as Newton
-from lib.GaitCore.Bio import Side
-from lib.GaitCore.Core import utilities as utilities
-from  lib.GaitCore.Bio import Leg
+from ..lib.Vicon import Vicon
+from ..lib.GaitCore.Core import Newton, Data
+from ..lib.GaitCore.Bio import Side
+from ..lib.GaitCore.Core import utilities as utilities
 
 import math
 
@@ -205,11 +202,11 @@ class ViconGaitingTrial(object):
                     time = ((inc[1] - inc[0]) / float(self.vicon.length)) * self.dt
                     time = np.linspace(0, 1, (inc[1] - inc[0]))
                     current_joint = fnc.__dict__[joint_name]
-                    angle = core.Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
-                    power = core.Data.Data(np.array(current_joint.power.z[inc[0]:inc[1]]), time)
-                    torque = core.Data.Data(np.array(current_joint.moment.x[inc[0]:inc[1]]), time)
-                    force = core.Data.Data(np.array(current_joint.force.x[inc[0]:inc[1]]), time)
-                    stamp = core.Newton.Newton(angle,force,torque,power)
+                    angle = Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
+                    power = Data.Data(np.array(current_joint.power.z[inc[0]:inc[1]]), time)
+                    torque = Data.Data(np.array(current_joint.moment.x[inc[0]:inc[1]]), time)
+                    force = Data.Data(np.array(current_joint.force.x[inc[0]:inc[1]]), time)
+                    stamp = Newton.Newton(angle,force,torque,power)
                     if self._use_black_list:
                         if count in self._black_list:
                             continue

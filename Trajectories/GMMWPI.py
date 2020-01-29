@@ -47,8 +47,10 @@
 from termcolor import colored
 
 
-from lib.pbdlib.pbdlib import gmm
-from lib.pbdlib.pbdlib.model import *
+import numpy as np
+from lib.GaitAnalysisToolkit.lib.pbdlib.pbdlib import model
+from lib.GaitAnalysisToolkit.lib.pbdlib.pbdlib import gmm
+from lib.GaitAnalysisToolkit.lib.pbdlib.pbdlib.functions import gaussPDF
 import copy
 
 class GMMWPI(gmm.GMM):
@@ -120,7 +122,7 @@ class GMMWPI(gmm.GMM):
                 # Update the centers
                 id = np.where(idList == i)
                 temp = np.mean(data[:, id], 2)
-                Mu[:, i] = np.mean(data[:, id], 2).reshape((1, 3))
+                Mu[:, i] = np.mean(data[:, id], 2).reshape((1, -1))
 
             # Stopping criterion %%%%%%%%%%%%%%%%%%%%
             if abs(cumdist - cumdist_old) < cumdist_threshold:
@@ -150,7 +152,11 @@ class GMMWPI(gmm.GMM):
         for i in xrange(self.nb_states):
 
             idtmp = np.where(idList==i)
-            mat = np.vstack((data[:, idtmp][0][0], data[:, idtmp][1][0], data[:, idtmp][2][0]))
+            mat = np.vstack((data[:, idtmp][0][0], data[:, idtmp][1][0]))
+
+            for j in xrange(2,len(data[:, idtmp])):
+                mat = np.vstack((mat, data[:, idtmp][j][0]))
+
             self.priors[i] = len(idtmp[0])
             sig = np.cov(mat).transpose()
             self.sigma[i] = np.cov(mat).transpose() + np.eye(self.nb_dim)*self.reg
@@ -361,7 +367,7 @@ class GMMWPI(gmm.GMM):
         for t in xrange(nbData):
 
             for i in xrange(self.nb_states):
-                H[i, t] = self.priors[i] * multi_variate_normal_old(np.asarray([DataIn[t]]),
+                H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]),
                                                                     self.mu[in_][i],
                                                                     self.sigma[i][in_, in_])
 
