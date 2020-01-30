@@ -63,7 +63,7 @@ class GMMWPI(gmm.GMM):
         nb_s = nb_states
         nb_d = nb_dim
 
-        gmm.GMM.__init__(self, nb_states=nb_states, nb_dim= nb_dim)
+        gmm.GMM.__init__(self, nb_states=nb_states, nb_dim=nb_dim)
         # flag to indicate that publishing was not init
         self.publish_init = False
         self._mu = mu
@@ -75,8 +75,6 @@ class GMMWPI(gmm.GMM):
             self.init_zeros()
 
     def kmeansclustering(self, data, reg=1e-8):
-
-
 
         self.reg = reg
 
