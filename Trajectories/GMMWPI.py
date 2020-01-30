@@ -120,7 +120,7 @@ class GMMWPI(gmm.GMM):
                 # Update the centers
                 id = np.where(idList == i)
                 temp = np.mean(data[:, id], 2)
-                Mu[:, i] = np.mean(data[:, id], 2).reshape((1, 3))
+                Mu[:, i] = np.mean(data[:, id], 2).reshape((1, -1))
 
             # Stopping criterion %%%%%%%%%%%%%%%%%%%%
             if abs(cumdist - cumdist_old) < cumdist_threshold:
