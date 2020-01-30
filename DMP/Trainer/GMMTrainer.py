@@ -37,14 +37,15 @@ class GMMTrainer(TrainerBase.TrainerBase):
        :return: None
         """
 
-        expData_st = ["%.6f" % number for number in expData]
-        expSigma_st = ["%.6f" % number for number in expSigma]
-        H_st = ["%.6f" % number for number in H]
+        expData_st = [ number for number in expData]
+        expSigma_st = [ number.tolist()[0] for number in expSigma]
+        H_st = [number for number in H]
 
         root = etree.Element('GMM')
         expData_ = etree.Element('expData')
         expSigma_ = etree.Element('expSigma')
         H_ = etree.Element('H')
+
         y_start = etree.Element('y0')
         the_goal = etree.Element('goal')
         y0 = self._demo[0][0]
@@ -70,7 +71,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         """
 
         """
-        nb_dim = len(self._demo)
+        nb_dim =  2 #len(self._demo)
         gmm = GMMWPI.GMMWPI(nb_states=self._n_rfs, nb_dim=nb_dim)
         tau, motion, sIn = self.gen_path(self._demo)
         gmm.init_params_kmeans(tau)
