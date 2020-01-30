@@ -41,24 +41,25 @@ class GMMTrainer(TrainerBase.TrainerBase):
         expSigma_st = ["%.6f" % number for number in expSigma]
         H_st = ["%.6f" % number for number in H]
 
-        root = etree.Element('RMPs')
-        weights = etree.Element('Weights')
-        inv_sq_var = etree.Element('inv_sq_var')
-        gauss_means = etree.Element('gauss_means')
+        root = etree.Element('GMM')
+        expData_ = etree.Element('expData')
+        expSigma_ = etree.Element('expSigma')
+        H_ = etree.Element('H')
         y_start = etree.Element('y0')
         the_goal = etree.Element('goal')
+        y0 = self._demo[0][0]
+        goal = self._demo[0][-1]
+        the_goal.text = np.str(np.float(goal))
+        y_start.text = np.str(np.float(y0))
 
-        the_goal.text = np.str(np.int(goal))
-        y_start.text = np.str(np.int(y0))
+        for _h, _d, _s in zip(H_st, expData_st, expSigma_st):
+            etree.SubElement(H_, "H").text = _h
+            etree.SubElement(expData_, "data").text = _d
+            etree.SubElement(expSigma_, "sigma").text = _s
 
-        for _w, _c, _h in zip(w_st, c_st, h_st):
-            etree.SubElement(weights, "w").text = _w
-            etree.SubElement(inv_sq_var, "h").text = _h
-            etree.SubElement(gauss_means, "c").text = _c
-
-        root.append(weights)
-        root.append(inv_sq_var)
-        root.append(gauss_means)
+        root.append(expData_)
+        root.append(H_)
+        root.append(expSigma_)
         root.append(the_goal)
         root.append(y_start)
         tree = etree.ElementTree(root)
@@ -75,6 +76,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         gmm.init_params_kmeans(tau)
         gmm.em(tau, no_init=True)
         expData, expSigma, H = gmm.gmr(sIn, [0], [1])
+        self.writeXML(expData, expSigma, H)
 
     @staticmethod
     def resample_demos(self, trajs):
