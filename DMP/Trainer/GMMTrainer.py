@@ -2,8 +2,8 @@
 import TrainerBase
 import numpy as np
 from scipy import signal
-from Trajectories import utilities as utl
-from Trajectories import GMMWPI
+from ...Trajectories import utilities as utl
+from ...Trajectories import GMMWPI
 import numpy as np
 import math
 from lxml import etree
@@ -63,7 +63,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         root.append(the_goal)
         root.append(y_start)
         tree = etree.ElementTree(root)
-        tree.write(self._file_name, pretty_print=True, xml_declaration=True, encoding="utf-8")
+        tree.write(self._file_name + ".xml", pretty_print=True, xml_declaration=True, encoding="utf-8")
 
 
     def train(self):
@@ -79,7 +79,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         self.writeXML(expData, expSigma, H)
 
     @staticmethod
-    def resample_demos(self, trajs):
+    def resample_demos(trajs):
         # find resample length to use
         resample = 100000
         for traj in trajs:
@@ -115,7 +115,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
 
         sIn.append(1.0)  # Initialization of decay term
         for t in xrange(1, nbData):
-            sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * dt)  # Update of decay term (ds/dt=-alpha s) )
+            sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
 
         goal = demos[0][-1]
 
