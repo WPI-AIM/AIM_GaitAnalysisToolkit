@@ -45,14 +45,12 @@
 
 import math
 import numpy as np
-from lib.Vicon import Vicon
-import lib.GaitCore.Core as core
-import lib.GaitCore.Core.Data as Data
-import lib.GaitCore.Core.Newton as Newton
-from lib.GaitCore.Bio import Side
-from lib.GaitCore.Core import utilities as utilities
-from  lib.GaitCore.Bio import Leg
+from ..lib.Vicon import Vicon
 
+from ..lib.GaitCore.Core import Data as Data
+from ..lib.GaitCore.Core import Newton as Newton
+from ..lib.GaitCore.Bio import Side
+from ..lib.GaitCore.Core import utilities as utilities
 import math
 
 

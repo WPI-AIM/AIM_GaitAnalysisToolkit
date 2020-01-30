@@ -47,8 +47,8 @@
 from termcolor import colored
 
 
-from lib.pbdlib.pbdlib import gmm
-from lib.pbdlib.pbdlib.model import *
+from ..lib.pbdlib.pbdlib import gmm
+from ..lib.pbdlib.pbdlib.model import *
 import copy
 
 class GMMWPI(gmm.GMM):
