@@ -47,8 +47,10 @@ import math
 import numpy as np
 from ..lib.Vicon import Vicon
 
+
 from ..lib.GaitCore.Core import Data as Data
 from ..lib.GaitCore.Core import Newton as Newton
+from ..lib.GaitCore.Core import Point as Point
 from ..lib.GaitCore.Bio import Side
 from ..lib.GaitCore.Core import utilities as utilities
 import math
@@ -177,11 +179,11 @@ class ViconGaitingTrial(object):
                 Mx = np.array(plateM.x)[start:end]
                 My = np.array(plateM.y)[start:end]
                 Mz = np.array(plateM.z)[start:end]
-                f = core.Point.Point(Fx, Fy, Fz)
-                m = core.Point.Point(Mx, My, Mz)
-                data = core.Newton.Newton(None, f, m, None)
+                f = Point.Point(Fx, Fy, Fz)
+                m = Point.Point(Mx, My, Mz)
+                data = Newton.Newton(None, f, m, None)
                 time = (len(Fx) / float(self.vicon.length)) * self.dt
-                stamp = core.Data.Data(data, np.linspace(0, time, len(data)))
+                stamp = Data.Data(data, np.linspace(0, time, len(data)))
                 joints[key].append(stamp)
 
         return joints
@@ -233,7 +235,7 @@ class ViconGaitingTrial(object):
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
                 time = (len(data) / float(self.vicon.length)) * self.dt
-                stamp = core.Data.Data(data, np.linspace(0, time, len(data)))
+                stamp = Data.Data(data, np.linspace(0, time, len(data)))
                 if self._use_black_list:
                     if count in self._black_list:
                         continue
@@ -260,7 +262,7 @@ class ViconGaitingTrial(object):
                 end = emg.get_offset_index(inc[1])
                 data = np.array(emg.get_values())[start:end]
                 time = (len(data) / float(self.vicon.length)) * self.dt
-                stamp = core.Data.Data(data, np.linspace(0, time, len(data)))
+                stamp = Data.Data(data, np.linspace(0, time, len(data)))
                 if self._use_black_list:
                     if count in self._black_list:
                         continue
@@ -290,8 +292,8 @@ class ViconGaitingTrial(object):
             right_data = right_cop[inc[0]:inc[1]]
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = core.Data.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = core.Data.Data(right_data, np.linspace(0, time, len(right_data)))
+            stamp_left = Data.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = Data.Data(right_data, np.linspace(0, time, len(right_data)))
 
             if self._use_black_list:
                 if count in self._black_list:
@@ -331,8 +333,8 @@ class ViconGaitingTrial(object):
                  [right_fsr[2].get_values()[inc[0]:inc[1]]]])
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = core.Data.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = core.Data.Data(right_data, np.linspace(0, time, len(right_data)))
+            stamp_left = Data.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = Data.Data(right_data, np.linspace(0, time, len(right_data)))
 
             # if self._use_black_list:
             #     if count in self._black_list:
@@ -373,8 +375,8 @@ class ViconGaitingTrial(object):
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
 
-            stamp_left = core.Data.Data()
-            stamp_right = core.Data.Data()
+            stamp_left = Data.Data()
+            stamp_right = Data.Data()
             stamp_right.data = right_data
             stamp_left.data = left_data
             stamp_left.time = np.linspace(0, time, len(left_data))
@@ -416,8 +418,8 @@ class ViconGaitingTrial(object):
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
 
-            stamp_left = core.Data.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = core.Data.Data(right_data, np.linspace(0, time, len(right_data)))
+            stamp_left = Data.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = Data.Data(right_data, np.linspace(0, time, len(right_data)))
 
             if self._use_black_list:
                 if count in self._black_list:
@@ -456,8 +458,8 @@ class ViconGaitingTrial(object):
                  [right_leg.ankle.IMU.gyro.get_values()[inc[0]:inc[1]]]])
 
             time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = core.Data.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = core.Data.Data(right_data, np.linspace(0, time, len(right_data)))
+            stamp_left = Data.Data(left_data, np.linspace(0, time, len(left_data)))
+            stamp_right = Data.Data(right_data, np.linspace(0, time, len(right_data)))
 
             if self._use_black_list:
                 if count in self._black_list:

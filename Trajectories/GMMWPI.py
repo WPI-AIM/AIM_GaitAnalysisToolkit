@@ -49,6 +49,7 @@ from termcolor import colored
 
 from ..lib.pbdlib.pbdlib import gmm
 from ..lib.pbdlib.pbdlib.model import *
+from ..lib.pbdlib.pbdlib.functions import gaussPDF
 import copy
 
 class GMMWPI(gmm.GMM):
@@ -61,7 +62,7 @@ class GMMWPI(gmm.GMM):
         nb_s = nb_states
         nb_d = nb_dim
 
-        gmm.GMM.__init__(self, nb_states=nb_states, nb_dim= nb_dim)
+        gmm.GMM.__init__(self, nb_states=nb_states, nb_dim=nb_dim)
         # flag to indicate that publishing was not init
         self.publish_init = False
         self._mu = mu
@@ -73,8 +74,6 @@ class GMMWPI(gmm.GMM):
             self.init_zeros()
 
     def kmeansclustering(self, data, reg=1e-8):
-
-
 
         self.reg = reg
 
@@ -154,7 +153,6 @@ class GMMWPI(gmm.GMM):
 
             for j in xrange(2, len(data[:,idtmp])):
                 mat = np.vstack((mat, data[:, idtmp][j][0]))
-
 
             self.priors[i] = len(idtmp[0])
             sig = np.cov(mat).transpose()
@@ -366,7 +364,7 @@ class GMMWPI(gmm.GMM):
         for t in xrange(nbData):
 
             for i in xrange(self.nb_states):
-                H[i, t] = self.priors[i] * multi_variate_normal_old(np.asarray([DataIn[t]]),
+                H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]),
                                                                     self.mu[in_][i],
                                                                     self.sigma[i][in_, in_])
 
