@@ -150,7 +150,12 @@ class GMMWPI(gmm.GMM):
         for i in xrange(self.nb_states):
 
             idtmp = np.where(idList==i)
-            mat = np.vstack((data[:, idtmp][0][0], data[:, idtmp][1][0], data[:, idtmp][2][0]))
+            mat = np.vstack((data[:, idtmp][0][0], data[:, idtmp][1][0]))
+
+            for j in xrange(2, len(data[:,idtmp])):
+                mat = np.vstack((mat, data[:, idtmp][j][0]))
+
+
             self.priors[i] = len(idtmp[0])
             sig = np.cov(mat).transpose()
             self.sigma[i] = np.cov(mat).transpose() + np.eye(self.nb_dim)*self.reg
