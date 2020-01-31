@@ -8,6 +8,7 @@ import numpy as np
 import math
 from lxml import etree
 import scipy.interpolate
+import pickle
 
 class GMMTrainer(TrainerBase.TrainerBase):
 
@@ -26,7 +27,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         super(GMMTrainer, self).__init__(demos, file_name, n_rf, dt)
 
 
-    def writeXML(self, expData, expSigma, H):
+    def writeXML(self, expData, expSigma, H, sIn):
         """
        Saves the data to a CSV file so that is can be used by a runner
        :param w: weights from training
@@ -37,44 +38,57 @@ class GMMTrainer(TrainerBase.TrainerBase):
        :return: None
         """
 
-        expData_st = expData.flatten()
-        expSigma_st = [ number.tolist()[0][0] for number in expSigma]
-        H_st = [number for number in H]
+        data = {}
 
-        root = etree.Element('GMM')
-        expData_ = etree.Element('expData')
-        expSigma_ = etree.Element('expSigma')
-        H_ = []
-        for ii in xrange(len(H)):
-            H_.append(etree.Element('H' + str(ii)))
+        data["len"] = len(sIn)
+        data["H"] = H
+        data["expData"] = expData
+        data["expSigma"] = expSigma
+        data["sIn"] = sIn
+        data["dt"] = self._dt
+        data["start"] = self._demo[0][0]
+        data["goal"] = self._demo[0][-1]
+        with open(self._file_name + '.pickle', 'wb') as handle:
+            pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        y_start = etree.Element('y0')
-        the_goal = etree.Element('goal')
-        y0 = self._demo[0][0]
-        goal = self._demo[0][-1]
-        the_goal.text = np.str(np.float(goal))
-        y_start.text = np.str(np.float(y0))
-
-
-        for _d, _s in zip(expData_st, expSigma_st):
-            print _d
-            print _s
-
-        for _d, _s in zip(expData_st, expSigma_st):
-            etree.SubElement(expData_, "data").text = "%.6f" % _d
-            etree.SubElement(expSigma_, "sigma").text = "%.6f" % _s
-
-        for _h, data in zip(H_, H_st):
-            for d in data:
-                etree.SubElement(_h, "h").text = "%.6f" % d
-            root.append(_h)
-
-        root.append(expData_)
-        root.append(expSigma_)
-        root.append(the_goal)
-        root.append(y_start)
-        tree = etree.ElementTree(root)
-        tree.write(self._file_name + ".xml", pretty_print=True, xml_declaration=True, encoding="utf-8")
+        # expData_st = expData.flatten()
+        # expSigma_st = [ number.tolist()[0][0] for number in expSigma]
+        # H_st = [number for number in H]
+        #
+        # root = etree.Element('GMM')
+        # expData_ = etree.Element('expData')
+        # expSigma_ = etree.Element('expSigma')
+        # H_ = []
+        # for ii in xrange(len(H)):
+        #     H_.append(etree.Element('H' + str(ii)))
+        #
+        # y_start = etree.Element('y0')
+        # the_goal = etree.Element('goal')
+        # y0 = self._demo[0][0]
+        # goal = self._demo[0][-1]
+        # the_goal.text = np.str(np.float(goal))
+        # y_start.text = np.str(np.float(y0))
+        #
+        #
+        # for _d, _s in zip(expData_st, expSigma_st):
+        #     print _d
+        #     print _s
+        #
+        # for _d, _s in zip(expData_st, expSigma_st):
+        #     etree.SubElement(expData_, "data").text = "%.6f" % _d
+        #     etree.SubElement(expSigma_, "sigma").text = "%.6f" % _s
+        #
+        # for _h, data in zip(H_, H_st):
+        #     for d in data:
+        #         etree.SubElement(_h, "h").text = "%.6f" % d
+        #     root.append(_h)
+        #
+        # root.append(expData_)
+        # root.append(expSigma_)
+        # root.append(the_goal)
+        # root.append(y_start)
+        # tree = etree.ElementTree(root)
+        # tree.write(self._file_name + ".xml", pretty_print=True, xml_declaration=True, encoding="utf-8")
 
 
     def train(self):
@@ -87,7 +101,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         gmm.init_params_kmeans(tau)
         gmm.em(tau, no_init=True)
         expData, expSigma, H = gmm.gmr(sIn, [0], [1])
-        self.writeXML(expData, expSigma, H)
+        self.writeXML(expData, expSigma, H, sIn)
 
     @staticmethod
     def resample_demos(trajs):
