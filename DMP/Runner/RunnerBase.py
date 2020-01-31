@@ -7,6 +7,8 @@ class RunnerBase(object):
 
         self._file = file
         self._goal = None
+        self._kp = 50.0
+        self._kc = 10.0
         with open(self._file, 'rb') as handle:
             self._data = pickle.load(handle)
 
