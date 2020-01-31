@@ -37,14 +37,16 @@ class GMMTrainer(TrainerBase.TrainerBase):
        :return: None
         """
 
-        expData_st = [ number for number in expData]
-        expSigma_st = [ number.tolist()[0] for number in expSigma]
+        expData_st = expData.flatten()
+        expSigma_st = [ number.tolist()[0][0] for number in expSigma]
         H_st = [number for number in H]
 
         root = etree.Element('GMM')
         expData_ = etree.Element('expData')
         expSigma_ = etree.Element('expSigma')
-        H_ = etree.Element('H')
+        H_ = []
+        for ii in xrange(len(H)):
+            H_.append(etree.Element('H' + str(ii)))
 
         y_start = etree.Element('y0')
         the_goal = etree.Element('goal')
@@ -53,13 +55,21 @@ class GMMTrainer(TrainerBase.TrainerBase):
         the_goal.text = np.str(np.float(goal))
         y_start.text = np.str(np.float(y0))
 
-        for _h, _d, _s in zip(H_st, expData_st, expSigma_st):
-            etree.SubElement(H_, "H").text = _h
-            etree.SubElement(expData_, "data").text = _d
-            etree.SubElement(expSigma_, "sigma").text = _s
+
+        for _d, _s in zip(expData_st, expSigma_st):
+            print _d
+            print _s
+
+        for _d, _s in zip(expData_st, expSigma_st):
+            etree.SubElement(expData_, "data").text = "%.6f" % _d
+            etree.SubElement(expSigma_, "sigma").text = "%.6f" % _s
+
+        for _h, data in zip(H_, H_st):
+            for d in data:
+                etree.SubElement(_h, "h").text = "%.6f" % d
+            root.append(_h)
 
         root.append(expData_)
-        root.append(H_)
         root.append(expSigma_)
         root.append(the_goal)
         root.append(y_start)
