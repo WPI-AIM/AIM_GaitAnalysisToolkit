@@ -7,7 +7,7 @@ class GMMRunner(RunnerBase.RunnerBase):
     def __init__(self, file):
         super(GMMRunner, self).__init__(file)
         self._x = self.get_start()
-        self._goal = self._data["goal"]
+        self._goal =  self._data["goal"]
         self._dx = np.array([[0.0]])
         self._path = []
         self._index = 0
@@ -36,7 +36,7 @@ class GMMRunner(RunnerBase.RunnerBase):
 
     @index.setter
     def index(self, value):
-        if value >= self.get_length():
+        if value > self.get_length():
             self._index = 0
         else:
             self._index = value

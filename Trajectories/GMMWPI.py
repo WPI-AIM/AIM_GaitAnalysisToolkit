@@ -87,11 +87,9 @@ class GMMWPI(gmm.GMM):
         self.nbData = data.shape[1]
         idTmp = np.random.permutation(self.nbData)
 
-        # Mu = Data[:, idTmp[:nbStates]]
-        #Mu = data[:, idTmp[:self.nb_states]]
         Mu = copy.deepcopy(data[:, idTmp[:self.nb_states]])
         searching = True
-        distTmp = np.zeros((len(data[0]),self.nb_states, ))
+        distTmpTrans = np.zeros((len(data[0]),self.nb_states, ))
         idList = []
 
         while searching:
@@ -102,9 +100,8 @@ class GMMWPI(gmm.GMM):
                 thing = np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, self.nbData)
                 temp = np.power(data - thing, 2.0)
                 temp2 = np.sum(temp, 0)
-                distTmp[:,i] = temp2
+                distTmpTrans[:,i] = temp2
 
-            distTmpTrans = distTmp#.transpose()
             vTmp = np.min(distTmpTrans, 1)
             cumdist = sum(vTmp)
             idList = []
@@ -118,7 +115,6 @@ class GMMWPI(gmm.GMM):
             for i in xrange(self.nb_states):
                 # Update the centers
                 id = np.where(idList == i)
-                temp = np.mean(data[:, id], 2)
                 Mu[:, i] = np.mean(data[:, id], 2).reshape((1, -1))
 
             # Stopping criterion %%%%%%%%%%%%%%%%%%%%
@@ -154,9 +150,9 @@ class GMMWPI(gmm.GMM):
             for j in xrange(2, len(data[:,idtmp])):
                 mat = np.vstack((mat, data[:, idtmp][j][0]))
 
+            mat = np.concatenate((mat, mat), axis=1)
             self.priors[i] = len(idtmp[0])
-            sig = np.cov(mat).transpose()
-            self.sigma[i] = np.cov(mat).transpose() + np.eye(self.nb_dim)*self.reg
+            self.sigma[i] = np.cov(mat) + np.eye(self.nb_dim)*self.reg
 
         self.priors = self.priors / np.sum(self.priors)
         #self.priors = np.array([ 0.1500,.16250, 0.14750, 0.3350, 0.2050  ])
@@ -192,18 +188,6 @@ class GMMWPI(gmm.GMM):
 
         nb_samples = data.shape[1]
 
-        if not no_init:
-            if random_init and not only_scikit:
-                self.init_params_random(data)
-            elif kmeans_init and not only_scikit:
-                self.init_params_kmeans(data)
-            else:
-                if diag:
-                    self.init_params_scikit(data, 'diag')
-                else:
-                    self.init_params_scikit(data, 'full')
-
-        if only_scikit: return
         data = data.T
         searching = True
         LL = np.zeros(nb_max_steps)
