@@ -65,3 +65,9 @@ class GMMRunner(RunnerBase.RunnerBase):
 
     def get_sIn(self):
         return self._data["sIn"]
+
+    def get_mu(self):
+        return self._data["mu"]
+
+    def get_sigma(self):
+        return self._data["sigma"]

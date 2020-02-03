@@ -16,7 +16,7 @@ class TrainerBase(object):
         self._dt = dt
 
     @abc.abstractmethod
-    def writeXML(self):
+    def save(self):
         pass
 
     @abc.abstractmethod

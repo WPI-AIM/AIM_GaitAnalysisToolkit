@@ -2,7 +2,7 @@
 import TrainerBase
 import numpy as np
 from scipy import signal
-from ...Trajectories import utilities as utl
+from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
 from ...Trajectories import GMMWPI
 import numpy as np
 import math
@@ -23,11 +23,12 @@ class GMMTrainer(TrainerBase.TrainerBase):
         self._kv = (2.0 * self._kp) ** 0.5
 
         demos = self.resample_demos(demo)
- 
+
+
         super(GMMTrainer, self).__init__(demos, file_name, n_rf, dt)
 
 
-    def writeXML(self, expData, expSigma, H, sIn):
+    def save(self, expData, expSigma, H, sIn):
         """
        Saves the data to a CSV file so that is can be used by a runner
        :param w: weights from training
@@ -45,6 +46,8 @@ class GMMTrainer(TrainerBase.TrainerBase):
         data["expData"] = expData
         data["expSigma"] = expSigma
         data["sIn"] = sIn
+        data["mu"] = self.gmm.mu
+        data["sigma"] = self.gmm.sigma
         data["dt"] = self._dt
         data["start"] = self._demo[0][0]
         data["goal"] = self._demo[0][-1]
@@ -56,12 +59,12 @@ class GMMTrainer(TrainerBase.TrainerBase):
 
         """
         nb_dim =  2 #len(self._demo)
-        gmm = GMMWPI.GMMWPI(nb_states=self._n_rfs, nb_dim=nb_dim)
+        self.gmm = GMMWPI.GMMWPI(nb_states=self._n_rfs, nb_dim=nb_dim)
         tau, motion, sIn = self.gen_path(self._demo)
-        gmm.init_params_kmeans(tau)
-        gmm.em(tau, no_init=True)
-        expData, expSigma, H = gmm.gmr(sIn, [0], [1])
-        self.writeXML(expData, expSigma, H, sIn)
+        self.gmm.init_params_kmeans(tau)
+        self.gmm.em(tau, no_init=True)
+        expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
+        self.save(expData, expSigma, H, sIn)
 
     @staticmethod
     def resample_demos(trajs):

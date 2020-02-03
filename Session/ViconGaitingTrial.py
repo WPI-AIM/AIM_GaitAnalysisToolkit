@@ -52,7 +52,7 @@ from ..lib.GaitCore.Core import Data as Data
 from ..lib.GaitCore.Core import Newton as Newton
 from ..lib.GaitCore.Core import Point as Point
 from ..lib.GaitCore.Bio import Side
-from ..lib.GaitCore.Core import utilities as utilities
+from ..lib.GaitCore.Core import utilities as ult
 import math
 
 
@@ -92,7 +92,7 @@ class ViconGaitingTrial(object):
         max_peakind = np.pad(max_peakind, (1, 10), 'constant', constant_values=(0, 0))
         max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
 
-        for start in xrange(0, len(max_peakind) - 2):
+        for start in xrange(0, len(max_peakind) - 1):
             error = 10000000
             offset = 0
             for ii in xrange(0, 20):
@@ -122,7 +122,7 @@ class ViconGaitingTrial(object):
             z.append(m[i].z)
 
         N = 10
-        z = utilities.smooth(map(int, z), 5)
+        z = ult.smooth(map(int, z), 5)
         z = np.convolve(z, np.ones((N,)) / N, mode='valid')
 
         max_peakind = np.diff(np.sign(np.diff(z))).flatten()  # the one liner
@@ -202,7 +202,6 @@ class ViconGaitingTrial(object):
                 name = side + joint_name[1:]
                 joints[name] = []
                 for inc in self.vicon_set_points:
-                    time = ((inc[1] - inc[0]) / float(self.vicon.length)) * self.dt
                     time = np.linspace(0, 1, (inc[1] - inc[0]))
                     current_joint = fnc.__dict__[joint_name]
                     angle = Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
