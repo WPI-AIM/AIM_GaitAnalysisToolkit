@@ -155,7 +155,6 @@ class GMMWPI(gmm.GMM):
             self.sigma[i] = np.cov(mat) + np.eye(self.nb_dim)*self.reg
 
         self.priors = self.priors / np.sum(self.priors)
-        #self.priors = np.array([ 0.1500,.16250, 0.14750, 0.3350, 0.2050  ])
 
     def em(self, data, reg=1e-8, maxiter=100, minstepsize=1e-5, diag=False, reg_finish=False,
            kmeans_init=False, random_init=False, dep_mask=None, verbose=False, only_scikit=False,
@@ -225,111 +224,7 @@ class GMMWPI(gmm.GMM):
         return GAMMA
 
 
-    def init_hmm_kbins(self, demos, dep=None, reg=1e-8, dep_mask=None):
-        """
-        Init HMM by splitting each demos in K bins along time. Each K states of the HMM will
-        be initialized with one of the bin. It corresponds to a left-to-right HMM.
 
-        :param demos:	[list of np.array([nb_timestep, nb_dim])]
-        :param dep:
-        :param reg:		[float]
-        :return:
-        """
-
-        # delimit the cluster bins for first demonstration
-        self.nb_dim = demos[0].shape[1]
-
-        self.init_zeros()
-
-        t_sep = []
-
-        for demo in demos:
-            t_sep += [map(int, np.round(np.linspace(0, demo.shape[0], self.nb_states + 1)))]
-
-        # print t_sep
-        for i in range(self.nb_states):
-            data_tmp = np.empty((0, self.nb_dim))
-            inds = []
-            states_nb_data = 0  # number of datapoints assigned to state i
-
-            # Get bins indices for each demonstration
-            for n, demo in enumerate(demos):
-                inds = range(t_sep[n][i], t_sep[n][i + 1])
-
-                data_tmp = np.concatenate([data_tmp, demo[inds]], axis=0)
-                states_nb_data += t_sep[n][i + 1] - t_sep[n][i]
-
-            self.priors[i] = states_nb_data
-            self.mu[i] = np.mean(data_tmp, axis=0)
-
-            if dep_mask is not None:
-                self.sigma *= dep_mask
-
-            if dep is None:
-                self.sigma[i] = np.cov(data_tmp.T) + np.eye(self.nb_dim) * reg
-            else:
-                for d in dep:
-                    dGrid = np.ix_([i], d, d)
-                    self.sigma[dGrid] = (np.cov(data_tmp[:, d].T) + np.eye(
-                        len(d)) * reg)[:, :, np.newaxis]
-            # print self.Sigma[:,:,i]
-
-        # normalize priors
-        self.priors = self.priors / np.sum(self.priors)
-
-        # Hmm specific init
-        self.Trans = np.ones((self.nb_states, self.nb_states)) * 0.01
-
-        nb_data = np.mean([d.shape[0] for d in demos])
-
-        for i in range(self.nb_states - 1):
-            self.Trans[i, i] = 1.0 - float(self.nb_states) / nb_data
-            self.Trans[i, i + 1] = float(self.nb_states) / nb_data
-
-        self.Trans[-1, -1] = 1.0
-        self.init_priors = np.ones(self.nb_states) * 1. / self.nb_states
-
-    def add_trash_component(self, data, scale=2.):
-        if isinstance(data, list):
-            data = np.concatenate(data, axis=0)
-
-        mu_new = np.mean(data, axis=0)
-        sigma_new = scale ** 2 * np.cov(data.T)
-
-        self.priors = np.concatenate([self.priors, 0.01 * np.ones(1)])
-        self.priors /= np.sum(self.priors)
-        self.mu = np.concatenate([self.mu, mu_new[None]], axis=0)
-        self.sigma = np.concatenate([self.sigma, sigma_new[None]], axis=0)
-
-    def mvn_pdf(self, x, reg=None):
-        """
-
-        :param x: 			np.array([nb_samples, nb_dim])
-            samples
-        :param mu: 			np.array([nb_states, nb_dim])
-            mean vector
-        :param sigma_chol: 	np.array([nb_states, nb_dim, nb_dim])
-            cholesky decomposition of covariance matrices
-        :param lmbda: 		np.array([nb_states, nb_dim, nb_dim])
-            precision matrices
-        :return: 			np.array([nb_states, nb_samples])
-            log mvn
-        """
-        # if len(x.shape) > 1:  # TODO implement mvn for multiple xs
-        # 	raise NotImplementedError
-        mu, lmbda_, sigma_chol_ = self.mu, self.lmbda, self.sigma_chol
-
-        if x.ndim > 1:
-            dx = mu[None] - x[:, None]  # nb_timesteps, nb_states, nb_dim
-        else:
-            dx = mu - x
-
-        eins_idx = ('baj,baj->ba', 'ajk,baj->bak') if x.ndim > 1 else (
-            'aj,aj->a', 'ajk,aj->ak')
-
-        return -0.5 * np.einsum(eins_idx[0], dx, np.einsum(eins_idx[1], lmbda_, dx)) \
-               - mu.shape[1] / 2. * np.log(2 * np.pi) - np.sum(
-            np.log(sigma_chol_.diagonal(axis1=1, axis2=2)), axis=1)
 
     def gmr(self, DataIn,  in_, out_):
 
