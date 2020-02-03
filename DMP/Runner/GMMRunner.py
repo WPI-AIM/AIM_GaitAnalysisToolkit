@@ -71,3 +71,6 @@ class GMMRunner(RunnerBase.RunnerBase):
 
     def get_sigma(self):
         return self._data["sigma"]
+
+    def get_tau(self):
+        return self._data["tau"]

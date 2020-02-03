@@ -210,16 +210,16 @@ class GMMWPI(gmm.GMM):
                 self.mu[:, i] = data.T.dot(GAMMA2[i,:].reshape((-1,1))).T
                 mu = np.matlib.repmat(self.mu[:, i].reshape((-1, 1)), 1, self.nbData)
                 diff = (data.T - mu)
-                self.sigma[i] = diff.dot(np.diag(GAMMA2[i,:])).dot(diff.T) + np.eye(self.nb_dim) * self.reg;
+                self.sigma[i] = diff.dot(np.diag(GAMMA2[i,:])).dot(diff.T) + np.eye(self.nb_dim) * self.reg
 
             # self.priors = np.mean(GAMMA, axis=1)
 
             LL[it] = np.sum(np.log(np.sum(L, axis=0)))/self.nbData
             # Check for convergence
             if it > nb_min_steps:
-                if LL[it] - LL[it - 1] < 1.0000e-04 or it == (100 - 1):
+                if LL[it] - LL[it - 1] < 1.0000e-04 or it == (100-1):
                     searching = False
-
+            print it
             it += 1
         return GAMMA
 
