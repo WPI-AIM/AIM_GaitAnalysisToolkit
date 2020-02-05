@@ -69,7 +69,7 @@ class ViconGaitingTrial(object):
         self._joint_trajs = None
         self._black_list = []
         self._use_black_list = False
-        self.create_index_seperators()
+        #self.create_index_seperators()
 
     def create_index_seperators(self):
         """
