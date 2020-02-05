@@ -52,6 +52,7 @@ from ..lib.GaitCore.Core import Data as Data
 from ..lib.GaitCore.Core import Newton as Newton
 from ..lib.GaitCore.Core import Point as Point
 from ..lib.GaitCore.Bio import Side
+from lib.GaitAnalysisToolkit.lib.Vicon import Markers
 from ..lib.GaitCore.Core import utilities as ult
 import math
 
@@ -109,40 +110,59 @@ class ViconGaitingTrial(object):
 
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
 
-    def get_stair_ranges(self, side="R"):
+    def get_stairs(self, toe_marker, base_frame, step_frame):
 
+        markers = self.vicon.get_markers()
+        toe = markers.get_marker(toe_marker)
+        stairB = markers.get_frame(base_frame)
+        stairA = markers.get_frame(step_frame)
+        distA = []
+        distB = []
 
-        if side == "R":
-            m = self.vicon.markers.get_marker("RTOE")
-        else:
-            m = self.vicon.markers.get_marker("LTOE")
+        for i in xrange(len(toe)):
+            distA.append(np.linalg.norm(Markers.transform_vector(np.linalg.pinv(stairA[i]), toe[i].toarray())))
+            distB.append(np.linalg.norm(Markers.transform_vector(np.linalg.pinv(stairB[i]), toe[i].toarray())))
 
-        z = []
-        for i in xrange(len(m)):
-            z.append(m[i].z)
+        error = 1.0
+        start = distA[0]
+        points = [0] * len(distA)
+        searching = False
+        N = 20
+        distA = np.convolve(distA, np.ones((N,)) / N, mode='valid')
+        local = []
+        hills = []
+        for ii in xrange(len(distA) - 3):
 
-        N = 10
-        z = ult.smooth(map(int, z), 5)
-        z = np.convolve(z, np.ones((N,)) / N, mode='valid')
+            d = distA[ii] - distA[ii + 3]
 
-        max_peakind = np.diff(np.sign(np.diff(z))).flatten()  # the one liner
-        max_peakind = np.pad(max_peakind, (1, 1), 'constant', constant_values=(0, 0))
-        max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
-        secound_step = max_peakind[-1]
-        first_step = max_peakind[-2]
+            if abs(d) > error and d < 0:
+                searching = True
+            else:
+                searching = False
+                if local:
+                    if local[-1][1] > 100:
+                        hills.append(local)
+                        points[local[0][0]] = local[0][1]
+                    local = []
 
-        index = secound_step
-        while z[index] != z[index + 1]:
-            print index
-            index += 1
-        final_index = index
+            if searching:
+                local.append((ii, distA[ii]))
 
-        index = first_step
-        while z[index] != z[index - 1]:
-            index -= 1
-        start_index = index
-        # plt.plot(z)
-        return (start_index, final_index)
+        for hill in hills:
+
+            max = hill[-1]
+            current_index = max[0] + 3
+            current_value = distA[current_index]
+            current_index += 1
+
+            while current_value >= distA[current_index]:
+                current_value = distA[current_index]
+                current_index += 1
+                hill.append((current_index, distA[current_index]))
+                points[current_index] = distA[current_index]
+
+        return hills
+
 
     def get_force_plates(self):
         """
