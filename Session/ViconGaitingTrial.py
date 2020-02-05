@@ -84,7 +84,7 @@ class ViconGaitingTrial(object):
         vicon = []
 
         model = self.vicon.get_model_output()
-        hip = model.get_right_leg().hip.angle.x
+        hip = model.get_left_leg().hip.angle.x
         N = 10
         hip = np.convolve(hip, np.ones((N,)) / N, mode='valid')
 
@@ -96,7 +96,7 @@ class ViconGaitingTrial(object):
             error = 10000000
             offset = 0
             for ii in xrange(0, 20):
-                temp_error = model.get_left_leg().hip.angle.x[max_peakind[start + 1] + ii]
+                temp_error = model.get_right_leg().hip.angle.x[max_peakind[start + 1] + ii]
                 if temp_error < error:
                     error = temp_error
                     offset = ii
