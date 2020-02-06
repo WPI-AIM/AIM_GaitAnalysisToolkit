@@ -110,18 +110,16 @@ class ViconGaitingTrial(object):
 
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
 
-    def get_stairs(self, toe_marker, base_frame, step_frame):
+    def get_stairs(self, toe_marker, step_frame):
 
         markers = self.vicon.get_markers()
         toe = markers.get_marker(toe_marker)
-        stairB = markers.get_frame(base_frame)
         stairA = markers.get_frame(step_frame)
         distA = []
         distB = []
 
         for i in xrange(len(toe)):
-            distA.append(np.linalg.norm(Markers.transform_vector(np.linalg.pinv(stairA[i]), toe[i].toarray())))
-            distB.append(np.linalg.norm(Markers.transform_vector(np.linalg.pinv(stairB[i]), toe[i].toarray())))
+            distA.append(Markers.transform_vector( np.linalg.pinv(stairA[i]), toe[i].toarray())[2][0])
 
         error = 1.0
         start = distA[0]
