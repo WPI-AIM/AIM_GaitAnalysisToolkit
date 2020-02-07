@@ -5,6 +5,8 @@ from scipy import signal
 from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
 from ...Trajectories import GMMWPI
 import numpy as np
+import numpy.polynomial.polynomial as poly
+
 import math
 from lxml import etree
 import scipy.interpolate
@@ -12,7 +14,7 @@ import pickle
 
 class GMMTrainer(TrainerBase.TrainerBase):
 
-    def __init__(self, demo, file_name, n_rf, dt):
+    def __init__(self, demo, file_name, n_rf, dt=0.01,smooth_window=3):
         """
            :param file_names: file to save training too
            :param n_rfs: number of DMPs
@@ -21,8 +23,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
            """
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
-
-        demos = self.resample_demos(demo)
+        demos = self.resample_demos(demo,smooth_window)
 
 
         super(GMMTrainer, self).__init__(demos, file_name, n_rf, dt)
@@ -69,12 +70,21 @@ class GMMTrainer(TrainerBase.TrainerBase):
         self.save(expData, expSigma, H, sIn, tau, motion)
 
     @staticmethod
-    def resample_demos(trajs):
+    def resample_demos(trajs,smooth_window):
         # find resample length to use
-        resample = 100000
+
+
+
+        resample = 1000000000
         for traj in trajs:
             sample = len(traj)
             resample = min(resample, sample)
+
+        sIn = []
+        alpha = 1.0
+        sIn.append(1.0)  # Initialization of decay term
+        for t in xrange(1, resample):
+            sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * 0.01)  # Update of decay term (ds/dt=-alpha s) )
 
         demos = []
         for traj in trajs:
@@ -82,7 +92,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
             temp = []
             for d in data:
                 temp.append(d)
-            temp = utl.smooth(temp,10)
+            temp = utl.smooth(temp, smooth_window)
             temp = [[np.array(el)] for el in temp]
             temp = np.array(temp)
             demos.append(temp)
@@ -115,7 +125,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
             demo = demos[n]
             size = demo.shape[0]
             x = utl.spline(np.arange(1, size + 1), demo, np.linspace(1, size, nbData))
-            dx = np.divide(np.diff(x, 1), np.power(self._dt, 1.0))
+            dx = np.divide(np.diff(x, 1), np.power(self._dt, 1))
             dx = np.append([0.0], dx[0])
             ddx = np.divide(np.diff(x, 2), np.power(self._dt, 2))
             ddx = np.append([0.0, 0.0], ddx[0])
