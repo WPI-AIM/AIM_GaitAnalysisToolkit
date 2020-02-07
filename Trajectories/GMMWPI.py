@@ -79,7 +79,8 @@ class GMMWPI(gmm.GMM):
 
         # Criterion to stop the EM iterative update
         cumdist_threshold = 1e-10
-        maxIter = 100
+        maxIter = 200
+        minIter = 20
 
         # Initialization of the parameters
         cumdist_old = -1.7977e+308
@@ -118,15 +119,16 @@ class GMMWPI(gmm.GMM):
                 Mu[:, i] = np.mean(data[:, id], 2).reshape((1, -1))
 
             # Stopping criterion %%%%%%%%%%%%%%%%%%%%
-            if abs(cumdist - cumdist_old) < cumdist_threshold:
-                print 'Maximum number of kmeans iterations, ' + str(maxIter) + ' is reached'
+            if abs(cumdist - cumdist_old) < cumdist_threshold and nbStep > minIter:
+                print 'Maximum number of kmeans iterations, ' + str(abs(cumdist - cumdist_old)) + ' is reached'
+                print 'steps reached, ' + str(nbStep) + ' is reached'
                 searching = False
 
             cumdist_old = cumdist
             nbStep = nbStep + 1
 
             if nbStep > maxIter:
-                print 'Maximum number of kmeans iterations, ' + str(maxIter) + ' is reached'
+                print 'steps reached, ' + str(nbStep) + ' is reached'
                 searching = False
             print "maxitter ", nbStep
 
@@ -156,7 +158,7 @@ class GMMWPI(gmm.GMM):
 
         self.priors = self.priors / np.sum(self.priors)
 
-    def em(self, data, reg=1e-8, maxiter=100, minstepsize=1e-5, diag=False, reg_finish=False,
+    def em(self, data, reg=1e-8, maxiter=200, minstepsize=1e-5, diag=False, reg_finish=False,
            kmeans_init=False, random_init=False, dep_mask=None, verbose=False, only_scikit=False,
            no_init=True):
         """
@@ -181,7 +183,7 @@ class GMMWPI(gmm.GMM):
 
         self.reg = reg
 
-        nb_min_steps = 5  # min num iterations
+        nb_min_steps = 20  # min num iterations
         nb_max_steps = maxiter  # max iterations
 
 
@@ -217,7 +219,7 @@ class GMMWPI(gmm.GMM):
             LL[it] = np.sum(np.log(np.sum(L, axis=0)))/self.nbData
             # Check for convergence
             if it > nb_min_steps:
-                if LL[it] - LL[it - 1] < 1.0000e-04 or it == (100-1):
+                if LL[it] - LL[it - 1] < .00000001 or it == (maxiter-1):
                     searching = False
             print it
             it += 1

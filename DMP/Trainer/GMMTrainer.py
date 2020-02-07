@@ -28,7 +28,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         super(GMMTrainer, self).__init__(demos, file_name, n_rf, dt)
 
 
-    def save(self, expData, expSigma, H, sIn, tau):
+    def save(self, expData, expSigma, H, sIn, tau, motion):
         """
        Saves the data to a CSV file so that is can be used by a runner
        :param w: weights from training
@@ -43,6 +43,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
 
         data["len"] = len(sIn)
         data["H"] = H
+        data["motion"] = motion
         data["expData"] = expData
         data["expSigma"] = expSigma
         data["sIn"] = sIn
@@ -65,7 +66,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         self.gmm.init_params_kmeans(tau)
         self.gmm.em(tau, no_init=True)
         expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
-        self.save(expData, expSigma, H, sIn, tau)
+        self.save(expData, expSigma, H, sIn, tau, motion)
 
     @staticmethod
     def resample_demos(trajs):
@@ -80,7 +81,9 @@ class GMMTrainer(TrainerBase.TrainerBase):
             data = signal.resample(traj, resample)
             temp = []
             for d in data:
-                temp.append([np.array(d)])
+                temp.append(d)
+            temp = utl.smooth(temp,10)
+            temp = [[np.array(el)] for el in temp]
             temp = np.array(temp)
             demos.append(temp)
 

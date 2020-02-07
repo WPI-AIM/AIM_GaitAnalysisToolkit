@@ -74,3 +74,6 @@ class GMMRunner(RunnerBase.RunnerBase):
 
     def get_tau(self):
         return self._data["tau"]
+
+    def get_motion(self):
+        return self._data["motion"]
