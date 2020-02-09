@@ -6,6 +6,7 @@ from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
 from ...Trajectories import GMMWPI
 import numpy as np
 import numpy.polynomial.polynomial as poly
+import numpy.matlib
 
 import math
 from lxml import etree
