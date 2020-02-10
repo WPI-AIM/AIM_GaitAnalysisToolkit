@@ -1,15 +1,17 @@
 
-
 from termcolor import colored
 import numpy as np
 import copy
+import matplotlib
+from matplotlib.patches import Polygon
+from matplotlib.collections import PatchCollection
 
 class GMMWPI():
 
     def __init__(self, nb_states=1, nb_dim=3, init_zeros=False, mu=None, lmbda=None, sigma=None, priors=None):
 
 
-        #gmm.GMM.__init__(self, nb_states=nb_states, nb_dim=nb_dim)
+        # gmm.GMM.__init__(self, nb_states=nb_states, nb_dim=nb_dim)
         self.nb_dim = nb_dim
         self.nb_states = nb_states
         # flag to indicate that publishing was not init
@@ -39,7 +41,7 @@ class GMMWPI():
 
         Mu = copy.deepcopy(data[:, idTmp[:self.nb_states]])
         searching = True
-        distTmpTrans = np.zeros((len(data[0]),self.nb_states, ))
+        distTmpTrans = np.zeros((len(data[0]) ,self.nb_states, ))
         idList = []
 
         while searching:
@@ -50,7 +52,7 @@ class GMMWPI():
                 thing = np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, self.nbData)
                 temp = np.power(data - thing, 2.0)
                 temp2 = np.sum(temp, 0)
-                distTmpTrans[:,i] = temp2
+                distTmpTrans[: ,i] = temp2
 
             vTmp = np.min(distTmpTrans, 1)
             cumdist = sum(vTmp)
@@ -98,12 +100,12 @@ class GMMWPI():
             idtmp = np.where(idList==i)
             mat = np.vstack((data[:, idtmp][0][0], data[:, idtmp][1][0]))
 
-            for j in xrange(2, len(data[:,idtmp])):
+            for j in xrange(2, len(data[: ,idtmp])):
                 mat = np.vstack((mat, data[:, idtmp][j][0]))
 
             mat = np.concatenate((mat, mat), axis=1)
             self.priors[i] = len(idtmp[0])
-            self.sigma[i] = np.cov(mat) + np.eye(self.nb_dim)*self.reg
+            self.sigma[i] = np.cov(mat) + np.eye(self.nb_dim ) *self.reg
 
         self.priors = self.priors / np.sum(self.priors)
 
@@ -137,18 +139,18 @@ class GMMWPI():
             # M-step
             for i in xrange(self.nb_states):
                 # update priors
-                self.priors[i] = np.sum(GAMMA[i,:]) / self.nbData
-                self.mu[:, i] = data.T.dot(GAMMA2[i,:].reshape((-1,1))).T
+                self.priors[i] = np.sum(GAMMA[i ,:]) / self.nbData
+                self.mu[:, i] = data.T.dot(GAMMA2[i ,:].reshape((-1 ,1))).T
                 mu = np.matlib.repmat(self.mu[:, i].reshape((-1, 1)), 1, self.nbData)
                 diff = (data.T - mu)
-                self.sigma[i] = diff.dot(np.diag(GAMMA2[i,:])).dot(diff.T) + np.eye(self.nb_dim) * self.reg
+                self.sigma[i] = diff.dot(np.diag(GAMMA2[i ,:])).dot(diff.T) + np.eye(self.nb_dim) * self.reg
 
             # self.priors = np.mean(GAMMA, axis=1)
 
-            LL[it] = np.sum(np.log(np.sum(L, axis=0)))/self.nbData
+            LL[it] = np.sum(np.log(np.sum(L, axis=0)) ) /self.nbData
             # Check for convergence
             if it > nb_min_steps:
-                if LL[it] - LL[it - 1] < .00000001 or it == (maxiter-1):
+                if LL[it] - LL[it - 1] < .00000001 or it == (maxiter -1):
                     searching = False
             print it
             it += 1
@@ -187,10 +189,10 @@ class GMMWPI():
                 expData[:, t] = expData[:, t] + H[i, t] * MuTmp[:, i]
 
             for i in xrange(self.nb_states):
-                sigma_tmp = self.sigma[i][out_[0]:(out_[-1]+1), out_[0]:(out_[-1]+1)] - \
+                sigma_tmp = self.sigma[i][out_[0]:(out_[-1 ] +1), out_[0]:(out_[-1 ] +1)] - \
                             self.sigma[i][out_, in_] / self.sigma[i][in_, in_] * self.sigma[i][in_, out_]
 
-                expSigma[t] = expSigma[t] + H[i, t] * (sigma_tmp + MuTmp[:, i].reshape((-1,1)) * MuTmp[:, i].T)
+                expSigma[t] = expSigma[t] + H[i, t] * (sigma_tmp + MuTmp[:, i].reshape((-1 ,1)) * MuTmp[:, i].T)
 
             expSigma[t] = expSigma[t] - expData[:, t] * expData[:, t].T + np.eye(nbVarOut) * 1E-8
 
@@ -239,3 +241,48 @@ class GMMWPI():
         self.nb_dim = value.shape[0]
         self.nb_states = value.shape[1]
         self._mu = value
+
+
+def plot_gmm2(Mu, Sigma, ax=None):
+
+	nbDrawingSeg = 10
+	t = np.linspace(-np.pi, np.pi, nbDrawingSeg)
+	X = []
+	nb_state = len(Mu[0])
+	patches = []
+
+	for i in xrange(nb_state):
+
+		w, v = np.linalg.eig(Sigma[i])
+		R = np.real(v.dot(np.lib.scimath.sqrt(np.diag(w))))
+		x = R.dot(np.array([np.cos(t), np.sin(t)])) + np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, nbDrawingSeg)
+		x = x.transpose().tolist()
+		patches.append(Polygon(x))
+		ax.plot(Mu[0, i], Mu[1, i], 'r*')
+
+	p = PatchCollection(patches, edgecolor="k")
+	ax.add_collection(p)
+
+	return p
+
+def plot_activation( sIn, H, ax):
+
+
+	nbDrawingSeg = 50
+	t = np.linspace(-np.pi, np.pi, nbDrawingSeg)
+	nb_states = len(H)
+	patches = []
+	sIn_ = sIn
+	sIn_.insert(0 ,0)
+	sIn_.append(0)
+
+	for i in xrange(4):
+		h = H[i].tolist()
+		h.insert(0, 0)
+		h.append(0)
+		fn = map(list, zip(*[ sIn_, h ]) )
+        # patches.append(Polygon(fn,fill=None, edgecolor='r'))
+		ax.add_patch(Polygon(fn ,fill=None, edgecolor='r'))
+
+	# p = PatchCollection(patches)
+	# ax.add_collection(p)

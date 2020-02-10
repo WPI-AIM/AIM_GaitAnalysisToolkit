@@ -77,3 +77,6 @@ class GMMRunner(RunnerBase.RunnerBase):
 
     def get_motion(self):
         return self._data["motion"]
+
+    def get_dwt(self):
+        return self._data["dtw"]

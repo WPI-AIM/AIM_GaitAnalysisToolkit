@@ -7,7 +7,7 @@ from ...Trajectories import GMMWPI
 import numpy as np
 import numpy.polynomial.polynomial as poly
 import numpy.matlib
-
+from dtw import dtw
 import math
 from lxml import etree
 import scipy.interpolate
@@ -24,10 +24,11 @@ class GMMTrainer(TrainerBase.TrainerBase):
            """
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
-        demos = self.resample_demos(demo,smooth_window)
+        demos1 = self.resample_demos(demo,smooth_window)
+        demos2, self.dtw_data = self.resample_demos2(demo, smooth_window)
 
 
-        super(GMMTrainer, self).__init__(demos, file_name, n_rf, dt)
+        super(GMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
 
 
     def save(self, expData, expSigma, H, sIn, tau, motion):
@@ -55,6 +56,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         data["dt"] = self._dt
         data["start"] = self._demo[0][0]
         data["goal"] = self._demo[0][-1]
+        data["dtw"] = self.dtw_data
         with open(self._file_name + '.pickle', 'wb') as handle:
             pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -66,9 +68,46 @@ class GMMTrainer(TrainerBase.TrainerBase):
         self.gmm = GMMWPI.GMMWPI(nb_states=self._n_rfs, nb_dim=nb_dim)
         tau, motion, sIn = self.gen_path(self._demo)
         self.gmm.init_params_kmeans(tau)
-        self.gmm.em(tau, no_init=True)
+        self.gmm.em(tau)
         expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
         self.save(expData, expSigma, H, sIn, tau, motion)
+
+
+    def resample_demos2(self, trajs, smoothing_window=0):
+
+
+        manhattan_distance = lambda x, y: np.abs(x - y)
+        ecuild_distance = lambda x, y: np.sqrt(x*x + y*y)
+
+        idx = np.argmax([l.shape[0] for l in trajs])
+        t = []
+        alpha = 1.0
+        t.append(1.0)  # Initialization of decay term
+        for i in xrange(1, len(trajs[idx])):
+            t.append(t[i - 1] - alpha * t[i - 1] * 0.01)  # Update of decay term (ds/dt=-alpha s) )
+
+        t = np.linspace(0, 1, len(trajs[idx]))
+        demos = []
+        coefs = poly.polyfit(t, trajs[idx], 3)
+        ffit = poly.Polynomial(coefs)  # instead of np.poly1d
+        x_fit = ffit(t)
+        data = []
+        for ii, y in enumerate(trajs):
+            dtw_data = {}
+            d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
+            dtw_data["cost"] = d
+            dtw_data["cost_matrix"] = cost_matrix
+            dtw_data["acc_cost_matrix"] = acc_cost_matrix
+            dtw_data["path"] = path
+            data.append(dtw_data)
+            data_warp = [y[path[1]][:x_fit.shape[0]]]
+            coefs = poly.polyfit(t, data_warp[0], 3)
+            ffit = poly.Polynomial(coefs)  # instead of np.poly1d
+            y_fit = ffit(t)
+            temp = [[np.array(ele)] for ele in y_fit.tolist()]
+            temp = np.array(temp)
+            demos.append(temp)
+        return demos, data
 
     @staticmethod
     def resample_demos(trajs,smooth_window):
