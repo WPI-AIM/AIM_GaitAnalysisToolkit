@@ -39,5 +39,12 @@ class RunnerBase(object):
     def goal(self):
         return self._goal
 
+    @property
+    def start(self):
+        return self._x
+
     def update_goal(self, value):
         self._goal = value
+
+    def update_start(self, value):
+        self._x = value

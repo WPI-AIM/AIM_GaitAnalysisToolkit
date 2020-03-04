@@ -489,6 +489,9 @@ class ViconGaitingTrial(object):
         side = Side.Side(left, right)
         return side
 
+
+
+
     @property
     def dt(self):
         return self._dt

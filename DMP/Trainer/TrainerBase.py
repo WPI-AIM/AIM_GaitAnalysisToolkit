@@ -1,6 +1,6 @@
 
 import abc
-
+import numpy as np
 class TrainerBase(object):
 
     def __init__(self, demo, file_name, n_rfs, dt):
@@ -26,4 +26,5 @@ class TrainerBase(object):
     @abc.abstractmethod
     def train(self):
         pass
+
 
