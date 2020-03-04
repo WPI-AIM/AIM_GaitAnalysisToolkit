@@ -9,3 +9,5 @@ def spline(x, Y, xx, kind='cubic'):
         return sp.interpolate.interp1d(x, Y, kind=kind)(xx)
     F = [sp.interpolate.interp1d(x, Y[:, i]) for i in range(Y.shape[1])]
     return np.vstack([f(xx) for f in F])
+
+
