@@ -20,7 +20,6 @@ class LowerLimb(Model.Model):
 
         num = x * x + y * y - l1 ** 2 - l2 ** 2
         dem = 2 * l1 * l2
-        print num / dem
         q2 = np.arctan2(-np.sqrt(1 - (num / dem) * (num / dem)), (num / dem))
         q1 = np.arctan2(y, x) - np.arctan2(l2 * np.sin(q2), l1 + l2 * np.cos(q2))
         q3 = 0.5 * np.pi - q1 - q2
