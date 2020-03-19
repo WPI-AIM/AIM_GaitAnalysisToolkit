@@ -10,7 +10,7 @@ class LowerLimb(Model.Model):
         super(LowerLimb, self).__init__(mass, height)
         self.make_body()
 
-    def IK(self, toe, hip_location=[0,0], ankle_contraint=False):
+    def IK(self, toe, hip_location=[0, 0], ankle_contraint=False):
 
         l1 = self.lengths["thigh"]
         l2 = self.lengths["shank"]
@@ -77,6 +77,5 @@ if __name__ == '__main__':
 
 
     plt.show()
-
 
 
