@@ -138,7 +138,7 @@ class ViconGaitingTrial(object):
             else:
                 searching = False
                 if local:
-                    if local[-1][1] > 100:
+                    if local[-1][1]  > 150:
                         hills.append(local)
                         points[local[0][0]] = local[0][1]
                     local = []

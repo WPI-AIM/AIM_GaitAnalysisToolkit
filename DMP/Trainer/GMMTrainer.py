@@ -104,7 +104,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
             dtw_data["path"] = path
             data.append(dtw_data)
             data_warp = [y[path[1]][:x_fit.shape[0]]]
-            coefs = poly.polyfit(t, data_warp[0], 10)
+            coefs = poly.polyfit(t, data_warp[0], 20)
             ffit = poly.Polynomial(coefs)  # instead of np.poly1d
             y_fit =  ffit(t)
             temp = [[np.array(ele)] for ele in y_fit.tolist()]
