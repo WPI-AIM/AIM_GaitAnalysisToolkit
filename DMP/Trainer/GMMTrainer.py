@@ -24,7 +24,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
            """
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
-        demos1 = self.resample_demos(demo, smooth_window)
+        # demos1 = self.resample_demos(demo, smooth_window)
         demos2, self.dtw_data = self.resample_demos2(demo, smooth_window)
         super(GMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
 
@@ -106,7 +106,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
             data_warp = [y[path[1]][:x_fit.shape[0]]]
             coefs = poly.polyfit(t, data_warp[0], 20)
             ffit = poly.Polynomial(coefs)  # instead of np.poly1d
-            y_fit =  ffit(t)
+            y_fit = ffit(t)
             temp = [[np.array(ele)] for ele in y_fit.tolist()]
             temp = np.array(temp)
             demos.append(temp)
@@ -146,7 +146,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
 
         """
 
-        self.nbData =len(demos[0])
+        self.nbData = len(demos[0])
         self.samples = len(demos)
 
         alpha = 1.0

@@ -28,3 +28,15 @@ class TrainerBase(object):
         pass
 
 
+def calculate_imitation_metric_1(demos, imitation):
+    M = len(demos)
+    T = len(imitation)
+    metric = 0.0
+
+    for m in xrange(M):
+        for t in xrange(T):
+            metric += np.sqrt(np.power(demos[m][t] - imitation[t]))
+
+    return metric
+
+

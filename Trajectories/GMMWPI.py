@@ -8,10 +8,10 @@ from matplotlib.collections import PatchCollection
 
 class GMMWPI():
 
-    def __init__(self, nb_states=1, nb_dim=3, init_zeros=False, mu=None, lmbda=None, sigma=None, priors=None):
+    def __init__(self, nb_states, nb_dim=3, init_zeros=False, mu=None, lmbda=None, sigma=None, priors=None):
 
         # gmm.GMM.__init__(self, nb_states=nb_states, nb_dim=nb_dim)
-        self.nb_dim = nb_dim
+        self.nb_dim = 2
         self.nb_states = nb_states
         # flag to indicate that publishing was not init
         self.publish_init = False
