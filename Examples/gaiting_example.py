@@ -46,11 +46,11 @@
 
 import sys
 import matplotlib.pyplot as plt
-import lib.GaitCore.Core.utilities as utilities
+from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities
 from scipy import signal
 import numpy as np
-from Session import ViconGaitingTrial
-from lib.Vicon import Vicon
+from lib.GaitAnalysisToolkit.Session import ViconGaitingTrial
+from lib.GaitAnalysisToolkit.lib.Vicon import Vicon
 import os
 
 
@@ -75,7 +75,7 @@ def compare_walking_angles(files, list_of_index):
     # find resample length to use
     for file, i in zip(files, list_of_index):
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
-        joints = trial.get_joint_trajectories()
+        joints = trial.vicon.get_model_output().get_right_leg().hip.angle
         sample = len(joints["Rhip"][i].angle.data)
         resample = min(resample, sample)
 
@@ -116,17 +116,17 @@ def compare_walking_moments(files, list_of_index):
     # find resample length to use
     for file, i in zip(files, list_of_index):
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
-        joints = trial.get_joint_trajectories()
-        sample = len(joints["Rhip"][i].moment.data)
+        joints = trial.vicon.get_model_output().get_right_leg().hip.angle
+        sample = len(joints)
         resample = min(resample, sample)
 
     # grab all the trajs and resample
     for file, i in zip(files, list_of_index):
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
-        hip = signal.resample(joints["Rhip"][i].moment.data, resample)
-        knee = signal.resample(joints["Rknee"][i].moment.data, resample)
-        ankle = signal.resample(joints["Rankle"][i].moment.data, resample)
+        hip = signal.resample(trial.vicon.get_model_output().get_right_leg().hip.moment, resample)
+        knee = signal.resample(trial.vicon.get_model_output().get_right_leg().knee.moment, resample)
+        ankle = signal.resample(trial.vicon.get_model_output().get_right_leg().ankle.moment, resample)
         ax1.plot(utilities.smooth(hip, 10))
         ax2.plot(utilities.smooth(knee, 10))
         ax3.plot( utilities.smooth(ankle,10))
