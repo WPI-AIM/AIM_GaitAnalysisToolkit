@@ -15,7 +15,7 @@ import pickle
 
 class GMMTrainer(TrainerBase.TrainerBase):
 
-    def __init__(self, demo, file_name, n_rf, dt=0.01,smooth_window=3):
+    def __init__(self, demo, file_name, n_rf, dt=0.01):
         """
            :param file_names: file to save training too
            :param n_rfs: number of DMPs
@@ -24,8 +24,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
            """
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
-        # demos1 = self.resample_demos(demo, smooth_window)
-        demos2, self.dtw_data = self.resample_demos2(demo, smooth_window)
+        demos2, self.dtw_data = self.resample(demo)
         super(GMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
 
 
@@ -72,73 +71,6 @@ class GMMTrainer(TrainerBase.TrainerBase):
         if save:
             self.save(expData, expSigma, H, sIn, tau, motion)
         return self.BIC
-
-
-    def resample_demos2(self, trajs, smoothing_window=0):
-
-
-        manhattan_distance = lambda x, y: np.abs(x - y)
-        ecuild_distance = lambda x, y: np.sqrt(x*x + y*y)
-
-        idx = np.argmax([l.shape[0] for l in trajs])
-        t = []
-        alpha = 1.0
-        t.append(1.0)  # Initialization of decay term
-        for i in xrange(1, len(trajs[idx])):
-            t.append(t[i - 1] - alpha * t[i - 1] * 0.01)  # Update of decay term (ds/dt=-alpha s) )
-        t = np.array(t)
-        #t = np.linspace(1.0,0.0, len(trajs[idx]) )
-        #t = np.linspace(1, 0, len(trajs[idx]))
-        demos = []
-        coefs = poly.polyfit(t, trajs[idx], 20)
-        ffit = poly.Polynomial(coefs)  # instead of np.poly1d
-        x_fit =  ffit(t)
-        data = []
-
-        for ii, y in enumerate(trajs):
-            dtw_data = {}
-            d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
-            dtw_data["cost"] = d
-            dtw_data["cost_matrix"] = cost_matrix
-            dtw_data["acc_cost_matrix"] = acc_cost_matrix
-            dtw_data["path"] = path
-            data.append(dtw_data)
-            data_warp = [y[path[1]][:x_fit.shape[0]]]
-            coefs = poly.polyfit(t, data_warp[0], 20)
-            ffit = poly.Polynomial(coefs)  # instead of np.poly1d
-            y_fit = ffit(t)
-            temp = [[np.array(ele)] for ele in y_fit.tolist()]
-            temp = np.array(temp)
-            demos.append(temp)
-        return demos, data
-
-    @staticmethod
-    def resample_demos(trajs, smooth_window):
-        # find resample length to use
-
-        resample = 1000000000
-        for traj in trajs:
-            sample = len(traj)
-            resample = min(resample, sample)
-
-        sIn = []
-        alpha = 1.0
-        sIn.append(1.0)  # Initialization of decay term
-        for t in xrange(1, resample):
-            sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * 0.01)  # Update of decay term (ds/dt=-alpha s) )
-
-        demos = []
-        for traj in trajs:
-            data = signal.resample(traj, resample)
-            temp = []
-            for d in data:
-                temp.append(d)
-            temp = utl.smooth(temp, smooth_window)
-            temp = [[np.array(el)] for el in temp]
-            temp = np.array(temp)
-            demos.append(temp)
-
-        return demos
 
 
     def gen_path(self, demos):
