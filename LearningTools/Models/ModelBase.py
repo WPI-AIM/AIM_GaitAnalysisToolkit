@@ -17,13 +17,13 @@ class ModelBase(object):
         self._nb_states = nb_states
         # flag to indicate that publishing was not init
         self.publish_init = False
-        self._mu = mu
-        self._lmbda = lmbda
-        self._sigma = sigma
-        self._priors = priors
-        self._nbData = 0
-        self._reg = 1e-8
-        self._nbData = 0
+        # self._mu = mu
+        # self._lmbda = lmbda
+        # self._sigma = sigma
+        # self._priors = priors
+        # self._nbData = 0
+        # self._reg = 1e-8
+        # self._nbData = 0
 
         if init_zeros:
             self.init_zeros()
@@ -89,6 +89,14 @@ class ModelBase(object):
     @nbData.setter
     def nbData(self, value):
         self._nbData = value
+
+    @property
+    def reg(self):
+        return self._reg
+
+    @reg.setter
+    def reg(self, value):
+        self._reg = value
 
     def BIC_score(self, LL):
         """

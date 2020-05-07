@@ -16,7 +16,8 @@ class GMM(ModelBase.ModelBase):
 
         idList = self.kmeansclustering(data)
         priors = np.ones(self.nb_states) / self.nb_states
-        self._sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
+        self.sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
+        self.Trans = np.ones((self.nb_states, self.nb_states)) * 0.01
 
         for i in xrange(self.nb_states):
 
@@ -28,9 +29,9 @@ class GMM(ModelBase.ModelBase):
 
             mat = np.concatenate((mat, mat), axis=1)
             priors[i] = len(idtmp[0])
-            self._sigma[i] = np.cov(mat) + np.eye(self.nb_dim) * self.reg
+            self.sigma[i] = np.cov(mat) + np.eye(self.nb_dim) * self.reg
 
-        self._priors = priors / np.sum(priors)
+        self.priors = priors / np.sum(priors)
 
     def train(self, data, reg=1e-8, maxiter=2000):
 
@@ -40,7 +41,9 @@ class GMM(ModelBase.ModelBase):
     def get_model(self):
         return self.sigma, self.mu
 
+
     def kmeansclustering(self, data, reg=1e-8):
+        self.reg = reg
 
         # Criterion to stop the EM iterative update
         cumdist_threshold = 1e-10

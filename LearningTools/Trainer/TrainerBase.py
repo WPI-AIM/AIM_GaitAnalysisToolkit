@@ -18,6 +18,7 @@ class TrainerBase(object):
         self._file_name = file_name
         self._n_rfs = n_rfs
         self._dt = dt
+        self.data = {}
 
 
     def resample(self, trajs):

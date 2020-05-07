@@ -4,6 +4,7 @@ import numpy as np
 from scipy import signal
 from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
 from ...Trajectories import GMMWPI
+from lib.GaitAnalysisToolkit.LearningTools.Models import GMM
 import numpy as np
 import numpy.polynomial.polynomial as poly
 import numpy.matlib
@@ -28,50 +29,45 @@ class GMMTrainer(TrainerBase.TrainerBase):
         super(GMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
 
 
-    def save(self, expData, expSigma, H, sIn, tau, motion):
+    def save(self):
         """
        Saves the data to a CSV file so that is can be used by a runner
-       :param w: weights from training
-       :param c: gausian centers
-       :param h: Varience of the mean
-       :param y0: startpoint
-       :param goal: goal
        :return: None
         """
+        self.data["mu"] = self.gmm.mu
+        self.data["sigma"] = self.gmm.sigma
+        self.data["dt"] = self._dt
+        self.data["start"] = self._demo[0][0]
+        self.data["goal"] = self._demo[0][-1]
+        self.data["dtw"] = self.dtw_data
+        self.data["BIC"] = self.BIC
 
-        data = {}
-
-        data["len"] = len(sIn)
-        data["H"] = H
-        data["motion"] = motion
-        data["expData"] = expData
-        data["expSigma"] = expSigma
-        data["sIn"] = sIn
-        data["mu"] = self.gmm.mu
-        data["tau"] = tau
-        data["sigma"] = self.gmm.sigma
-        data["dt"] = self._dt
-        data["start"] = self._demo[0][0]
-        data["goal"] = self._demo[0][-1]
-        data["dtw"] = self.dtw_data
-        data["BIC"] = self.BIC
         with open(self._file_name + '.pickle', 'wb') as handle:
-            pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def train(self, save=True):
         """
 
         """
         nb_dim = len(self._demo)
-        self.gmm = GMMWPI.GMMWPI(nb_states=self._n_rfs, nb_dim=nb_dim)
+        self.gmm = GMM.GMM(nb_states=self._n_rfs, nb_dim=nb_dim)
         tau, motion, sIn = self.gen_path(self._demo)
-        self.gmm.init_params_kmeans(tau)
+        self.gmm.init_params(tau)
         gammam, self.BIC = self.gmm.em(tau)
-        expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
-        if save:
-            self.save(expData, expSigma, H, sIn, tau, motion)
-        return self.BIC
 
+        expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
+
+        self.data["len"] = len(sIn)
+        self.data["H"] = H
+        self.data["motion"] = motion
+        self.data["expData"] = expData
+        self.data["expSigma"] = expSigma
+        self.data["sIn"] = sIn
+        self.data["tau"] = tau
+
+        if save:
+            self.save()
+        return self.data
 
     def gen_path(self, demos):
         """
