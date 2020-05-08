@@ -19,8 +19,25 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         A = self.get_Ad()
         R = self.get_R()
         P = self.get_P()
-        v = np.linalg.pinv( np.dot(np.dot(B.T,P[i]), B) + R)
-        K = np.dot(np.dot(np.dot(v, B.T), P[i]), A)
+        v = np.linalg.pinv(np.dot(np.dot(B.T, P[i]), B) + R)
+        L = np.dot(np.dot(np.dot(v, B.T), P[i]), A)
+
+        # L = np.append(np.eye(1) * self._kp, np.eye(1) * self._kc, 1)
+        x_ = np.append(self.goal - self._x, -self._dx).reshape((-1, 1))
+        ddx = L.dot(x_) + (self.get_expData()[:, self._index] * self.get_sIn()[self._index]).reshape((-1, 1))
+        self._dx = self._dx + ddx * self.get_dt()
+        self._x = self._x + self._dx * self.get_dt()
+        self._index = self._index + 1
+        self._path.append(self._x[0])
+        return self._x[0]
+
+    def step(self):
+        B = self.get_Bd()
+        A = self.get_Ad()
+        R = self.get_R()
+        P = self.get_P()
+        v = np.linalg.pinv( np.dot(np.dot(B.T,P[self._index]), B) + R)
+        K = np.dot(np.dot(np.dot(v, B.T), P[self._index]), A)
         x_ = np.append(self._x, self._dx).reshape((-1, 1))
         ddx = K.dot( np.vstack( (self.get_expData()[:, self._index],[0])) - x_)
         self._dx = self._dx + ddx * self.get_dt()
@@ -34,7 +51,7 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         self._x = self.get_start()
         self._goal = self._data["goal"]
         for i in xrange(self.get_length()):
-            path.append(self.step(i))
+            path.append(self.step())
         self._index = 0
         self._x = self.get_start()
         self._goal = self._data["goal"]

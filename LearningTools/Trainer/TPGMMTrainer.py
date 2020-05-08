@@ -34,7 +34,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
 
 
-        self.solve_riccati(expData, expSigma)
+        self.solve_riccati( expSigma)
 
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)
@@ -57,25 +57,24 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
 
 
 
-    def solve_riccati(self, expData, expSigma):
+    def solve_riccati(self, expSigma):
         Ad = np.eye(2)
+        Q = np.zeros((2,2))
         Bd = np.array([[0],[self._dt]])
         Ad[0,1] = self._dt
         R = np.eye(1)*self.gmm.reg
-        P = [ expSigma[-1] ] * len(expSigma)
+        P = [np.zeros((2, 2))] * len(expSigma)
+        P[-1][0, 0] = np.linalg.pinv(expSigma[-1])
 
-        for ii in xrange(len(expSigma)-2, -1, -1 ):
-            print
-            sig = expSigma[ii]
-            Q = np.linalg.pinv(sig)
-            B =  P[ii+1] * Bd
-            C = np.linalg.pinv( np.dot(Bd.T * P[ii+1], Bd) + R)
-            D = Bd.T * P[ii+1]
-            E =  B *  C * D - P[ii+1]
-            F = np.dot(np.dot( Ad.T, E ), Ad)
+        for ii in xrange(len(expSigma)-2, -1, -1):
+            Q[0,0] = np.linalg.pinv(expSigma[ii])
+            B = np.dot(P[ii+1],Bd)
+            C = np.linalg.pinv( np.dot( np.dot(Bd.T ,P[ii+1]), Bd) + R)
+            D = np.dot( Bd.T ,P[ii+1])
+            F = np.dot(np.dot(Ad.T, np.dot(np.dot(B, C), D) - P[ii+1]), Ad)
             P[ii] = Q - F
 
-        P[-1] = P[-2]
+
         self.data["Ad"] = Ad
         self.data["Bd"] = Bd
         self.data["R"] = R
