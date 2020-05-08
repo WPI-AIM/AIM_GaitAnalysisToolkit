@@ -33,6 +33,9 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         sigma, mu = self.gmm.get_model()
         expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
 
+
+        self.solve_riccati(expData, expSigma)
+
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)
         self.data["H"] = H
@@ -51,6 +54,32 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         if save:
             self.save()
         return self.data
+
+
+
+    def solve_riccati(self, expData, expSigma):
+        Ad = np.eye(2)
+        Bd = np.array([[0],[self._dt]])
+        Ad[0,1] = self._dt
+        R = np.eye(1)*self.gmm.reg
+        P = [ expSigma[-1] ] * len(expSigma)
+
+        for ii in xrange(len(expSigma)-2, -1, -1 ):
+            print
+            sig = expSigma[ii]
+            Q = np.linalg.pinv(sig)
+            B =  P[ii+1] * Bd
+            C = np.linalg.pinv( np.dot(Bd.T * P[ii+1], Bd) + R)
+            D = Bd.T * P[ii+1]
+            E =  B *  C * D - P[ii+1]
+            F = np.dot(np.dot( Ad.T, E ), Ad)
+            P[ii] = Q - F
+
+        P[-1] = P[-2]
+        self.data["Ad"] = Ad
+        self.data["Bd"] = Bd
+        self.data["R"] = R
+        self.data["P"] = P
 
     def gen_path(self, demos):
         """

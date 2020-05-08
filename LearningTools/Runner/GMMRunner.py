@@ -51,42 +51,7 @@ class GMMRunner(RunnerBase.RunnerBase):
         else:
             self._index = value
 
-    def get_length(self):
-        return self._data["len"]
-
-    def get_H(self):
-        return self._data["H"]
-
-    def get_expData(self):
-        return self._data["expData"]
-
-    def get_expSigma(self):
-        return self._data["expSigma"]
-
-    def get_start(self):
-        return self._data["start"]
-
     @property
     def goal(self):
         return self._goal
 
-    def get_dt(self):
-        return self._data["dt"]
-
-    def get_sIn(self):
-        return self._data["sIn"]
-
-    def get_mu(self):
-        return self._data["mu"]
-
-    def get_sigma(self):
-        return self._data["sigma"]
-
-    def get_tau(self):
-        return self._data["tau"]
-
-    def get_motion(self):
-        return self._data["motion"]
-
-    def get_dwt(self):
-        return self._data["dtw"]
