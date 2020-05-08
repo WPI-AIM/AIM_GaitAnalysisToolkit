@@ -1,20 +1,12 @@
 
 import TrainerBase
-import numpy as np
-from scipy import signal
 from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
-from ...Trajectories import GMMWPI
 from lib.GaitAnalysisToolkit.LearningTools.Models import GMM
 import numpy as np
-import numpy.polynomial.polynomial as poly
 import numpy.matlib
-from dtw import dtw
-import math
-from lxml import etree
-import scipy.interpolate
-import pickle
 
-class GMMTrainer(TrainerBase.TrainerBase):
+
+class TPGMMTrainer(TrainerBase.TrainerBase):
 
     def __init__(self, demo, file_name, n_rf, dt=0.01):
         """
@@ -26,7 +18,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
         demos2, self.dtw_data = self.resample(demo)
-        super(GMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
+        super(TPGMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
 
 
     def train(self, save=True):
@@ -79,18 +71,33 @@ class GMMTrainer(TrainerBase.TrainerBase):
         for t in xrange(1, self.nbData):
             sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
 
-        goal = demos[0][-1]
+
 
         for n in xrange(self.samples):
             demo = demos[n]
             size = demo.shape[0]
+            sol = np.zeros(demo.shape)
+            A = np.eye(demo.shape[1])
+            goal = demos[n][-1]
             x = utl.spline(np.arange(1, size + 1), demo, np.linspace(1, size, self.nbData))
+            dx_temp = np.zeros(x.shape)
+            ddx_temp = np.zeros(x.shape)
+
             dx = np.divide(np.diff(x, 1), np.power(self._dt, 1))
-            dx = np.append([0.0], dx[0])
+            dx_temp[:x.shape[0],1:x.shape[1]+1] = dx
+            dx = dx_temp
+
             ddx = np.divide(np.diff(x, 2), np.power(self._dt, 2))
-            ddx = np.append([0.0, 0.0], ddx[0])
-            goals = np.matlib.repmat(goal, self.nbData, 1)
-            tau_ = ddx - (self._kp * (goals.transpose() - x)) / sIn + (self._kv * dx) / sIn
+            ddx_temp[:x.shape[0], 1:x.shape[1] + 1] = ddx
+            ddx = dx_temp
+
+
+            goals = np.matlib.repmat(goal, 1, self.nbData)
+            x_hat = x + (self._kv/self._kp)*dx + (1.0/self._kp)*ddx
+            goals = x_hat - goal
+
+            for i in xrange(4):
+                sol[:, i] = np.linalg.solve(A, goals[:, i].reshape((-1, 1))).ravel()
 
             if x_ is not None:
                 x_ = x_ + x.tolist()
@@ -101,7 +108,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
                 dx_ = dx.tolist()
                 ddx_ = ddx.tolist()
 
-            taux = taux + tau_[0].tolist()
+            taux = taux + sol[0].tolist()
 
         t = sIn * self.samples
         tau = np.vstack((t, taux))

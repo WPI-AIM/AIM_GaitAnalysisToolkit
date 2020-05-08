@@ -6,11 +6,11 @@ from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 import ModelBase
 
-class GMM(ModelBase.ModelBase):
+class TPGMM(ModelBase.ModelBase):
 
     def __init__(self, nb_states, nb_dim=3, init_zeros=False, mu=None, lmbda=None, sigma=None, priors=None):
 
-        super(GMM, self).__init__(nb_states, nb_dim, init_zeros, mu, lmbda, sigma, priors)
+        super(TPGMM, self).__init__(nb_states, nb_dim, init_zeros, mu, lmbda, sigma, priors)
 
     def init_params(self, data):
 
@@ -42,6 +42,7 @@ class GMM(ModelBase.ModelBase):
         return self.sigma, self.mu
 
     def kmeansclustering(self, data, reg=1e-8):
+
         self.reg = reg
 
         # Criterion to stop the EM iterative update

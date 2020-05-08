@@ -3,7 +3,7 @@ import abc
 import numpy as np
 import numpy.polynomial.polynomial as poly
 from dtw import dtw
-
+import pickle
 
 class TrainerBase(object):
 
@@ -60,7 +60,12 @@ class TrainerBase(object):
 
     @abc.abstractmethod
     def save(self):
-        pass
+        """
+       Saves the data to a CSV file so that is can be used by a runner
+       :return: None
+        """
+        with open(self._file_name + '.pickle', 'wb') as handle:
+            pickle.dump(self.data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     @abc.abstractmethod
     def gen_path(self):
