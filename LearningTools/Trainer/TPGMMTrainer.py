@@ -1,7 +1,7 @@
 
 import TrainerBase
 from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
-from lib.GaitAnalysisToolkit.LearningTools.Models import GMM
+from lib.GaitAnalysisToolkit.LearningTools.Models import TPGMM
 import numpy as np
 import numpy.matlib
 
@@ -26,7 +26,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
 
         """
         nb_dim = len(self._demo)
-        self.gmm = GMM.GMM(nb_states=self._n_rfs, nb_dim=nb_dim)
+        self.gmm = TPGMM.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim)
         tau, motion, sIn = self.gen_path(self._demo)
         self.gmm.init_params(tau)
         gammam, BIC = self.gmm.train(tau)
@@ -71,15 +71,14 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         for t in xrange(1, self.nbData):
             sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
 
-
-
         for n in xrange(self.samples):
             demo = demos[n]
             size = demo.shape[0]
-            sol = np.zeros(demo.shape)
+
             A = np.eye(demo.shape[1])
-            goal = demos[n][-1]
+            goal = np.array([demos[n][-1]])
             x = utl.spline(np.arange(1, size + 1), demo, np.linspace(1, size, self.nbData))
+            sol = np.zeros(x.shape)
             dx_temp = np.zeros(x.shape)
             ddx_temp = np.zeros(x.shape)
 
@@ -88,15 +87,15 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             dx = dx_temp
 
             ddx = np.divide(np.diff(x, 2), np.power(self._dt, 2))
-            ddx_temp[:x.shape[0], 1:x.shape[1] + 1] = ddx
+            ddx_temp[:x.shape[0], 2:x.shape[1] + 2] = ddx
             ddx = dx_temp
 
 
             goals = np.matlib.repmat(goal, 1, self.nbData)
             x_hat = x + (self._kv/self._kp)*dx + (1.0/self._kp)*ddx
-            goals = x_hat - goal
+            goals = x_hat - goals
 
-            for i in xrange(4):
+            for i in xrange(self.nbData):
                 sol[:, i] = np.linalg.solve(A, goals[:, i].reshape((-1, 1))).ravel()
 
             if x_ is not None:
