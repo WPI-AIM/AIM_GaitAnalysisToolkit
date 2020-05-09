@@ -14,7 +14,15 @@ class GMMRunner(RunnerBase.RunnerBase):
         self._kp = 50.0
         self._kc = 10.0
 
-    def step(self):
+    def step(self, x=None, dx=None):
+        """
+
+        :param x: feedback position
+        :param dx: feedback velocity
+        :return: None
+        """
+
+        super(GMMRunner, self).step(x, dx)
         L = np.append(np.eye(1) * self._kp, np.eye(1) * self._kc, 1)
         x_ = np.append(self.goal - self._x, -self._dx).reshape((-1, 1))
         ddx = L.dot(x_) + (self.get_expData()[:, self._index] * self.get_sIn()[self._index]).reshape((-1, 1))
@@ -23,18 +31,6 @@ class GMMRunner(RunnerBase.RunnerBase):
         self._index = self._index + 1
         self._path.append(self._x[0])
         return self._x[0]
-
-    def run(self):
-        path = []
-        for i in xrange(self.get_length()):
-            path.append(self.step())
-        self._index = 0
-        self._x = self.get_start()
-        self._goal = self._data["goal"]
-        self._dx = np.array([[0.0]])
-        self._path = []
-
-        return path
 
     @property
     def goal(self):

@@ -9,9 +9,37 @@ class RunnerBase(object):
         self._goal = None
         self._kp = 50.0
         self._kc = 10.0
+        self._x = 0
+        self._dx = 0
+        self._ddx = 0
+        self._index = 0
+        self._path = []
         with open(self._file, 'rb') as handle:
             self._data = pickle.load(handle)
 
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def dx(self):
+        return self._dx
+
+    @dx.setter
+    def dx(self, value):
+        self._dx = value
+
+    @property
+    def ddx(self):
+        return self._ddx
+
+    @dx.setter
+    def ddx(self, value):
+        self._ddx = value
 
     @property
     def kp(self):
@@ -29,11 +57,29 @@ class RunnerBase(object):
     def kc(self, value):
         self._kc = value
 
-    def step(self):
-        pass
+    def step(self, x=None, dx=None):
+        """
+
+        :param x: feedback position
+        :param dx: feedback velocity
+        :return: None
+        """
+        if x is not None:
+            self._x = x
+        if dx is not None:
+            self._dx = dx
 
     def run(self):
-        pass
+        path = []
+        for i in xrange(self.get_length()):
+            path.append(self.step())
+        self._index = 0
+        self._x = self.get_start()
+        self._goal = self._data["goal"]
+        self._dx = np.array([[0.0]])
+
+
+        return path
 
     @property
     def goal(self):

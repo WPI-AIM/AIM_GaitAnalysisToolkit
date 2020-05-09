@@ -14,7 +14,15 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         self._kp = 50.0
         self._kc = 10.0
 
-    def step(self):
+    def step(self, x=None, dx=None):
+        """
+
+        :param x: feedback position
+        :param dx: feedback velocity
+        :return: None
+        """
+
+        super(TPGMMRunner, self).step(x,dx)
         B = self.get_Bd()
         A = self.get_Ad()
         R = self.get_R()
@@ -28,20 +36,6 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         self._index = self._index + 1
         self._path.append(self._x[0])
         return self._x[0]
-
-    def run(self):
-        path = []
-        self._x = self.get_start()
-        self._goal = self._data["goal"]
-        for i in xrange(self.get_length()):
-            path.append(self.step())
-        self._index = 0
-        self._x = self.get_start()
-        self._goal = self._data["goal"]
-        self._dx = np.array([[0.0]])
-        self._path = []
-
-        return path
 
     def get_Bd(self):
         return self._data["Bd"]
