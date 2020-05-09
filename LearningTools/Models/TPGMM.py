@@ -116,7 +116,7 @@ class TPGMM(ModelBase.ModelBase):
 
         return idList
 
-    def em(self, data, reg=1e-8, maxiter=2000):
+    def em(self, data, reg=1e-12, maxiter=2000):
         """
         Perform the EM algorithum
         :param data: data to learn

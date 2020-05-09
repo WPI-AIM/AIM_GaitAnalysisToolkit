@@ -1,6 +1,6 @@
 import RunnerBase
 import numpy as np
-
+from random import uniform
 
 class TPGMMRunner(RunnerBase.RunnerBase):
 
@@ -28,21 +28,6 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         self._index = self._index + 1
         self._path.append(self._x[0])
         return self._x[0]
-
-    # def step(self):
-    #     B = self.get_Bd()
-    #     A = self.get_Ad()
-    #     R = self.get_R()
-    #     P = self.get_P()
-    #     v = np.linalg.pinv( np.dot(np.dot(B.T,P[self._index]), B) + R)
-    #     K = np.dot( np.dot( v * B.T, P[self._index]), A)
-    #     x_ = np.append(self._x, self._dx).reshape((-1, 1))
-    #     ddx = K.dot( np.vstack( (self.get_expData()[:, self._index],[0])) - x_)
-    #     self._dx = self._dx + ddx * self.get_dt()
-    #     self._x = self._x + self._dx * self.get_dt()
-    #     self._index = self._index + 1
-    #     self._path.append(self._x[0])
-    #     return self._x[0]
 
     def run(self):
         path = []

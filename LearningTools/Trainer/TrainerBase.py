@@ -72,7 +72,12 @@ class TrainerBase(object):
         pass
 
     @abc.abstractmethod
-    def train(self):
+    def train(self, save="True"):
+        """
+
+        :param save: Boolean to save the model
+        :return:
+        """
         pass
 
 

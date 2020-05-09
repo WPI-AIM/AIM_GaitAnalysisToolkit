@@ -25,7 +25,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
 
     def train(self, save=True):
         """
-
+        train a model to reproduction
         """
         nb_dim = len(self._demo)
         self.gmm = TPGMM.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim)
