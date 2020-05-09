@@ -37,6 +37,7 @@ class TPGMM(ModelBase.ModelBase):
 
     def train(self, data, reg=1e-8, maxiter=2000):
 
+        self.init_params(data)
         gamma, BIC = self.em(data, reg, maxiter)
         return gamma, BIC
 

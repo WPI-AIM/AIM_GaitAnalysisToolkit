@@ -25,7 +25,6 @@ class ModelBase(object):
         self._reg = 1e-8
         self._nbData = 0
 
-
     @abc.abstractmethod
     def init_params(self, data):
         pass

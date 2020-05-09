@@ -30,7 +30,6 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         nb_dim = len(self._demo)
         self.gmm = TPGMM.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim)
         tau, motion, sIn = self.gen_path(self._demo)
-        self.gmm.init_params(tau)
         gammam, BIC = self.gmm.train(tau)
         self.gmm.relocateGaussian(self.A, self.b)
         sigma, mu, priors = self.gmm.get_model()

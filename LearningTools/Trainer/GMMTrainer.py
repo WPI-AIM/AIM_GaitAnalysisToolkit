@@ -37,7 +37,6 @@ class GMMTrainer(TrainerBase.TrainerBase):
         nb_dim = len(self._demo)
         self.gmm = GMM.GMM(nb_states=self._n_rfs, nb_dim=nb_dim)
         tau, motion, sIn = self.gen_path(self._demo)
-        self.gmm.init_params(tau)
         gammam, BIC = self.gmm.train(tau)
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)

@@ -55,6 +55,7 @@ class GMM(ModelBase.ModelBase):
         :param maxiter: max number of interations before breaking out
         :return:
         """
+        self.init_params(data)
         gamma, BIC = self.em(data, reg, maxiter)
         return gamma, BIC
 
