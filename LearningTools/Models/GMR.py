@@ -5,7 +5,12 @@ from ModelBase import gaussPDF
 class GMR(object):
 
     def __init__(self, mu, sigma, priors):
+        """
 
+        :param mu: list of trained mus
+        :param sigma: list of trained sigmas
+        :param priors: list of trained proirs
+        """
         self._sigma = sigma
         self._mu = mu
         self._priors = priors
@@ -13,26 +18,53 @@ class GMR(object):
 
     @property
     def sigma(self):
+        """
+
+        :return: sigma
+        """
         return self._sigma
 
     @sigma.setter
     def sigma(self, value):
+        """
+        set the sigma value
+        :param value: value to set sigma
+        :return:
+        """
         self._sigma = value
 
     @property
     def mu(self):
+        """
+
+        :return: list of mu
+        """
         return self._mu
 
     @mu.setter
     def mu(self, value):
+        """
+
+        :param value: value to set mu
+        :return:
+        """
         self._mu = value
 
     @property
     def priors(self):
+        """
+
+        :return: return the priors
+        """
         return self._priors
 
     @priors.setter
     def priors(self, value):
+        """
+
+        :param value: value to set the priors
+        :return: None
+        """
         self._priors = value
 
     @property
@@ -44,7 +76,13 @@ class GMR(object):
         self._states = value
 
     def train(self, DataIn, in_, out_):
-
+        """
+        Train the system
+        :param DataIn: data to tain on
+        :param in_: start location
+        :param out_: end location
+        :return:
+        """
         nbData = np.shape(DataIn)[0]
         nbVarOut = len(out_)
         in_ = in_[0]
