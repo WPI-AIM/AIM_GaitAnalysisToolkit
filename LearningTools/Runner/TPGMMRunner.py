@@ -19,7 +19,7 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         A = self.get_Ad()
         R = self.get_R()
         P = self.get_P()
-        v = np.linalg.pinv(np.dot(np.dot(B.T, P[self._index]), B) + R)
+        v = np.linalg.inv(np.dot(np.dot(B.T, P[self._index]), B) + R)
         K = np.dot(np.dot(v * B.T, P[self._index]), A)
         x_ = np.append(self._x, self._dx).reshape((-1, 1))
         ddx = K.dot(np.vstack((self.get_expData()[:, self._index], [0])) - x_)

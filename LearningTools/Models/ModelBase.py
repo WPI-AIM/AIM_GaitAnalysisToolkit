@@ -17,13 +17,13 @@ class ModelBase(object):
         self._nb_states = nb_states
         # flag to indicate that publishing was not init
         self.publish_init = False
-        # self._mu = mu
+        self._mu = np.zeros((self._nb_dim, self._nb_states))
         # self._lmbda = lmbda
-        # self._sigma = sigma
-        # self._priors = priors
+        self._sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
+        self._priors = np.ones(self.nb_states) / self.nb_states
         # self._nbData = 0
-        # self._reg = 1e-8
-        # self._nbData = 0
+        self._reg = 1e-8
+        self._nbData = 0
 
         if init_zeros:
             self.init_zeros()

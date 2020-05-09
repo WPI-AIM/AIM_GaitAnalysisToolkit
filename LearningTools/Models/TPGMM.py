@@ -11,6 +11,7 @@ class TPGMM(ModelBase.ModelBase):
     def __init__(self, nb_states, nb_dim=3, init_zeros=False, mu=None, lmbda=None, sigma=None, priors=None):
 
         super(TPGMM, self).__init__(nb_states, nb_dim, init_zeros, mu, lmbda, sigma, priors)
+        self.frames = 1
 
     def init_params(self, data):
 
@@ -231,6 +232,24 @@ class TPGMM(ModelBase.ModelBase):
         prop = np.exp(-0.5 * p) / scale
         return prop.T
 
+    def relocateGaussian(self, A, b):
+        mu = np.zeros((self._nb_dim, self._nb_states))
+        sigma = np.array([np.zeros((self.nb_dim,self.nb_dim)) for i in range(self.nb_states)])
+
+        for i in xrange(self._nb_states):
+            temp_mu = np.zeros((self._nb_dim, 1))
+            temp_sigma = np.zeros((self.nb_dim, self.nb_dim))
+            for frame in xrange(self.frames):
+                curr_mu = A[frame].dot(self.mu[:,i].reshape((-1,1))) + b[frame]
+                curr_sigma = A[frame] * self.sigma[i] * A[frame].T
+                temp_sigma = temp_sigma + np.linalg.inv(curr_sigma)
+                temp_mu = temp_mu + np.linalg.inv(curr_sigma).dot(curr_mu)
+
+            sigma[i] = np.linalg.inv(temp_sigma)
+            mu[:,i] = sigma[i].dot(temp_mu).flatten().tolist()
+
+        self.sigma = sigma
+        self.mu = mu
 
 
 
