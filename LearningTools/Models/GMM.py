@@ -14,7 +14,11 @@ class GMM(ModelBase.ModelBase):
         super(GMM, self).__init__(nb_states, nb_dim, init_zeros, mu, lmbda, sigma, priors)
 
     def init_params(self, data):
-
+        """
+        Sets up all the parameters learning, Initials all the variables with values
+        :param data:
+        :return: None
+        """
         idList = self.kmeansclustering(data)
         priors = np.ones(self.nb_states) / self.nb_states
         self.sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
@@ -35,7 +39,13 @@ class GMM(ModelBase.ModelBase):
         self.priors = priors / np.sum(priors)
 
     def train(self, data, reg=1e-8, maxiter=2000):
-
+        """
+        train the model to find the Means and covariance
+        :param data:
+        :param reg: error
+        :param maxiter: max number of interations before breaking out
+        :return:
+        """
         gamma, BIC = self.em(data, reg, maxiter)
         return gamma, BIC
 
@@ -43,8 +53,13 @@ class GMM(ModelBase.ModelBase):
         return self.sigma, self.mu
 
     def kmeansclustering(self, data, reg=1e-8):
+        """
+        Perform K-means to init the GMM
+        :param data: data to cluster
+        :param reg: error term
+        :return:
+        """
         self.reg = reg
-
         # Criterion to stop the EM iterative update
         cumdist_threshold = 1e-10
         maxIter = 200
@@ -107,7 +122,13 @@ class GMM(ModelBase.ModelBase):
 
 
     def em(self, data, reg=1e-8, maxiter=2000):
-
+        """
+        Perform the EM algorithum
+        :param data: data to learn
+        :param reg: error
+        :param maxiter:  max number of interations
+        :return:
+        """
         self.reg = reg
 
         nb_min_steps = 50  # min num iterations
@@ -196,8 +217,3 @@ class GMM(ModelBase.ModelBase):
         return prop.T
 
 
-
-
-
-# p = PatchCollection(patches)
-# ax.add_collection(p)

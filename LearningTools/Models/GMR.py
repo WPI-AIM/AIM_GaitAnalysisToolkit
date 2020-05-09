@@ -8,6 +8,7 @@ class GMR(object):
         self._sigma = sigma
         self._mu = mu
         self._priors = priors
+        self._states = len(mu)
 
     @property
     def sigma(self):
@@ -33,6 +34,14 @@ class GMR(object):
     def priors(self, value):
         self._priors = value
 
+    @property
+    def states(self):
+        return self._states
+
+    @states.setter
+    def states(self, value):
+        self._states = value
+
     def train(self, DataIn, in_, out_):
 
         nbData = np.shape(DataIn)[0]
@@ -45,25 +54,25 @@ class GMR(object):
         for i in xrange(nbData):
             expSigma.append(np.zeros((nbVarOut, nbVarOut)))
 
-        H = np.zeros((self.nb_states, nbData))
+        H = np.zeros((self.states, nbData))
 
         for t in xrange(nbData):
 
-            for i in xrange(self.nb_states):
-                H[i, t] = self.priors[i] * self.gaussPDF(np.asarray([DataIn[t]]),
+            for i in xrange(self.states):
+                H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]),
                                                          self.mu[in_][i],
                                                          self.sigma[i][in_, in_])
 
             H[:, t] = H[:, t] / np.sum(H[:, t] + np.finfo(float).tiny)
 
-            for i in xrange(self.nb_states):
+            for i in xrange(self.states):
                 MuTmp[:, i] = self.mu[out_, i] + self.sigma[i][out_, in_] / \
                               self.sigma[i][in_, in_] * \
                               (DataIn[t] - self.mu[in_, i])
 
                 expData[:, t] = expData[:, t] + H[i, t] * MuTmp[:, i]
 
-            for i in xrange(self.nb_states):
+            for i in xrange(self.states):
                 sigma_tmp = self.sigma[i][out_[0]:(out_[-1] + 1), out_[0]:(out_[-1] + 1)] - \
                             self.sigma[i][out_, in_] / self.sigma[i][in_, in_] * self.sigma[i][in_, out_]
 
