@@ -5,6 +5,7 @@ import matplotlib
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 import ModelBase
+from ModelBase import gaussPDF
 
 class TPGMM(ModelBase.ModelBase):
 
@@ -126,7 +127,7 @@ class TPGMM(ModelBase.ModelBase):
             L = np.zeros((self.nb_states, nb_samples))
 
             for i in range(self.nb_states):
-                L[i, :] = self.priors[i] * self.gaussPDF(data.T, self.mu[:, i], self.sigma[i])
+                L[i, :] = self.priors[i] * gaussPDF(data.T, self.mu[:, i], self.sigma[i])
 
             GAMMA = L / np.sum(L, axis=0)
             GAMMA2 = GAMMA / np.sum(GAMMA, axis=1)[:, np.newaxis]
@@ -170,7 +171,7 @@ class TPGMM(ModelBase.ModelBase):
         for t in xrange(nbData):
 
             for i in xrange(self.nb_states):
-                H[i, t] = self.priors[i] * self.gaussPDF(np.asarray([DataIn[t]]),
+                H[i, t] = self.priors[i] *  gaussPDF(np.asarray([DataIn[t]]),
                                                          self.mu[in_][i],
                                                          self.sigma[i][in_, in_])
 
@@ -193,44 +194,7 @@ class TPGMM(ModelBase.ModelBase):
 
         return expData, expSigma, H
 
-    def gaussPDF(self, x, mean, covar):
-        '''Multi-variate normal distribution
 
-        x: [n_data x n_vars] matrix of data_points for which to evaluate
-        mean: [n_vars] vector representing the mean of the distribution
-        covar: [n_vars x n_vars] matrix representing the covariance of the distribution
-
-        '''
-
-        # Check dimensions of covariance matrix:
-        if type(covar) is np.ndarray:
-            n_vars = covar.shape[0]
-        else:
-            n_vars = 1
-
-        # Check dimensions of data:
-        if x.ndim > 1 and n_vars == len(x):
-            nbData = x.shape[1]
-        else:
-            nbData = x.shape[0]
-
-        # nbData = x.shape[1]
-        mu = np.matlib.repmat(mean.reshape((-1, 1)), 1, nbData)
-        diff = (x - mu)
-
-        # Distinguish between multi and single variate distribution:
-        if n_vars > 1:
-            lambdadiff = np.linalg.pinv(covar).dot(diff) * diff
-            scale = np.sqrt(
-                np.power((2 * np.pi), n_vars) * (abs(np.linalg.det(covar)) + 2.2251e-308))
-            p = np.sum(lambdadiff, 0)
-        else:
-            lambdadiff = diff / covar
-            scale = np.sqrt(np.power((2 * np.pi), n_vars) * covar + 2.2251e-308)
-            p = diff * lambdadiff
-
-        prop = np.exp(-0.5 * p) / scale
-        return prop.T
 
     def relocateGaussian(self, A, b):
         mu = np.zeros((self._nb_dim, self._nb_states))
