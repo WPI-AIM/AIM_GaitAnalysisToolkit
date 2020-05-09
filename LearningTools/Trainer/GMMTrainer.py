@@ -4,10 +4,11 @@ import numpy as np
 from scipy import signal
 from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
 from ...Trajectories import GMMWPI
-from lib.GaitAnalysisToolkit.LearningTools.Models import GMM
+from lib.GaitAnalysisToolkit.LearningTools.Models import GMM,GMR
 import numpy as np
 import numpy.polynomial.polynomial as poly
 import numpy.matlib
+
 from dtw import dtw
 import math
 from lxml import etree
@@ -38,8 +39,10 @@ class GMMTrainer(TrainerBase.TrainerBase):
         tau, motion, sIn = self.gen_path(self._demo)
         self.gmm.init_params(tau)
         gammam, BIC = self.gmm.train(tau)
-        sigma, mu = self.gmm.get_model()
-        expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
+        sigma, mu, priors = self.gmm.get_model()
+        gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
+        expData, expSigma, H = gmr.train(sIn, [0], [1])
+
 
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)

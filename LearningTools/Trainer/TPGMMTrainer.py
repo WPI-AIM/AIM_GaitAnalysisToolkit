@@ -1,7 +1,7 @@
 
 import TrainerBase
 from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
-from lib.GaitAnalysisToolkit.LearningTools.Models import TPGMM
+from lib.GaitAnalysisToolkit.LearningTools.Models import TPGMM, GMR
 import numpy as np
 import numpy.matlib
 
@@ -33,8 +33,9 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.gmm.init_params(tau)
         gammam, BIC = self.gmm.train(tau)
         self.gmm.relocateGaussian(self.A, self.b)
-        sigma, mu = self.gmm.get_model()
-        expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
+        sigma, mu, priors = self.gmm.get_model()
+        gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
+        expData, expSigma, H = gmr.train(sIn, [0], [1])
         self.solve_riccati( expSigma)
 
         self.data["BIC"] = BIC

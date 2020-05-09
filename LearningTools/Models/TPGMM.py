@@ -41,7 +41,7 @@ class TPGMM(ModelBase.ModelBase):
         return gamma, BIC
 
     def get_model(self):
-        return self.sigma, self.mu
+        return self.sigma, self.mu, self.priors
 
     def kmeansclustering(self, data, reg=1e-8):
 
