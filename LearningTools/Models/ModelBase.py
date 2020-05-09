@@ -10,7 +10,7 @@ from matplotlib.collections import PatchCollection
 
 class ModelBase(object):
 
-    def __init__(self, nb_states, nb_dim=2, init_zeros=False, mu=None, lmbda=None, sigma=None, priors=None):
+    def __init__(self, nb_states, nb_dim=2):
 
         # gmm.GMM.__init__(self, nb_states=nb_states, nb_dim=nb_dim)
         self._nb_dim = nb_dim
@@ -25,8 +25,6 @@ class ModelBase(object):
         self._reg = 1e-8
         self._nbData = 0
 
-        if init_zeros:
-            self.init_zeros()
 
     @abc.abstractmethod
     def init_params(self, data):
@@ -38,6 +36,10 @@ class ModelBase(object):
 
     @abc.abstractmethod
     def get_model(self):
+        """
+        Get all the generated model parameters
+        :return:
+        """
         pass
 
     @property
