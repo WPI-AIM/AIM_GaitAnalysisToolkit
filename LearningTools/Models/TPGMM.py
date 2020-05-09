@@ -242,17 +242,14 @@ class TPGMM(ModelBase.ModelBase):
             for frame in xrange(self.frames):
                 curr_mu = A[frame].dot(self.mu[:,i].reshape((-1,1))) + b[frame]
                 curr_sigma = A[frame] * self.sigma[i] * A[frame].T
-                temp_sigma = temp_sigma + np.linalg.inv(curr_sigma)
-                temp_mu = temp_mu + np.linalg.inv(curr_sigma).dot(curr_mu)
+                temp_sigma = temp_sigma + np.linalg.pinv(curr_sigma)
+                temp_mu = temp_mu + np.linalg.pinv(curr_sigma).dot(curr_mu)
 
-            sigma[i] = np.linalg.inv(temp_sigma)
+            sigma[i] = np.linalg.pinv(temp_sigma)
             mu[:,i] = sigma[i].dot(temp_mu).flatten().tolist()
 
         self.sigma = sigma
         self.mu = mu
-
-
-
 
 # p = PatchCollection(patches)
 # ax.add_collection(p)

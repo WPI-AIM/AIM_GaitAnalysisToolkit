@@ -35,8 +35,6 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.gmm.relocateGaussian(self.A, self.b)
         sigma, mu = self.gmm.get_model()
         expData, expSigma, H = self.gmm.gmr(sIn, [0], [1])
-
-
         self.solve_riccati( expSigma)
 
         self.data["BIC"] = BIC
@@ -66,10 +64,10 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         Ad[0,1] = self._dt
         R = np.eye(1)*self.gmm.reg
         P = [np.zeros((2, 2))] * len(expSigma)
-        P[-1][0, 0] = np.linalg.inv(expSigma[-1])
+        P[-1][0, 0] = np.linalg.pinv(expSigma[-1])
 
         for ii in xrange(len(expSigma)-2, -1, -1):
-            Q[0,0] = np.linalg.inv(expSigma[ii])
+            Q[0,0] = np.linalg.pinv(expSigma[ii])
             B = P[ii + 1] * Bd
             C = np.linalg.pinv(np.dot(Bd.T * P[ii + 1], Bd) + R)
             D = Bd.T * P[ii + 1]
@@ -120,7 +118,6 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             ddx_temp[:x.shape[0], 2:x.shape[1] + 2] = ddx
             ddx = dx_temp
 
-
             goals = np.matlib.repmat(goal, 1, self.nbData)
             x_hat = x + (self._kv/self._kp)*dx + (1.0/self._kp)*ddx
             goals = x_hat - goals
@@ -128,7 +125,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             for i in xrange(self.nbData):
                 sol[:, i] = np.linalg.solve(A, goals[:, i].reshape((-1, 1))).ravel()
 
-            self.A.append(np.eye(self.samples))
+            self.A.append(np.eye(2))
             self.b.append(np.array([[0.0], [demos[n][-1]]]))
 
             if x_ is not None:
