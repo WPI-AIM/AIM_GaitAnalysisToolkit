@@ -5,6 +5,3 @@
 	path = lib/Vicon
 	url = https://github.com/WPI-AIM/AIM_Vicon.git
 
-[submodule "lib/pbdlib"]
-	path = lib/pbdlib
-	url = https://github.com/nag92/pbdlib-python.git

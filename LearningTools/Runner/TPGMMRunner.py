@@ -11,8 +11,6 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         self._dx = np.array([[0.0]])
         self._path = []
         self._index = 0
-        self._kp = 50.0
-        self._kc = 10.0
 
     def step(self, x=None, dx=None):
         """
@@ -30,8 +28,8 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         v = np.linalg.inv(np.dot(np.dot(B.T, P[self._index]), B) + R)
         K = np.dot(np.dot(v * B.T, P[self._index]), A)
         x_ = np.append(self._x, self._dx).reshape((-1, 1))
-        ddx = K.dot(np.vstack((self.get_expData()[:, self._index], [0])) - x_)
-        self._dx = self._dx + ddx * self.get_dt()
+        self._ddx = K.dot(np.vstack((self.get_expData()[:, self._index], [0])) - x_)
+        self._dx = self._dx + self._ddx * self.get_dt()
         self._x = self._x + self._dx * self.get_dt()
         self._index = self._index + 1
         self._path.append(self._x[0])
