@@ -106,6 +106,7 @@ class GMMWPI():
             self.sigma[i] = np.cov(mat) + np.eye(self.nb_dim) * self.reg
 
         self.priors = self.priors / np.sum(self.priors)
+        return idList
 
     def em(self, data, reg=1e-8, maxiter=2000):
 
