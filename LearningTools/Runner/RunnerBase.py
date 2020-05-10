@@ -14,6 +14,7 @@ class RunnerBase(object):
         self._ddx = 0
         self._index = 0
         self._path = []
+        self._K = None
         with open(self._file, 'rb') as handle:
             self._data = pickle.load(handle)
 
@@ -56,6 +57,15 @@ class RunnerBase(object):
     @property
     def kc(self, value):
         self._kc = value
+
+    @property
+    def K(self):
+        return self._K
+
+    @K.setter
+    def K(self, value):
+        self._K = value
+
 
     def step(self, x=None, dx=None):
         """

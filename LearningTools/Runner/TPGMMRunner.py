@@ -35,6 +35,7 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         self._x = self._x + self._dx * self.get_dt()
         self._index = self._index + 1
         self._path.append(self._x[0])
+        self._K = K
         return self._x[0]
 
     def get_Bd(self):
