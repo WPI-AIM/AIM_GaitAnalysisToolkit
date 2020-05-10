@@ -180,3 +180,27 @@ def gaussPDF(x, mean, covar):
 
     prop = np.exp(-0.5 * p) / scale
     return prop.T
+
+
+def solve_riccati(expSigma, dt=0.01, reg =1e-8):
+    ric = {}
+    Ad = np.eye(2)
+    Q = np.zeros((2,2))
+    Bd = np.array([[0],[dt]])
+    Ad[0,1] = dt
+    R = np.eye(1)*reg
+    P = [np.zeros((2, 2))] * len(expSigma)
+    P[-1][0, 0] = np.linalg.pinv(expSigma[-1])
+
+    for ii in xrange(len(expSigma)-2, -1, -1):
+        Q[0,0] = np.linalg.pinv(expSigma[ii])
+        B = P[ii + 1] * Bd
+        C = np.linalg.pinv(np.dot(Bd.T * P[ii + 1], Bd) + R)
+        D = Bd.T * P[ii + 1]
+        F = np.dot(np.dot(Ad.T, B * C * D - P[ii + 1]), Ad)
+        P[ii] = Q - F
+
+    ric["Ad"] = Ad
+    ric["Bd"] = Bd
+    ric["R"] = R
+    ric["P"] = P
