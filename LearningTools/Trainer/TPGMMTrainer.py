@@ -38,7 +38,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         expData, expSigma, H = gmr.train(sIn, [0], [1])
         ric = solve_riccati(expSigma)
 
-        self.data.update(ric)
+
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)
         self.data["H"] = H
@@ -53,6 +53,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.data["start"] = self._demo[0][0]
         self.data["goal"] = self._demo[0][-1]
         self.data["dtw"] = self.dtw_data
+        self.data.update(ric)
 
         if save:
             self.save()
