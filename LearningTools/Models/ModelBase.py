@@ -204,3 +204,4 @@ def solve_riccati(expSigma, dt=0.01, reg =1e-8):
     ric["Bd"] = Bd
     ric["R"] = R
     ric["P"] = P
+    return ric
