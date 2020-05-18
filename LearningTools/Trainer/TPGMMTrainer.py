@@ -68,7 +68,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.gmm.relocateGaussian(self.A, self.b)
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
-        expData, expSigma, H = gmr.train(sIn, [0], [1,2,3])
+        expData, expSigma, H = gmr.train(sIn, [0], range(1,1+len(self._demo)))
         ric = solve_riccati(expSigma)
 
         self.data["BIC"] = BIC
@@ -82,8 +82,8 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.data["mu"] = mu
         self.data["sigma"] = sigma
         self.data["dt"] = self._dt
-        self.data["start"] = self._demo[0][0]
-        self.data["goal"] = self._demo[0][-1]
+        self.data["start"] = [ self._demo[i][0][0] for i in xrange(len(self._demo))]
+        self.data["goal"] = [ self._demo[i][0][-1] for i in xrange(len(self._demo))]
         self.data["dtw"] = self.dtw_data
         self.data.update(ric)
 
