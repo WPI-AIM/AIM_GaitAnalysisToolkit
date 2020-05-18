@@ -99,7 +99,7 @@ class GMR(object):
 
             for i in xrange(self.states):
                 H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]),
-                                                    self.mu[in_][i],
+                                                    self.mu[in_, i],
                                                     self.sigma[i][in_, in_])
 
             H[:, t] = H[:, t] / np.sum(H[:, t] + np.finfo(float).tiny)

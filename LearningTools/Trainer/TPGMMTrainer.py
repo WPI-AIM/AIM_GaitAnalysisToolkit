@@ -34,26 +34,42 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         """
         train a model to reproduction
         """
+        sIn = []
+        alpha = 1.0
+        sIn.append(1.0)  # Initialization of decay term
+
         nb_dim = len(self._demo[0])
         self.gmm = TPGMM.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim)
         taus = []
-        sIn = None
+        goals = []
         for i in xrange(len(self._demo)):
-            tau, motion, sIn = self.gen_path(self._demo[i])
+            tau, motion, goal = self.gen_path(self._demo[i])
             taus.append(tau)
+            goals.append(goal)
+
+        for t in xrange(1, self.nbData):
+            sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
+
         t = sIn * self.samples
         tau = np.vstack((t, taus[0]))
 
         for tau_ in taus[1:]:
             tau = np.vstack((tau, tau_))
 
+        for i in xrange(len(goals[0])):
+            b = [0.0]
+            for j in xrange(len(goals)):
+                b.append(goals[j][i].tolist()[0])
+            b = np.asarray(b).reshape((-1, 1))
+            self.b.append(b)
+            self.A.append(np.eye(len(goals)+1))
+
         gammam, BIC = self.gmm.train(tau)
         self.gmm.relocateGaussian(self.A, self.b)
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
-        expData, expSigma, H = gmr.train(sIn, [0], [1])
+        expData, expSigma, H = gmr.train(sIn, [0], [1,2,3])
         ric = solve_riccati(expSigma)
-
 
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)
@@ -84,17 +100,13 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.nbData = len(demos[0])
         self.samples = len(demos)
 
-        alpha = 1.0
+
         x_ = None
         dx_ = None
         ddx_ = None
         sIn = []
         taux = []
-
-        sIn.append(1.0)  # Initialization of decay term
-        for t in xrange(1, self.nbData):
-            sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
-
+        ending_pos = []
         for n in xrange(self.samples):
             demo = demos[n]
             size = demo.shape[0]
@@ -123,9 +135,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
 
             # self.A.append(np.eye(2))
             # self.b.append(np.array([[0.0], [demos[n][-1]]]))
-
-            self.A.append(np.eye(4))
-            self.b.append(np.array([[0.0], [0.0], [0.0], [0.0]]))
+            ending_pos.append(demos[n][-1])
 
             if x_ is not None:
                 x_ = x_ + x.tolist()
@@ -138,11 +148,9 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
 
             taux = taux + sol[0].tolist()
 
-        t = sIn * self.samples
-        #tau = np.vstack((t, taux))
         motion = np.vstack((x_, dx_, ddx_))
 
-        return taux, motion, sIn
+        return taux, motion, ending_pos
 
 
 

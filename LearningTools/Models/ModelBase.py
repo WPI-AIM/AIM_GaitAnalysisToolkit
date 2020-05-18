@@ -184,20 +184,20 @@ def gaussPDF(x, mean, covar):
 
 def solve_riccati(expSigma, dt=0.01, reg =1e-8):
     ric = {}
-    Ad = np.eye(2)
-    Q = np.zeros((2,2))
-    Bd = np.array([[0],[dt]])
-    Ad[0,1] = dt
-    R = np.eye(1)*reg
-    P = [np.zeros((2, 2))] * len(expSigma)
-    P[-1][0, 0] = np.linalg.pinv(expSigma[-1])
+    size = expSigma[0].shape[0]
+    Ad = np.kron([[0, 1],[0, 0]], np.eye(size))*dt + np.eye(2*size)
+    Q = np.zeros((size*2, size*2))
+    Bd = np.kron([[0],[1]], np.eye(size))*dt
+    R = np.eye(size)*reg
+    P = [np.zeros((size*2, size*2))] * len(expSigma)
+    P[-1][:size, :size] = np.linalg.pinv(expSigma[-1])
 
     for ii in xrange(len(expSigma)-2, -1, -1):
-        Q[0,0] = np.linalg.pinv(expSigma[ii])
-        B = P[ii + 1] * Bd
-        C = np.linalg.pinv(np.dot(Bd.T * P[ii + 1], Bd) + R)
-        D = Bd.T * P[ii + 1]
-        F = np.dot(np.dot(Ad.T, B * C * D - P[ii + 1]), Ad)
+        Q[:size, :size] = np.linalg.pinv(expSigma[ii])
+        B = P[ii + 1].dot(Bd)
+        C = np.linalg.pinv(np.dot(Bd.T.dot(P[ii + 1]) , Bd) + R)
+        D = Bd.T.dot(P[ii + 1])
+        F = np.dot(np.dot(Ad.T, np.dot( np.dot(B, C), D) - P[ii + 1]), Ad)
         P[ii] = Q - F
 
     ric["Ad"] = Ad
