@@ -25,7 +25,6 @@ class TrainerBase(object):
 
 
         manhattan_distance = lambda x, y: np.abs(x - y)
-        ecuild_distance = lambda x, y: np.sqrt(x*x + y*y)
 
         idx = np.argmax([l.shape[0] for l in trajs])
         t = []
@@ -38,7 +37,7 @@ class TrainerBase(object):
         demos = []
         coefs = poly.polyfit(t, trajs[idx], 20)
         ffit = poly.Polynomial(coefs)  # instead of np.poly1d
-        x_fit =  ffit(t)
+        x_fit = ffit(t)
         data = []
 
         for ii, y in enumerate(trajs):

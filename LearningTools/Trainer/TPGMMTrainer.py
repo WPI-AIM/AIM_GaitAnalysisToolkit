@@ -20,17 +20,33 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self._kv = (2.0 * self._kp) ** 0.5
         self.A = []
         self.b = []
-        demos2, self.dtw_data = self.resample(demo)
-        super(TPGMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
+        rescaled = []
+        self.dtw_data = []
+        for d in demo:
+            demo_, dtw_data_ = self.resample(d)
+            rescaled.append(demo_)
+            self.dtw_data.append(dtw_data_)
+
+        super(TPGMMTrainer, self).__init__(rescaled, file_name, n_rf, dt)
 
 
     def train(self, save=True):
         """
         train a model to reproduction
         """
-        nb_dim = len(self._demo)
+        nb_dim = len(self._demo[0])
         self.gmm = TPGMM.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim)
-        tau, motion, sIn = self.gen_path(self._demo)
+        taus = []
+        sIn = None
+        for i in xrange(len(self._demo)):
+            tau, motion, sIn = self.gen_path(self._demo[i])
+            taus.append(tau)
+        t = sIn * self.samples
+        tau = np.vstack((t, taus[0]))
+
+        for tau_ in taus[1:]:
+            tau = np.vstack((tau, tau_))
+
         gammam, BIC = self.gmm.train(tau)
         self.gmm.relocateGaussian(self.A, self.b)
         sigma, mu, priors = self.gmm.get_model()
@@ -105,8 +121,11 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             for i in xrange(self.nbData):
                 sol[:, i] = np.linalg.solve(A, goals[:, i].reshape((-1, 1))).ravel()
 
-            self.A.append(np.eye(2))
-            self.b.append(np.array([[0.0], [demos[n][-1]]]))
+            # self.A.append(np.eye(2))
+            # self.b.append(np.array([[0.0], [demos[n][-1]]]))
+
+            self.A.append(np.eye(4))
+            self.b.append(np.array([[0.0], [0.0], [0.0], [0.0]]))
 
             if x_ is not None:
                 x_ = x_ + x.tolist()
@@ -120,10 +139,10 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             taux = taux + sol[0].tolist()
 
         t = sIn * self.samples
-        tau = np.vstack((t, taux))
+        #tau = np.vstack((t, taux))
         motion = np.vstack((x_, dx_, ddx_))
 
-        return tau, motion, sIn
+        return taux, motion, sIn
 
 
 
