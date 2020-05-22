@@ -8,8 +8,7 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         super(TPGMMRunner, self).__init__(file)
         self._x = self.get_start()
         self._goal = self._data["goal"]
-        self._dx = np.zeros(len(self._x)).reshape((-1, 1))
-        self._v0 = np.zeros(len(self._x)).reshape((-1, 1))
+        self._dx = np.array([[0.0]])
         self._path = []
         self._index = 0
 
@@ -27,15 +26,15 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         R = self.get_R()
         P = self.get_P()
         v = np.linalg.inv(np.dot(np.dot(B.T, P[self._index]), B) + R)
-        K = np.dot(np.dot(v.dot(B.T), P[self._index]), A)
+        K = np.dot(np.dot(v * B.T, P[self._index]), A)
         x_ = np.append(self._x, self._dx).reshape((-1, 1))
-        self._ddx = K.dot(np.vstack((self.get_expData()[:, self._index].reshape((-1,1)), self._v0)) - x_)
+        self._ddx = K.dot(np.vstack((self.get_expData()[:, self._index], [0])) - x_)
         self._dx = self._dx + self._ddx * self.get_dt()
         self._x = self._x + self._dx * self.get_dt()
         self._index = self._index + 1
         self._path.append(self._x[0])
         self._K = K
-        return self._x
+        return self._x[0]
 
     def get_Bd(self):
         return self._data["Bd"]

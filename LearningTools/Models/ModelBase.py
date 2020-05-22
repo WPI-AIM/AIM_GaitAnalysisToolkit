@@ -194,10 +194,10 @@ def solve_riccati(expSigma, dt=0.01, reg =1e-8):
 
     for ii in xrange(len(expSigma)-2, -1, -1):
         Q[:size, :size] = np.linalg.pinv(expSigma[ii])
-        B = P[ii + 1].dot(Bd)
-        C = np.linalg.pinv(np.dot(Bd.T.dot(P[ii + 1]) , Bd) + R)
-        D = Bd.T.dot(P[ii + 1])
-        F = np.dot(np.dot(Ad.T, np.dot( np.dot(B, C), D) - P[ii + 1]), Ad)
+        B = P[ii + 1]*Bd
+        C = np.linalg.pinv(np.dot(Bd.T * P[ii + 1] , Bd) + R)
+        D = Bd.T*P[ii + 1]
+        F = np.dot(np.dot(Ad.T, B*C*D - P[ii + 1]), Ad)
         P[ii] = Q - F
 
     ric["Ad"] = Ad
