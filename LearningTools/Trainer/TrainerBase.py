@@ -7,7 +7,7 @@ import pickle
 
 class TrainerBase(object):
 
-    def __init__(self, demo, file_name, n_rfs, dt):
+    def __init__(self, demo, file_name, n_rfs=15, dt=0.01):
         """
            :param file_names: file to save training too
            :param n_rfs: number of DMPs
@@ -21,7 +21,7 @@ class TrainerBase(object):
         self.data = {}
 
 
-    def resample(self, trajs):
+    def resample(self, trajs, poly_degree):
 
 
         manhattan_distance = lambda x, y: np.abs(x - y)
@@ -35,7 +35,7 @@ class TrainerBase(object):
         t = np.array(t)
 
         demos = []
-        coefs = poly.polyfit(t, trajs[idx], 20)
+        coefs = poly.polyfit(t, trajs[idx], poly_degree)
         ffit = poly.Polynomial(coefs)  # instead of np.poly1d
         x_fit = ffit(t)
         data = []
@@ -49,7 +49,7 @@ class TrainerBase(object):
             dtw_data["path"] = path
             data.append(dtw_data)
             data_warp = [y[path[1]][:x_fit.shape[0]]]
-            coefs = poly.polyfit(t, data_warp[0], 20)
+            coefs = poly.polyfit(t, data_warp[0], poly_degree)
             ffit = poly.Polynomial(coefs)  # instead of np.poly1d
             y_fit = ffit(t)
             temp = [[np.array(ele)] for ele in y_fit.tolist()]

@@ -2,14 +2,14 @@
 import TrainerBase
 from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
 from lib.GaitAnalysisToolkit.LearningTools.Models import TPGMM, GMR
-from lib.GaitAnalysisToolkit.LearningTools.Models.ModelBase import solve_riccati
+from lib.GaitAnalysisToolkit.LearningTools.Models.ModelBase import solve_riccati_mat, solve_riccati
 import numpy as np
 import numpy.matlib
 
 
 class TPGMMTrainer(TrainerBase.TrainerBase):
 
-    def __init__(self, demo, file_name, n_rf, dt=0.01):
+    def __init__(self, demo, file_name, n_rf, dt=0.01, poly_degree=15):
         """
            :param file_names: file to save training too
            :param n_rfs: number of DMPs
@@ -23,7 +23,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         rescaled = []
         self.dtw_data = []
         for d in demo:
-            demo_, dtw_data_ = self.resample(d)
+            demo_, dtw_data_ = self.resample(d, poly_degree)
             rescaled.append(demo_)
             self.dtw_data.append(dtw_data_)
 
@@ -69,7 +69,8 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
         expData, expSigma, H = gmr.train(sIn, [0], range(1, 1+len(self._demo)))
-        ric = solve_riccati(expSigma)
+        #ric1 = solve_riccati(expSigma)
+        ric2 = solve_riccati_mat(expSigma)
 
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)
@@ -85,7 +86,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.data["start"] = [self._demo[i][0][0] for i in xrange(len(self._demo))]
         self.data["goal"] = [self._demo[i][0][-1] for i in xrange(len(self._demo))]
         self.data["dtw"] = self.dtw_data
-        self.data.update(ric)
+        self.data.update(ric2)
 
         if save:
             self.save()
