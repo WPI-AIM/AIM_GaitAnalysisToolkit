@@ -9,7 +9,7 @@ import numpy.matlib
 
 class TPGMMTrainer(TrainerBase.TrainerBase):
 
-    def __init__(self, demo, file_name, n_rf, dt=0.01, poly_degree=[15]):
+    def __init__(self, demo, file_name, n_rf, dt=0.01, reg=1e-3, poly_degree=[15]):
         """
            :param file_names: file to save training too
            :param n_rfs: number of DMPs
@@ -22,14 +22,13 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.b = []
         rescaled = []
         self.dtw_data = []
-        degree = poly_degree*len(demo)
-        for d, polyD in zip(demo, degree):
+        # degree = poly_degree*len(demo)
+        for d, polyD in zip(demo, poly_degree):
             demo_, dtw_data_ = self.resample(d, polyD)
             rescaled.append(demo_)
             self.dtw_data.append(dtw_data_)
 
-        super(TPGMMTrainer, self).__init__(rescaled, file_name, n_rf, dt)
-
+        super(TPGMMTrainer, self).__init__(rescaled, file_name, n_rf, dt, reg)
 
     def train(self, save=True):
         """
@@ -40,7 +39,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         sIn.append(1.0)  # Initialization of decay term
 
         nb_dim = len(self._demo[0])
-        self.gmm = TPGMM.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim)
+        self.gmm = TPGMM.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim, reg=self.reg)
         taus = []
         goals = []
         for i in xrange(len(self._demo)):
@@ -70,7 +69,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
         expData, expSigma, H = gmr.train(sIn, [0], range(1, 1+len(self._demo)))
-        #ric1 = solve_riccati(expSigma)
+        ric1 = solve_riccati(expSigma)
         ric2 = solve_riccati_mat(expSigma)
 
         self.data["BIC"] = BIC

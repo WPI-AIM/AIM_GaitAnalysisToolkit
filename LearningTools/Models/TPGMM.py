@@ -9,9 +9,9 @@ from ModelBase import gaussPDF
 
 class TPGMM(ModelBase.ModelBase):
 
-    def __init__(self, nb_states, nb_dim=3):
+    def __init__(self, nb_states, nb_dim=3, reg=1e-8):
 
-        super(TPGMM, self).__init__(nb_states, nb_dim)
+        super(TPGMM, self).__init__(nb_states, nb_dim, reg)
         self.frames = 1
 
     def init_params(self, data):
@@ -35,10 +35,10 @@ class TPGMM(ModelBase.ModelBase):
 
         self.priors = priors / np.sum(priors)
 
-    def train(self, data, reg=1e-8, maxiter=2000):
+    def train(self, data, maxiter=2000):
 
         self.init_params(data)
-        gamma, BIC = self.em(data, reg, maxiter)
+        gamma, BIC = self.em(data, maxiter)
         return gamma, BIC
 
     def get_model(self):
@@ -53,9 +53,7 @@ class TPGMM(ModelBase.ModelBase):
         """
         return self.sigma, self.mu, self.priors
 
-    def kmeansclustering(self, data, reg=1e-8):
-
-        self.reg = reg
+    def kmeansclustering(self, data):
 
         # Criterion to stop the EM iterative update
         cumdist_threshold = 1e-10
@@ -116,16 +114,15 @@ class TPGMM(ModelBase.ModelBase):
 
         return idList
 
-    def em(self, data, reg=1e-12, maxiter=2000):
+    def em(self, data, maxiter=2000):
         """
         Perform the EM algorithum
         :param data: data to learn
-        :param reg: error
         :param maxiter:  max number of interations
         :return:
         """
 
-        self.reg = reg
+
 
         nb_min_steps = 50  # min num iterations
         nb_max_steps = maxiter  # max iterations
@@ -177,8 +174,8 @@ class TPGMM(ModelBase.ModelBase):
             temp_mu = np.zeros((self._nb_dim, 1))
             temp_sigma = np.zeros((self.nb_dim, self.nb_dim))
             for frame in xrange(self.frames):
-                curr_mu = A[frame].dot(self.mu[:,i].reshape((-1,1))) + b[frame]
-                curr_sigma = A[frame] * self.sigma[i] * A[frame].T
+                curr_mu = A[frame].dot(self.mu[:,i].reshape((-1,1))) + b[-1]
+                curr_sigma = np.dot(np.dot(A[frame], self.sigma[i]), A[frame].T)
                 temp_sigma = temp_sigma + np.linalg.pinv(curr_sigma)
                 temp_mu = temp_mu + np.linalg.pinv(curr_sigma).dot(curr_mu)
 

@@ -10,9 +10,8 @@ from matplotlib.collections import PatchCollection
 
 class ModelBase(object):
 
-    def __init__(self, nb_states, nb_dim=2):
+    def __init__(self, nb_states, nb_dim=2, reg=1.0e-8):
 
-        # gmm.GMM.__init__(self, nb_states=nb_states, nb_dim=nb_dim)
         self._nb_dim = nb_dim
         self._nb_states = nb_states
         # flag to indicate that publishing was not init
@@ -22,7 +21,7 @@ class ModelBase(object):
         self._sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
         self._priors = np.ones(self.nb_states) / self.nb_states
         # self._nbData = 0
-        self._reg = 1e-8
+        self._reg = reg
         self._nbData = 0
 
     @abc.abstractmethod
@@ -30,7 +29,7 @@ class ModelBase(object):
         pass
 
     @abc.abstractmethod
-    def train(self, data, reg=1e-8, maxiter=2000):
+    def train(self, data, maxiter=2000):
         pass
 
     @abc.abstractmethod
@@ -207,7 +206,7 @@ def solve_riccati(expSigma, dt=0.01, reg =1e-8):
     return ric
 
 
-def solve_riccati_mat(expSigma, dt=0.01, reg =1e-8):
+def solve_riccati_mat(expSigma, dt=0.01, reg =1e-5):
     ric = {}
     size = expSigma[0].shape[0]
     Ad = np.kron([[0, 1],[0, 0]], np.eye(size))*dt + np.eye(2*size)

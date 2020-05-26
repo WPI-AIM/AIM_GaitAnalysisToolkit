@@ -4,10 +4,10 @@ import numpy as np
 import numpy.polynomial.polynomial as poly
 from dtw import dtw
 import pickle
-
+import matplotlib.pyplot as plt
 class TrainerBase(object):
 
-    def __init__(self, demo, file_name, n_rfs=15, dt=0.01):
+    def __init__(self, demo, file_name, n_rfs=15, dt=0.01, reg=1e-8):
         """
            :param file_names: file to save training too
            :param n_rfs: number of DMPs
@@ -19,12 +19,20 @@ class TrainerBase(object):
         self._n_rfs = n_rfs
         self._dt = dt
         self.data = {}
+        self._reg = reg
 
+    @property
+    def reg(self):
+        return self._reg
+
+    @reg.setter
+    def reg(self, value):
+        self._reg = value
 
     def resample(self, trajs, poly_degree):
 
-
         manhattan_distance = lambda x, y: np.abs(x - y)
+        # manhattan_distance = lambda x, y: np.sqrt(x*x + y*y)
 
         idx = np.argmax([l.shape[0] for l in trajs])
         t = []
