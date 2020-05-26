@@ -106,14 +106,16 @@ class GMR(object):
             H[:, t] = H[:, t] / np.sum(H[:, t] + np.finfo(float).tiny)
 
             for i in xrange(self.states):
-                MuTmp[:, i] = self.mu[out_, i] + self.sigma[i][out_, in_] / \
+                MuTmp[:, i] = self.mu[out_[0]:out_[-1]+1, i] + self.sigma[i][out_[0]:out_[-1]+1, in_] / \
                               self.sigma[i][in_, in_] * \
                               (DataIn[t] - self.mu[in_, i])
 
                 expData[:, t] = expData[:, t] + H[i, t] * MuTmp[:, i]
 
             for i in xrange(self.states):
-                sigma_tmp = self.sigma[i][out_, out_] - self.sigma[i][out_, in_] / self.sigma[i][in_, in_] * self.sigma[i][in_, out_]
+                sigma_tmp = self.sigma[i][out_[0]:out_[-1]+1, out_[0]:out_[-1]+1] - \
+                            self.sigma[i][out_[0]:out_[-1]+1, in_] / \
+                            self.sigma[i][in_, in_] * self.sigma[i][in_, out_[0]:out_[-1]+1]
                 expSigma[t] = expSigma[t] + H[i, t] * (sigma_tmp + MuTmp[:, i].reshape((-1, 1)) * MuTmp[:, i].T)
 
             expSigma[t] = expSigma[t] - expData[:, t] * expData[:, t].T + np.eye(nbVarOut) * reg
