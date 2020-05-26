@@ -75,12 +75,13 @@ class GMR(object):
     def states(self, value):
         self._states = value
 
-    def train(self, DataIn, in_, out_):
+    def train(self, DataIn, in_, out_, reg=1e-8):
         """
         Train the system
         :param DataIn: data to tain on
         :param in_: start location
         :param out_: end location
+        :param reg: regulization
         :return:
         """
         nbData = np.shape(DataIn)[0]
@@ -115,6 +116,6 @@ class GMR(object):
                 sigma_tmp = self.sigma[i][out_, out_] - self.sigma[i][out_, in_] / self.sigma[i][in_, in_] * self.sigma[i][in_, out_]
                 expSigma[t] = expSigma[t] + H[i, t] * (sigma_tmp + MuTmp[:, i].reshape((-1, 1)) * MuTmp[:, i].T)
 
-            expSigma[t] = expSigma[t] - expData[:, t] * expData[:, t].T + np.eye(nbVarOut) * 1E-8
+            expSigma[t] = expSigma[t] - expData[:, t] * expData[:, t].T + np.eye(nbVarOut) * reg
 
         return expData, expSigma, H
