@@ -69,7 +69,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
         expData, expSigma, H = gmr.train(sIn, [0], range(1, 1+len(self._demo)), self.reg)
-        ric1 = solve_riccati(expSigma)
+        #ric1 = solve_riccati(expSigma)
         ric2 = solve_riccati_mat(expSigma)
 
         self.data["BIC"] = BIC
