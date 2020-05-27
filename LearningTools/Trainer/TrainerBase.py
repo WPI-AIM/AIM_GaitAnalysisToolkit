@@ -50,8 +50,8 @@ class TrainerBase(object):
 
         for ii, y in enumerate(trajs):
             dtw_data = {}
-            d, cost_matrix, acc_cost_matrix, path = dtw(trajs[idx], y, dist=manhattan_distance)
-            # d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
+            #d, cost_matrix, acc_cost_matrix, path = dtw(trajs[idx], y, dist=manhattan_distance)
+            d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
             dtw_data["cost"] = d
             dtw_data["cost_matrix"] = cost_matrix
             dtw_data["acc_cost_matrix"] = acc_cost_matrix
@@ -61,7 +61,7 @@ class TrainerBase(object):
             coefs = poly.polyfit(t, data_warp[0], poly_degree)
             ffit = poly.Polynomial(coefs)  # instead of np.poly1d
             y_fit = ffit(t)
-            y_fit = data_warp[0]
+            #y_fit = data_warp[0]
             temp = [[np.array(ele)] for ele in y_fit.tolist()]
             temp = np.array(temp)
             demos.append(temp)
