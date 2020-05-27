@@ -74,10 +74,7 @@ class RunnerBase(object):
         :param dx: feedback velocity
         :return: None
         """
-        if x is not None:
-            self._x = x
-        if dx is not None:
-            self._dx = dx
+        pass
 
     def run(self):
         path = []

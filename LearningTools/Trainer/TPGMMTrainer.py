@@ -11,11 +11,11 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
 
     def __init__(self, demo, file_name, n_rf, dt=0.01, reg=1e-3, poly_degree=[15]):
         """
-           :param file_names: file to save training too
-           :param n_rfs: number of DMPs
-           :param dt: time step
-           :return: None
-           """
+       :param file_names: file to save training too
+       :param n_rfs: number of DMPs
+       :param dt: time step
+       :return: None
+        """
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
         self.A = []
@@ -47,15 +47,18 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             taus.append(tau)
             goals.append(goal)
 
+        # make the decay term
         for t in xrange(1, self.nbData):
             sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
 
+        # stack the decay term and all the demos
         t = sIn * self.samples
         tau = np.vstack((t, taus[0]))
 
         for tau_ in taus[1:]:
             tau = np.vstack((tau, tau_))
 
+        # Make all the transformations
         for i in xrange(len(goals[0])):
             b = [0.0]
             for j in xrange(len(goals)):
@@ -64,14 +67,16 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             self.b.append(b)
             self.A.append(np.eye(len(goals)+1))
 
-        gammam, BIC = self.gmm.train(tau)
-        self.gmm.relocateGaussian(self.A, self.b)
-        sigma, mu, priors = self.gmm.get_model()
-        gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
-        expData, expSigma, H = gmr.train(sIn, [0], range(1, 1+len(self._demo)), self.reg)
+        # Do all the transformations
+        gammam, BIC = self.gmm.train(tau) # get the goodness of fit
+        self.gmm.relocateGaussian(self.A, self.b) # more the gaussian based on the frame transformations
+        sigma, mu, priors = self.gmm.get_model() # get all the model parameters
+        gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors) # set up the GMR trainers
+        expData, expSigma, H = gmr.train(sIn, [0], range(1, 1+len(self._demo)), self.reg) # train the model
         #ric1 = solve_riccati(expSigma)
-        ric2 = solve_riccati_mat(expSigma)
+        ric2 = solve_riccati_mat(expSigma) # get the gains for the system
 
+        # save all the data to a dictionary
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)
         self.data["H"] = H
@@ -96,6 +101,11 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
     def gen_path(self, demos):
         """
 
+        :param demos: list of training data
+        :return:
+            - taux: x_hat = x + Kp*dx + Kd*ddx
+            - motion: the scaled trajectories
+            - ending_pos: last position
         """
 
         self.nbData = len(demos[0])
@@ -105,7 +115,6 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         x_ = None
         dx_ = None
         ddx_ = None
-        sIn = []
         taux = []
         ending_pos = []
         for n in xrange(self.samples):
@@ -134,8 +143,6 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             for i in xrange(self.nbData):
                 sol[:, i] = np.linalg.solve(A, goals[:, i].reshape((-1, 1))).ravel()
 
-            # self.A.append(np.eye(2))
-            # self.b.append(np.array([[0.0], [demos[n][-1]]]))
             ending_pos.append(demos[n][-1])
 
             if x_ is not None:

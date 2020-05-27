@@ -5,11 +5,15 @@ from random import uniform
 class TPGMMRunner(RunnerBase.RunnerBase):
 
     def __init__(self, file):
+        """
+        Running the model
+        :param file: Training file
+        """
         super(TPGMMRunner, self).__init__(file)
-        self._x = self.get_start()
-        self._goal = self._data["goal"]
+        self._x = self.get_start() # initial starting position
+        self._goal = self._data["goal"] # initial ending position
         self._dx = np.zeros(len(self._x)).reshape((-1, 1))
-        self._v0 = np.zeros(len(self._x)).reshape((-1, 1))
+        self._v0 = np.zeros(len(self._x)).reshape((-1, 1)) # vector of zeros for velocity
         self._path = []
         self._index = 0
 
@@ -21,13 +25,20 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         :return: None
         """
 
-        super(TPGMMRunner, self).step(x,dx)
+        # allow for feedback
+        if x is not None:
+            self._x = x
+        if dx is not None:
+            self._dx = dx
+
         B = self.get_Bd()
         A = self.get_Ad()
         R = self.get_R()
         P = self.get_P()
+        # get the gain
         v = np.linalg.inv(np.dot(np.dot(B.T, P[self._index]), B) + R)
         K = np.dot(np.dot(v.dot(B.T), P[self._index]), A)
+        # update the system
         x_ = np.append(self._x, self._dx).reshape((-1, 1))
         self._ddx = K.dot(np.vstack((self.get_expData()[:, self._index].reshape((-1,1)), self._v0)) - x_)
         self._dx = self._dx + self._ddx * self.get_dt()

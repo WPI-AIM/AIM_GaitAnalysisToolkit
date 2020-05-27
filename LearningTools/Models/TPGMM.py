@@ -10,12 +10,21 @@ from ModelBase import gaussPDF
 class TPGMM(ModelBase.ModelBase):
 
     def __init__(self, nb_states, nb_dim=3, reg=1e-8):
+        """
 
+        :param nb_states: number of states
+        :param nb_dim: demention of the data
+        :param reg: regilization term
+        """
         super(TPGMM, self).__init__(nb_states, nb_dim, reg)
         self.frames = 1
 
     def init_params(self, data):
-
+        """
+        Sets up all the parameters
+        :param data: vector of the data
+        :return:
+        """
         idList = self.kmeansclustering(data)
         priors = np.ones(self.nb_states) / self.nb_states
         self.sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
@@ -36,7 +45,12 @@ class TPGMM(ModelBase.ModelBase):
         self.priors = priors / np.sum(priors)
 
     def train(self, data, maxiter=2000):
-
+        """
+        Train the model on the data
+        :param data:  data to train on
+        :param maxiter: maxinum number of interations
+        :return:
+        """
         self.init_params(data)
         gamma, BIC = self.em(data, maxiter)
         return gamma, BIC
@@ -54,7 +68,11 @@ class TPGMM(ModelBase.ModelBase):
         return self.sigma, self.mu, self.priors
 
     def kmeansclustering(self, data):
-
+        """
+        Use keans to init the GMM algorithum
+        :param data:
+        :return:
+        """
         # Criterion to stop the EM iterative update
         cumdist_threshold = 1e-10
         maxIter = 200
@@ -122,8 +140,6 @@ class TPGMM(ModelBase.ModelBase):
         :return:
         """
 
-
-
         nb_min_steps = 50  # min num iterations
         nb_max_steps = maxiter  # max iterations
         nb_samples = data.shape[1]
@@ -167,14 +183,23 @@ class TPGMM(ModelBase.ModelBase):
         return GAMMA, self.BIC
 
     def relocateGaussian(self, A, b):
+        """
+        Use frame transformations to move the data from different observer frames
+        :param A:  list of rotation matrix
+        :param b: list of translation matix
+        :return:
+        """
+
+        # set up temp varibles for  old the new sigma and mu
         mu = np.zeros((self._nb_dim, self._nb_states))
         sigma = np.array([np.zeros((self.nb_dim,self.nb_dim)) for i in range(self.nb_states)])
 
+        # loop through all the varibles
         for i in xrange(self._nb_states):
             temp_mu = np.zeros((self._nb_dim, 1))
             temp_sigma = np.zeros((self.nb_dim, self.nb_dim))
             for frame in xrange(self.frames):
-                curr_mu = A[frame].dot(self.mu[:,i].reshape((-1,1))) + b[-1]
+                curr_mu = A[frame].dot(self.mu[:,i].reshape((-1,1))) + b[frame]
                 curr_sigma = np.dot(np.dot(A[frame], self.sigma[i]), A[frame].T)
                 temp_sigma = temp_sigma + np.linalg.pinv(curr_sigma)
                 temp_mu = temp_mu + np.linalg.pinv(curr_sigma).dot(curr_mu)
@@ -182,6 +207,7 @@ class TPGMM(ModelBase.ModelBase):
             sigma[i] = np.linalg.pinv(temp_sigma)
             mu[:,i] = sigma[i].dot(temp_mu).flatten().tolist()
 
+        # update the new mu and sigma
         self.sigma = sigma
         self.mu = mu
 
