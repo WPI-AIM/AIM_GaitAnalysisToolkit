@@ -84,7 +84,7 @@ class RunnerBase(object):
         self._x = self.get_start()
         self._goal = self._data["goal"]
         self._dx = np.array([[0.0]])
-        return path
+        return np.array(path)
 
     @property
     def goal(self):

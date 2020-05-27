@@ -30,28 +30,38 @@ class TrainerBase(object):
         self._reg = value
 
     def resample(self, trajs, poly_degree):
+        """
 
-        manhattan_distance = lambda x, y: np.abs(x - y)
-        # manhattan_distance = lambda x, y: np.sqrt(x*x + y*y)
+        :param trajs: list of demos
+        :param poly_degree: degree of polynomal to smooth
+        :return:
+        """
 
-        idx = np.argmax([l.shape[0] for l in trajs])
         t = []
         alpha = 1.0
-        t.append(1.0)  # Initialization of decay term
+        demos = []
+
+        # DWT distance function
+        manhattan_distance = lambda x, y: np.abs(x - y)
+
+        idx = np.argmax([l.shape[0] for l in trajs])
+        # get the decay term
+        t.append(1.0)  #
         for i in xrange(1, len(trajs[idx])):
             t.append(t[i - 1] - alpha * t[i - 1] * 0.01)  # Update of decay term (ds/dt=-alpha s) )
         t = np.array(t)
 
-        demos = []
+        # Smooth the data
         coefs = poly.polyfit(t, trajs[idx], poly_degree)
         ffit = poly.Polynomial(coefs)  # instead of np.poly1d
         x_fit = ffit(t)
         data = []
 
+        # scale all the data using DTW
         for ii, y in enumerate(trajs):
             dtw_data = {}
-            #d, cost_matrix, acc_cost_matrix, path = dtw(trajs[idx], y, dist=manhattan_distance)
-            d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
+            d, cost_matrix, acc_cost_matrix, path = dtw(trajs[idx], y, dist=manhattan_distance)
+            # d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
             dtw_data["cost"] = d
             dtw_data["cost_matrix"] = cost_matrix
             dtw_data["acc_cost_matrix"] = acc_cost_matrix
@@ -61,7 +71,7 @@ class TrainerBase(object):
             coefs = poly.polyfit(t, data_warp[0], poly_degree)
             ffit = poly.Polynomial(coefs)  # instead of np.poly1d
             y_fit = ffit(t)
-            #y_fit = data_warp[0]
+            y_fit = data_warp[0]
             temp = [[np.array(ele)] for ele in y_fit.tolist()]
             temp = np.array(temp)
             demos.append(temp)
