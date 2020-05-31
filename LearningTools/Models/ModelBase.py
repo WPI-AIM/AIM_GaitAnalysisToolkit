@@ -1,4 +1,4 @@
-from termcolor import colored
+# from termcolor import colored
 import numpy as np
 import copy
 import matplotlib
@@ -132,7 +132,7 @@ def plot_activation(sIn, H, ax):
     sIn_.insert(0, 0)
     sIn_.append(0)
 
-    for i in xrange(4):
+    for i in range(4):
         h = H[i].tolist()
         h.insert(0, 0)
         h.append(0)
@@ -191,7 +191,7 @@ def solve_riccati(expSigma, dt=0.01, reg =1e-8):
     P = [np.zeros((size*2, size*2))] * len(expSigma)
     P[-1][:size, :size] = np.linalg.pinv(expSigma[-1])
 
-    for ii in xrange(len(expSigma)-2, -1, -1):
+    for ii in range(len(expSigma)-2, -1, -1):
         Q[:size, :size] = np.linalg.pinv(expSigma[ii])
         B = P[ii + 1]*Bd
         C = np.linalg.pinv(np.dot(Bd.T * P[ii + 1] , Bd) + R)
@@ -216,7 +216,7 @@ def solve_riccati_mat(expSigma, dt=0.01, reg =1e-5):
     P = [np.zeros((size*2, size*2))] * len(expSigma)
     P[-1][:size, :size] = np.linalg.pinv(expSigma[-1])
 
-    for ii in xrange(len(expSigma)-2, -1, -1):
+    for ii in range(len(expSigma)-2, -1, -1):
         Q[:size, :size] = np.linalg.pinv(expSigma[ii])
         B = P[ii + 1].dot(Bd)
         C = np.linalg.pinv(np.dot(Bd.T.dot(P[ii + 1]), Bd) + R)

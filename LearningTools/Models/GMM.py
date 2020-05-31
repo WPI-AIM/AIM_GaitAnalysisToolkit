@@ -1,11 +1,11 @@
-from termcolor import colored
+# from termcolor import colored
 import numpy as np
 import copy
 import matplotlib
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-import ModelBase
-from ModelBase import gaussPDF
+from LearningTools.Models import ModelBase
+from LearningTools.Models.ModelBase import gaussPDF
 
 class GMM(ModelBase.ModelBase):
 
@@ -33,12 +33,12 @@ class GMM(ModelBase.ModelBase):
         self.sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
         self.Trans = np.ones((self.nb_states, self.nb_states)) * 0.01
 
-        for i in xrange(self.nb_states):
+        for i in range(self.nb_states):
 
             idtmp = np.where(idList == i)
             mat = np.vstack((data[:, idtmp][0][0], data[:, idtmp][1][0]))
 
-            for j in xrange(2, len(data[:, idtmp])):
+            for j in range(2, len(data[:, idtmp])):
                 mat = np.vstack((mat, data[:, idtmp][j][0]))
 
             mat = np.concatenate((mat, mat), axis=1)
@@ -98,7 +98,7 @@ class GMM(ModelBase.ModelBase):
         while searching:
 
             # E-step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
-            for i in xrange(0, self.nb_states):
+            for i in range(0, self.nb_states):
                 # Compute distances
                 thing = np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, self.nbData)
                 temp = np.power(data - thing, 2.0)
@@ -115,24 +115,24 @@ class GMM(ModelBase.ModelBase):
 
             idList = np.array(idList)
             # M-step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            for i in xrange(self.nb_states):
+            for i in range(self.nb_states):
                 # Update the centers
                 id = np.where(idList == i)
                 Mu[:, i] = np.mean(data[:, id], 2).reshape((1, -1))
 
             # Stopping criterion %%%%%%%%%%%%%%%%%%%%
             if abs(cumdist - cumdist_old) < cumdist_threshold and nb_step > minIter:
-                print 'Maximum number of kmeans iterations, ' + str(abs(cumdist - cumdist_old)) + ' is reached'
-                print 'steps reached, ' + str(nb_step) + ' is reached'
+                print('Maximum number of kmeans iterations, ' + str(abs(cumdist - cumdist_old)) + ' is reached')
+                print('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
 
             cumdist_old = cumdist
             nb_step = nb_step + 1
 
             if nb_step > maxIter:
-                print 'steps reached, ' + str(nb_step) + ' is reached'
+                print('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
-            print "maxitter ", nb_step
+            print("maxitter ", nb_step)
 
         self.mu = Mu
 
@@ -170,7 +170,7 @@ class GMM(ModelBase.ModelBase):
             GAMMA2 = GAMMA / np.sum(GAMMA, axis=1)[:, np.newaxis]
 
             # M-step
-            for i in xrange(self.nb_states):
+            for i in range(self.nb_states):
                 # update priors
                 self.priors[i] = np.sum(GAMMA[i, :]) / self.nbData
                 self.mu[:, i] = data.T.dot(GAMMA2[i, :].reshape((-1, 1))).T

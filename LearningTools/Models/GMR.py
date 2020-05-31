@@ -1,5 +1,5 @@
 import numpy as np
-from ModelBase import gaussPDF
+from LearningTools.Models.ModelBase import gaussPDF
 
 
 class GMR(object):
@@ -96,20 +96,20 @@ class GMR(object):
 
         H = np.zeros((self.states, nbData))
 
-        for t in xrange(nbData):
+        for t in range(nbData):
 
-            for i in xrange(self.states):
+            for i in range(self.states):
                 H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]), self.mu[in_, i], self.sigma[i][in_, in_])
 
             H[:, t] = H[:, t] / np.sum(H[:, t] + np.finfo(float).tiny)
 
-            for i in xrange(self.states):
+            for i in range(self.states):
                 MuTmp[:, i] = self.mu[out_[0]:out_[-1]+1, i] + self.sigma[i][out_[0]:out_[-1]+1, in_] / \
                               self.sigma[i][in_, in_] * (DataIn[t] - self.mu[in_, i])
 
                 expData[:, t] = expData[:, t] + H[i, t] * MuTmp[:, i]
 
-            for i in xrange(self.states):
+            for i in range(self.states):
                 sigma_tmp = self.sigma[i][out_[0]:out_[-1]+1, out_[0]:out_[-1]+1] - \
                             (self.sigma[i][out_[0]:out_[-1]+1, in_] / self.sigma[i][in_, in_]).reshape((-1,1))  * \
                              self.sigma[i][in_, out_[0]:out_[-1]+1]
