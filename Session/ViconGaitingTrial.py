@@ -45,15 +45,15 @@
 
 import math
 import numpy as np
-from ..lib.Vicon import Vicon
+from lib.Vicon import Vicon
 
 
-from ..lib.GaitCore.Core import Data as Data
-from ..lib.GaitCore.Core import Newton as Newton
-from ..lib.GaitCore.Core import Point as Point
-from ..lib.GaitCore.Bio import Side
-from ..lib.Vicon import Markers
-from ..lib.GaitCore.Core import utilities as ult
+from lib.GaitCore.Core import Data as Data
+from lib.GaitCore.Core import Newton as Newton
+from lib.GaitCore.Core import Point as Point
+from lib.GaitCore.Bio import Side
+from lib.Vicon import Markers
+from lib.GaitCore.Core import utilities as ult
 import math
 
 
@@ -103,7 +103,7 @@ class ViconGaitingTrial(object):
                     offset = ii
             offsets.append(offset)
 
-        for ii, start in enumerate(xrange(0, len(max_peakind) - 2)):
+        for ii, start in enumerate(range(0, len(max_peakind) - 2)):
             begin = max_peakind[start]
             end = max_peakind[start + 1] + offsets[ii]
             vicon.append((begin, end))
