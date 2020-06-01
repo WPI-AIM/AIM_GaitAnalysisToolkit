@@ -52,7 +52,7 @@ from ..lib.GaitCore.Core import Data as Data
 from ..lib.GaitCore.Core import Newton as Newton
 from ..lib.GaitCore.Core import Point as Point
 from ..lib.GaitCore.Bio import Side
-from lib.GaitAnalysisToolkit.lib.Vicon import Markers
+from ..lib.Vicon import Markers
 from ..lib.GaitCore.Core import utilities as ult
 import math
 
@@ -93,10 +93,10 @@ class ViconGaitingTrial(object):
         max_peakind = np.pad(max_peakind, (1, 10), 'constant', constant_values=(0, 0))
         max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
 
-        for start in xrange(0, len(max_peakind) - 1):
+        for start in range(0, len(max_peakind) - 1):
             error = 10000000
             offset = 0
-            for ii in xrange(0, 20):
+            for ii in range(0, 20):
                 temp_error = model.get_left_leg().hip.angle.x[max_peakind[start + 1] + ii]
                 if temp_error < error:
                     error = temp_error
@@ -118,7 +118,7 @@ class ViconGaitingTrial(object):
         distA = []
         distB = []
 
-        for i in xrange(len(toe)):
+        for i in range(len(toe)):
             distA.append(Markers.transform_vector( np.linalg.pinv(stairA[i]), toe[i].toarray())[2][0])
 
         error = 1.0
@@ -129,7 +129,7 @@ class ViconGaitingTrial(object):
         distA = np.convolve(distA, np.ones((N,)) / N, mode='valid')
         local = []
         hills = []
-        for ii in xrange(len(distA) - 3):
+        for ii in range(len(distA) - 3):
 
             d = distA[ii] - distA[ii + 3]
 
