@@ -4,8 +4,8 @@ import copy
 import matplotlib
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-import ModelBase
-from ModelBase import gaussPDF
+from .ModelBase import ModelBase as ModelBase
+from .ModelBase import gaussPDF
 
 class TPGMM(ModelBase.ModelBase):
 
@@ -21,12 +21,12 @@ class TPGMM(ModelBase.ModelBase):
         self.sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
         self.Trans = np.ones((self.nb_states, self.nb_states)) * 0.01
 
-        for i in xrange(self.nb_states):
+        for i in range(self.nb_states):
 
             idtmp = np.where(idList == i)
             mat = np.vstack((data[:, idtmp][0][0], data[:, idtmp][1][0]))
 
-            for j in xrange(2, len(data[:, idtmp])):
+            for j in range(2, len(data[:, idtmp])):
                 mat = np.vstack((mat, data[:, idtmp][j][0]))
 
             mat = np.concatenate((mat, mat), axis=1)
@@ -100,17 +100,17 @@ class TPGMM(ModelBase.ModelBase):
 
             # Stopping criterion %%%%%%%%%%%%%%%%%%%%
             if abs(cumdist - cumdist_old) < cumdist_threshold and nb_step > minIter:
-                print 'Maximum number of kmeans iterations, ' + str(abs(cumdist - cumdist_old)) + ' is reached'
-                print 'steps reached, ' + str(nb_step) + ' is reached'
+                print('Maximum number of kmeans iterations, ' + str(abs(cumdist - cumdist_old)) + ' is reached')
+                print('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
 
             cumdist_old = cumdist
             nb_step = nb_step + 1
 
             if nb_step > maxIter:
-                print 'steps reached, ' + str(nb_step) + ' is reached'
+                print ('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
-            print "maxitter ", nb_step
+            print ("maxitter ", nb_step)
 
         self.mu = Mu
 
@@ -173,10 +173,10 @@ class TPGMM(ModelBase.ModelBase):
         mu = np.zeros((self._nb_dim, self._nb_states))
         sigma = np.array([np.zeros((self.nb_dim,self.nb_dim)) for i in range(self.nb_states)])
 
-        for i in xrange(self._nb_states):
+        for i in range(self._nb_states):
             temp_mu = np.zeros((self._nb_dim, 1))
             temp_sigma = np.zeros((self.nb_dim, self.nb_dim))
-            for frame in xrange(self.frames):
+            for frame in range(self.frames):
                 curr_mu = A[frame].dot(self.mu[:,i].reshape((-1,1))) + b[frame]
                 curr_sigma = A[frame] * self.sigma[i] * A[frame].T
                 temp_sigma = temp_sigma + np.linalg.pinv(curr_sigma)

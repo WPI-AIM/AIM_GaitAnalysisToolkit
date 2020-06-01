@@ -1,8 +1,8 @@
 
-import TrainerBase
-from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
-from lib.GaitAnalysisToolkit.LearningTools.Models import TPGMM, GMR
-from lib.GaitAnalysisToolkit.LearningTools.Models.ModelBase import solve_riccati_mat, solve_riccati
+from . import TrainerBase
+from ...lib.GaitCore.Core import utilities as utl
+from ..Models import TPGMM, GMR
+from ..Models.ModelBase import solve_riccati_mat, solve_riccati
 import numpy as np
 import numpy.matlib
 
@@ -42,13 +42,13 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.gmm = TPGMM.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim, reg=self.reg)
         taus = []
         goals = []
-        for i in xrange(len(self._demo)):
+        for i in range(len(self._demo)):
             tau, motion, goal = self.gen_path(self._demo[i])
             taus.append(tau)
             goals.append(goal)
 
         # make the decay term
-        for t in xrange(1, self.nbData):
+        for t in range(1, self.nbData):
             sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
 
         # stack the decay term and all the demos
@@ -59,9 +59,9 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             tau = np.vstack((tau, tau_))
 
         # Make all the transformations
-        for i in xrange(len(goals[0])):
+        for i in range(len(goals[0])):
             b = [0.0]
-            for j in xrange(len(goals)):
+            for j in range(len(goals)):
                 b.append(goals[j][i].tolist()[0])
             b = np.asarray(b).reshape((-1, 1))
             self.b.append(b)
@@ -88,8 +88,8 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.data["mu"] = mu
         self.data["sigma"] = sigma
         self.data["dt"] = self._dt
-        self.data["start"] = [self._demo[i][0][0] for i in xrange(len(self._demo))]
-        self.data["goal"] = [self._demo[i][0][-1] for i in xrange(len(self._demo))]
+        self.data["start"] = [self._demo[i][0][0] for i in range(len(self._demo))]
+        self.data["goal"] = [self._demo[i][0][-1] for i in range(len(self._demo))]
         self.data["dtw"] = self.dtw_data
         self.data.update(ric2)
 
@@ -117,7 +117,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         ddx_ = None
         taux = []
         ending_pos = []
-        for n in xrange(self.samples):
+        for n in range(self.samples):
             demo = demos[n]
             size = demo.shape[0]
 
@@ -140,7 +140,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             x_hat = x + (self._kv/self._kp)*dx + (1.0/self._kp)*ddx
             goals = x_hat - goals
 
-            for i in xrange(self.nbData):
+            for i in range(self.nbData):
                 sol[:, i] = np.linalg.solve(A, goals[:, i].reshape((-1, 1))).ravel()
 
             ending_pos.append(demos[n][-1])
