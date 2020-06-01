@@ -1,4 +1,4 @@
-import LearningTools.Runner.RunnerBase as RunnerBase
+from . import RunnerBase
 import numpy as np
 from random import uniform
 

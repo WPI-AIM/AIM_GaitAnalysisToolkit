@@ -1,10 +1,10 @@
 
-import TrainerBase
+from . import TrainerBase
 import numpy as np
 from scipy import signal
-from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
+from ...lib.GaitCore.Core import utilities as utl
 from ...Trajectories import GMMWPI
-from lib.GaitAnalysisToolkit.LearningTools.Models import GMM,GMR
+from ..Models import GMM, GMR
 import numpy as np
 import numpy.polynomial.polynomial as poly
 import numpy.matlib

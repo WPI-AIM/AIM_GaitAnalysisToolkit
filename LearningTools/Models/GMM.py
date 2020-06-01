@@ -4,8 +4,8 @@ import copy
 import matplotlib
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-from LearningTools.Models import ModelBase
-from LearningTools.Models.ModelBase import gaussPDF
+from . import ModelBase
+from .ModelBase import gaussPDF
 
 class GMM(ModelBase.ModelBase):
 
