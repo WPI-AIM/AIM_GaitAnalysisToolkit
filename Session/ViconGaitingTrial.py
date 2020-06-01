@@ -51,7 +51,9 @@ from lib.Vicon import Vicon
 from lib.GaitCore.Core import Data as Data
 from lib.GaitCore.Core import Newton as Newton
 from lib.GaitCore.Core import Point as Point
-from lib.GaitCore.Bio import Side
+from lib.GaitCore.Bio import Side as Side
+from lib.GaitCore.Bio import Leg as Leg
+from lib.GaitCore.Bio import Joint
 from lib.Vicon import Markers
 from lib.GaitCore.Core import utilities as ult
 import math
@@ -222,18 +224,38 @@ class ViconGaitingTrial(object):
                 for inc in self.vicon_set_points:
                     time = np.linspace(0, 1, (inc[1] - inc[0]))
                     current_joint = fnc.__dict__[joint_name]
-                    angle = Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
-                    power = Data.Data(np.array(current_joint.power.z[inc[0]:inc[1]]), time)
-                    torque = Data.Data(np.array(current_joint.moment.x[inc[0]:inc[1]]), time)
-                    force = Data.Data(np.array(current_joint.force.x[inc[0]:inc[1]]), time)
-                    stamp = Newton.Newton(angle,force,torque,power)
+
+                    angleX = Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
+                    angleY = Data.Data(np.array(current_joint.angle.y[inc[0]:inc[1]]), time)
+                    angleZ = Data.Data(np.array(current_joint.angle.z[inc[0]:inc[1]]), time)
+                    angle = Point.Point(x=angleX, y=angleY, z=angleZ)
+
+                    powerX = Data.Data(np.array(current_joint.power.x[inc[0]:inc[1]]), time)
+                    powerY = Data.Data(np.array(current_joint.power.y[inc[0]:inc[1]]), time)
+                    powerZ = Data.Data(np.array(current_joint.power.z[inc[0]:inc[1]]), time)
+                    power = Point.Point(x=powerX, y=powerY, z=powerZ)
+
+                    torqueX = Data.Data(np.array(current_joint.moment.x[inc[0]:inc[1]]), time)
+                    torqueY = Data.Data(np.array(current_joint.moment.y[inc[0]:inc[1]]), time)
+                    torqueZ = Data.Data(np.array(current_joint.moment.z[inc[0]:inc[1]]), time)
+                    torque = Point.Point(x=torqueX, y=torqueY, z=torqueZ)
+
+                    forceX = Data.Data(np.array(current_joint.force.x[inc[0]:inc[1]]), time)
+                    forceY = Data.Data(np.array(current_joint.force.y[inc[0]:inc[1]]), time)
+                    forceZ = Data.Data(np.array(current_joint.force.z[inc[0]:inc[1]]), time)
+                    force = Point.Point(forceX,forceY, forceZ)
+
+                    stamp = Joint.Joint(angle, force, torque, power)
                     if self._use_black_list:
                         if count in self._black_list:
                             continue
                     joints[name].append(stamp)
                     count += 1
 
-        return joints
+        left_leg = Leg.Leg(joints["Rhip"], joints["Rknee"], joints["Rankle"])
+        right_leg = Leg.Leg(joints["Lhip"], joints["Lknee"], joints["Lankle"])
+        body = Side.Side(left_leg,right_leg)
+        return body
 
     def get_emg(self):
         """
