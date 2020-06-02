@@ -8,10 +8,12 @@ It provides tool to anaylsis gaiting including seperating the gait cycle
 
 
 ## Dependence
-* python 2.7
+* python 3.8
 * numpy
 * scipy
 * matplotlib
+* pandas
+* dtw
 
 
 ## External Dependence 
