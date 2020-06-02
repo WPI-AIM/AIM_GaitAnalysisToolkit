@@ -328,7 +328,7 @@ class ViconGaitingTrial(object):
         count = 0
         emgs = self.vicon.get_all_emgs()
 
-        for key, emg in emgs.iteritems():
+        for key, emg in emgs.items():
             joints[key] = []
             for inc in self.vicon_set_points:
                 start = emg.get_offset_index(inc[0])
@@ -355,7 +355,7 @@ class ViconGaitingTrial(object):
         count = 0
         emgs = self.vicon.get_all_t_emg()
 
-        for key, emg in emgs.iteritems():
+        for key, emg in emgs.items():
             joints[key] = []
             for inc in self.vicon_set_points:
                 start = emg.get_offset_index(inc[0])

@@ -47,7 +47,7 @@ class TrainerBase(object):
         idx = np.argmax([l.shape[0] for l in trajs])
         # get the decay term
         t.append(1.0)  #
-        for i in xrange(1, len(trajs[idx])):
+        for i in range(1, len(trajs[idx])):
             t.append(t[i - 1] - alpha * t[i - 1] * 0.01)  # Update of decay term (ds/dt=-alpha s) )
         t = np.array(t)
 
@@ -105,8 +105,8 @@ def calculate_imitation_metric_spatially(demos, imitation):
     T = len(imitation)
     metric = 0.0
 
-    for m in xrange(M):
-        for t in xrange(T):
+    for m in range(M):
+        for t in range(T):
             metric += np.sqrt(np.power(demos[m][t] - imitation[t]))
 
     return metric
