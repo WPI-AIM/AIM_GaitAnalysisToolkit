@@ -58,6 +58,8 @@ from lib.Vicon import Markers
 from lib.GaitCore.Core import utilities as ult
 import math
 
+import matplotlib.pyplot as plt
+
 
 class ViconGaitingTrial(object):
 
@@ -72,9 +74,15 @@ class ViconGaitingTrial(object):
         self._joint_trajs = None
         self._black_list = []
         self._use_black_list = False
+
+        # Flag for if the data was gathered from the right leg hip angle
+        # Data will only be gathered from the right leg iff handle_nan was set to True
+        # and the data would otherwise have caused an abort
+        self.gait_cycle_left_leg = True
+
         #self.create_index_seperators()
 
-    def create_index_seperators(self):
+    def create_index_seperators(self, verbose=False, handle_nan=False, abort_nan=False):
         """
         This function find the index that seperates
         the sensors by the joints angles
@@ -83,33 +91,86 @@ class ViconGaitingTrial(object):
         self.exo_set_points
         :return: None
         """
-        offsets = []
         vicon = []
 
         model = self.vicon.get_model_output()
         hip = model.get_left_leg().hip.angle.x
+
+        # Perform checks on the data according to flags set by user
+        if False not in np.isnan(hip) or (abort_nan and True in np.isnan(hip)):
+            # Make sure that we can use the data with our current configuration
+            if verbose:
+                if abort_nan:
+                    print "The field left_leg.hip.angle.x contains at least one NaN!"
+                else:
+                    print "The field left_leg.hip.angle.x is composed entirely of NaNs!"
+                if handle_nan:
+                    print "Attempting to calculate gait cycles using the right leg..."
+                else:
+                    print "Aborting..."
+            if handle_nan:
+                # if handle_nan is set to True, we'll try to handle this automatically by using the right leg data
+                hip = model.get_right_leg().hip.angle.x
+                self.gait_cycle_left_leg = False
+                if False not in np.isnan(hip) or (abort_nan and True in np.isnan(hip)):
+                    if verbose:
+                        if abort_nan:
+                            print "The field right_leg.hip.angle.x contains at least one NaN!"
+                        else:
+                            print "The field right_leg.hip.angle.x is composed entirely of NaNs!"
+                        print "Aborting..."
+                    self.vicon_set_points = []
+                    return
+            else:
+                self.vicon_set_points = []
+                return
+
+        if abort_nan and True in np.isnan(hip):
+            if verbose:
+                print "NaNs in dataset!"
+                print "Aborting..."
+            self.vicon_set_points = []
+            return
+
         N = 10
         hip = np.convolve(hip, np.ones((N,)) / N, mode='valid')
 
-        max_peakind = np.diff(np.sign(np.diff(hip))).flatten()  # the one liner
-        max_peakind = np.pad(max_peakind, (1, 10), 'constant', constant_values=(0, 0))
-        max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
+        # plt.plot(hip)
+        # plt.show()
 
-        for start in range(0, len(max_peakind) - 1):
-            error = 10000000
-            offset = 0
-            for ii in range(0, 20):
-                temp_error = model.get_left_leg().hip.angle.x[max_peakind[start + 1] + ii]
-                if temp_error < error:
-                    error = temp_error
-                    offset = ii
-            offsets.append(offset)
+        peaks = [max(0, value) for index, value in enumerate(hip)]
+        # peaks is the data of hips, just floored at 0
 
-        for ii, start in enumerate(range(0, len(max_peakind) - 2)):
-            begin = max_peakind[start]
-            end = max_peakind[start + 1] + offsets[ii]
-            vicon.append((begin, end))
+        flag = False
+        gait_borders = []
+        highest = 0
+        highest_ind = 0
+        for i in xrange(len(peaks)):
+            if peaks[i] == 0 or np.isnan(peaks[i]):
+                if highest != 0 and flag:
+                    gait_borders.append(highest_ind)
+                    if verbose:
+                        print "Peak detected! Highest point of peak is at index " + str(highest_ind)
+                flag = True
+                highest = 0
+            else:
+                if highest < peaks[i]:
+                    highest = peaks[i]
+                    highest_ind = i
+        # gait_borders is an array of the highest values within each peak,
+        # where a valid peak is defined as a peak which is not cut off by either the beginning or end of the data
 
+        if len(gait_borders) < 2:  # if we have 1 or 0 peaks detected, there are no gait cycles
+            if verbose:
+                print "No gait cycles detected in data"
+            self.vicon_set_points = []
+            return
+
+        for i in xrange(len(gait_borders)-1):
+            vicon.append((gait_borders[i], gait_borders[i+1]))
+
+        if verbose:
+            print "Gait cycles: " + str(vicon)
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
 
     def get_stairs(self, toe_marker, step_frame):
