@@ -101,13 +101,13 @@ class ViconGaitingTrial(object):
             # Make sure that we can use the data with our current configuration
             if verbose:
                 if abort_nan:
-                    print "The field left_leg.hip.angle.x contains at least one NaN!"
+                    print ("The field left_leg.hip.angle.x contains at least one NaN!")
                 else:
-                    print "The field left_leg.hip.angle.x is composed entirely of NaNs!"
+                    print( "The field left_leg.hip.angle.x is composed entirely of NaNs!")
                 if handle_nan:
-                    print "Attempting to calculate gait cycles using the right leg..."
+                    print ("Attempting to calculate gait cycles using the right leg...")
                 else:
-                    print "Aborting..."
+                    print("Aborting...")
             if handle_nan:
                 # if handle_nan is set to True, we'll try to handle this automatically by using the right leg data
                 hip = model.get_right_leg().hip.angle.x
@@ -115,10 +115,10 @@ class ViconGaitingTrial(object):
                 if False not in np.isnan(hip) or (abort_nan and True in np.isnan(hip)):
                     if verbose:
                         if abort_nan:
-                            print "The field right_leg.hip.angle.x contains at least one NaN!"
+                            print ("The field right_leg.hip.angle.x contains at least one NaN!")
                         else:
-                            print "The field right_leg.hip.angle.x is composed entirely of NaNs!"
-                        print "Aborting..."
+                            print ("The field right_leg.hip.angle.x is composed entirely of NaNs!")
+                        print ("Aborting...")
                     self.vicon_set_points = []
                     return
             else:
@@ -127,8 +127,8 @@ class ViconGaitingTrial(object):
 
         if abort_nan and True in np.isnan(hip):
             if verbose:
-                print "NaNs in dataset!"
-                print "Aborting..."
+                print ("NaNs in dataset!")
+                print ("Aborting...")
             self.vicon_set_points = []
             return
 
@@ -145,12 +145,12 @@ class ViconGaitingTrial(object):
         gait_borders = []
         highest = 0
         highest_ind = 0
-        for i in xrange(len(peaks)):
+        for i in range(len(peaks)):
             if peaks[i] == 0 or np.isnan(peaks[i]):
                 if highest != 0 and flag:
                     gait_borders.append(highest_ind)
                     if verbose:
-                        print "Peak detected! Highest point of peak is at index " + str(highest_ind)
+                        print ("Peak detected! Highest point of peak is at index " + str(highest_ind))
                 flag = True
                 highest = 0
             else:
@@ -162,15 +162,15 @@ class ViconGaitingTrial(object):
 
         if len(gait_borders) < 2:  # if we have 1 or 0 peaks detected, there are no gait cycles
             if verbose:
-                print "No gait cycles detected in data"
+                print ("No gait cycles detected in data")
             self.vicon_set_points = []
             return
 
-        for i in xrange(len(gait_borders)-1):
+        for i in range(len(gait_borders)-1):
             vicon.append((gait_borders[i], gait_borders[i+1]))
 
         if verbose:
-            print "Gait cycles: " + str(vicon)
+            print ("Gait cycles: " + str(vicon))
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
 
     def get_stairs(self, toe_marker, step_frame):
