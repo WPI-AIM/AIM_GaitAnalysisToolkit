@@ -91,7 +91,7 @@ class GMR(object):
         MuTmp = np.zeros((nbVarOut, self.states))
         expData = np.zeros((nbVarOut, nbData))
         expSigma = []
-        for i in xrange(nbData):
+        for i in range(nbData):
             expSigma.append(np.zeros((nbVarOut, nbVarOut)))
 
         H = np.zeros((self.states, nbData))

@@ -1,6 +1,6 @@
 
 from . import TrainerBase
-from ...lib.GaitCore.Core import utilities as utl
+from lib.GaitCore.Core import utilities as utl
 from ..Models import TPGMM, GMR
 from ..Models.ModelBase import solve_riccati_mat, solve_riccati
 import numpy as np

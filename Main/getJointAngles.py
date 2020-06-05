@@ -10,7 +10,6 @@ from scipy import signal
 import numpy.polynomial.polynomial as poly
 from dtw import dtw
 
-
 def plot_joint_angles(files, indecies, sides, lables):
     """
 
