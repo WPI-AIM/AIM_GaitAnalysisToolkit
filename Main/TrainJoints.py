@@ -47,6 +47,11 @@ def plot_joint_angles(files, indecies, sides, lables):
 
     sample_size = min(samples)
 
+    # for i in range(len(files)):
+    #     angles2["hip"].append(signal.resample(angles["hip"][i], sample_size))
+    #     angles2["knee"].append(signal.resample(angles["knee"][i], sample_size))
+    #     angles2["ankle"].append(signal.resample(angles["ankle"][i], sample_size))
+
     for i in range(len(files)):
         angles2["hip"].append(signal.resample(angles["hip"][i], sample_size))
         angles2["knee"].append(signal.resample(angles["knee"][i], sample_size))
@@ -56,24 +61,51 @@ def plot_joint_angles(files, indecies, sides, lables):
 
 
 if __name__ == "__main__":
-    angles = plot_joint_angles(["/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_00/subject_00 walk_00.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_01/subject_01_walk_00.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_02/subject_02_walk_00.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_03/subject_03_walk_00.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_04/subject_04_walk_00.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_05/subject_05_walk_00.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_06/subject_06 walk_00.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_07/subject_07 walk_01.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_08/subject_08_walking_01.csv",
-                                "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_10/subject_10 walk_02.csv",
-                                ],
-                               [0, 0, 1, 0, 0, 0, 0, 0, 0, 2],
-                               ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
-                               ["Subject00", "Subject01", "Subject02", 'Subject03', "subject04", "Subject05",
-                                "Subject06", "Subject07", "Subject08", "Subject10"])
+    # angles = plot_joint_angles(["/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_02/subject_02_walk_00.csv",
+    #                             "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_03/subject_03_walk_00.csv",
+    #                             "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_04/subject_04_walk_00.csv",
+    #                             "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_05/subject_05_walk_00.csv",
+    #                             "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_06/subject_06 walk_00.csv",
+    #                             "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_07/subject_07 walk_01.csv",
+    #                             "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_08/subject_08_walking_01.csv",
+    #                             "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_10/subject_10 walk_02.csv",
+    #                             ],
+    #                            [1, 0, 0, 0, 0, 0, 0, 2],
+    #                            ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+    #                            ["Subject00", "Subject01", "Subject02", 'Subject03', "subject04", "Subject05",
+    #                             "Subject06", "Subject07", "Subject08", "Subject10"])
 
-    traj = [angles["hip"]]
-    trainer = TPGMMTrainer.TPGMMTrainer(demo=traj, file_name="leg", n_rf=15, dt=0.01, reg=1e-8, poly_degree=[20, 15, 15])
+    angles = plot_joint_angles(["/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_00/subject_00 walk_00.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_01/subject_01_walk_00.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_02/subject_02_walk_00.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_03/subject_03_walk_00.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_04/subject_04_walk_00.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_05/subject_05_walk_00.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_06/subject_06 walk_00.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_07/subject_07 walk_01.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_08/subject_08_walking_01.csv",
+                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_10/subject_10 walk_02.csv",
+                       ],
+                      [0, 0, 1, 0, 0, 0, 0, 0, 0, 2],
+                      ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+                      ["Subject00", "Subject01", "Subject02", 'Subject03', "subject04", "Subject05", "Subject06",
+                       "Subject07", "Subject08", "Subject10"])
+
+
+    # angles = plot_joint_angles(["/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_00/subject_00 walk_00.csv",
+    #                    "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_03/subject_03_walk_00.csv",
+    #                    "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_04/subject_04_walk_00.csv",
+    #                    "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_05/subject_05_walk_00.csv",
+    #                    "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_08/subject_08_walking_01.csv",
+    #                    "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_10/subject_10 walk_02.csv",
+    #                    ],
+    #                   [0,  0, 0, 0,  0, 2],
+    #                   ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+    #                   ["Subject00", "Subject01", "Subject02", 'Subject03', "subject04", "Subject05", "Subject06",
+    #                    "Subject07", "Subject08", "Subject10"])
+
+    traj = [angles["knee"]]
+    trainer = TPGMMTrainer.TPGMMTrainer(demo=traj, file_name="leg", n_rf=25, dt=0.01, reg=1e-8, poly_degree=[15, 15, 15])
     trainer.train()
     runner = TPGMMRunner.TPGMMRunner("leg.pickle")
     path = np.array(runner.run())
@@ -87,7 +119,7 @@ if __name__ == "__main__":
     for p in angles["ankle"]:
         ax3.plot(p)
 
-    ax1.plot(path[:, 0], linewidth=4)
-    # ax2.plot(path[:, 1], linewidth=4)
-    # ax3.plot(path[:, 2], linewidth=4)
+    ax2.plot(path[:, 0], linewidth=4)
+    # ax1.plot(path[:, 1], linewidth=4)
+    #ax3.plot(path[:, 2], linewidth=4)
     plt.show()

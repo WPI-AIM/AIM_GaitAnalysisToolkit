@@ -8,10 +8,11 @@ It provides tool to anaylsis gaiting including seperating the gait cycle
 
 
 ## Dependence
-* python 2.7
+* python 3.x
 * numpy
 * scipy
 * matplotlib
+* dtw
 
 
 ## External Dependence 
@@ -24,10 +25,25 @@ All packages are installed in the `lib` folder
 
 
 ## Install
-This package as level submoduls that need to be installed
+This package as level submodules that need to be installed
 
 ````bash
-git clone https://github.com/WPI-AIM/AIM_GaitAnalysisToolkit.git
 cd AIM_GaitAnalysisToolkit
 git submodule update --init --recursive
 git submodule update --recursive
+````
+
+## Data
+Gaiting data can be found here. 
+* [AIM_GaitData](https://github.com/WPI-AIM/AIM_GaitData.git)
+
+
+## Learning tools
+* The Model folder holds the different algorthum to for training. 
+It should extend ```ModelBase.py```. 
+* The Trainer folder holds the trainer for the different algorithums. 
+Its name should match the training algorithum used internial followed by Trainer. 
+Follow the convention set. It should extend ```TrainerBase.py```.  
+This class sould prepare the data to be trained and save the trained model.
+* The Runner folder holds all the Runners for the trained model. It runs a trained model. 
+It should follow the set naming convetion and extend ```RunnerBase.py```.   
