@@ -206,7 +206,7 @@ def solve_riccati(expSigma, dt=0.01, reg =1e-8):
     return ric
 
 
-def solve_riccati_mat(expSigma, dt=0.01, reg =1e-5):
+def solve_riccati_mat(expSigma, dt=0.01, reg=1e-5):
     ric = {}
     size = expSigma[0].shape[0]
     Ad = np.kron([[0, 1],[0, 0]], np.eye(size))*dt + np.eye(2*size)

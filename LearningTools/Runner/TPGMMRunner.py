@@ -38,7 +38,7 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         # get the gain
         v = np.linalg.inv(np.dot(np.dot(B.T, P[self._index]), B) + R)
         K = np.dot(np.dot(v.dot(B.T), P[self._index]), A)
-        # update the system
+        #K = np.append(np.eye(1) * self._kp, np.eye(1) * self._kc, 1)
         x_ = np.append(self._x, self._dx).reshape((-1, 1))
         self._ddx = K.dot(np.vstack((self.get_expData()[:, self._index].reshape((-1,1)), self._v0)) - x_)
         self._dx = self._dx + self._ddx * self.get_dt()

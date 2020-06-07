@@ -61,7 +61,7 @@ class TrainerBase(object):
         for ii, y in enumerate(trajs):
             dtw_data = {}
             d, cost_matrix, acc_cost_matrix, path = dtw(trajs[idx], y, dist=manhattan_distance)
-            d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
+            # d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
             dtw_data["cost"] = d
             dtw_data["cost_matrix"] = cost_matrix
             dtw_data["acc_cost_matrix"] = acc_cost_matrix
