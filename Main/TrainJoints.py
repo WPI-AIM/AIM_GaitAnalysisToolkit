@@ -104,9 +104,9 @@ if __name__ == "__main__":
     #                   ["Subject00", "Subject01", "Subject02", 'Subject03', "subject04", "Subject05", "Subject06",
     #                    "Subject07", "Subject08", "Subject10"])
 
-    traj = [angles["knee"]]
-    trainer = TPGMMTrainer.TPGMMTrainer(demo=traj, file_name="leg", n_rf=25, dt=0.01, reg=1e-8, poly_degree=[15, 15, 15])
-    trainer.train()
+    traj = [angles["hip"],angles["knee"],angles["ankle"]]
+    # trainer = TPGMMTrainer.TPGMMTrainer(demo=traj, file_name="leg", n_rf=12, dt=0.01, reg=[1e-7, 1e-7, 1e-7], poly_degree=[15, 15, 15])
+    # trainer.train()
     runner = TPGMMRunner.TPGMMRunner("leg.pickle")
     path = np.array(runner.run())
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     for p in angles["ankle"]:
         ax3.plot(p)
 
-    ax2.plot(path[:, 0], linewidth=4)
-    # ax1.plot(path[:, 1], linewidth=4)
-    #ax3.plot(path[:, 2], linewidth=4)
+    ax1.plot(path[:, 0], linewidth=4)
+    ax2.plot(path[:, 1], linewidth=4)
+    ax3.plot(path[:, 2], linewidth=4)
     plt.show()

@@ -9,7 +9,7 @@ from .ModelBase import gaussPDF
 
 class TPGMM(ModelBase.ModelBase):
 
-    def __init__(self, nb_states, nb_dim=3, reg=1e-8):
+    def __init__(self, nb_states, nb_dim=3, reg=[1e-8]):
         """
 
         :param nb_states: number of states
@@ -167,7 +167,7 @@ class TPGMM(ModelBase.ModelBase):
                 self.mu[:, i] = data.T.dot(GAMMA2[i, :].reshape((-1, 1))).T
                 mu = np.matlib.repmat(self.mu[:, i].reshape((-1, 1)), 1, self.nbData)
                 diff = (data.T - mu)
-                self.sigma[i] = diff.dot(np.diag(GAMMA2[i, :])).dot(diff.T) + np.eye(self.nb_dim) * self.reg
+                self.sigma[i] = diff.dot(np.diag(GAMMA2[i, :])).dot(diff.T) + np.diag(self.reg) #np.eye(self.nb_dim) * self.reg
 
             # self.priors = np.mean(GAMMA, axis=1)
 

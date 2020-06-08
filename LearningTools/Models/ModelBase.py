@@ -212,7 +212,7 @@ def solve_riccati_mat(expSigma, dt=0.01, reg=1e-5):
     Ad = np.kron([[0, 1],[0, 0]], np.eye(size))*dt + np.eye(2*size)
     Q = np.zeros((size*2, size*2))
     Bd = np.kron([[0],[1]], np.eye(size))*dt
-    R = np.eye(size)*reg
+    R = np.eye(size)*reg[1:]
     P = [np.zeros((size*2, size*2))] * len(expSigma)
     P[-1][:size, :size] = np.linalg.pinv(expSigma[-1])
 

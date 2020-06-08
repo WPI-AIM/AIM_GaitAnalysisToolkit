@@ -115,6 +115,6 @@ class GMR(object):
                              self.sigma[i][in_, out_[0]:out_[-1]+1]
                 expSigma[t] = expSigma[t] + H[i, t] * (sigma_tmp + MuTmp[:, i].reshape((-1, 1)) * MuTmp[:, i].T)
 
-            expSigma[t] = expSigma[t] - expData[:, t] * expData[:, t].T + np.eye(nbVarOut) * reg
+            expSigma[t] = expSigma[t] - expData[:, t] * expData[:, t].T + np.eye(nbVarOut) * reg[1:]
 
         return expData, expSigma, H
