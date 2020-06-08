@@ -1,6 +1,6 @@
 
 from . import TrainerBase
-from ...lib.GaitCore.Core import utilities as utl
+from lib.GaitCore.Core import utilities as utl
 from ..Models import TPGMM, GMR
 from ..Models.ModelBase import solve_riccati_mat, solve_riccati
 import numpy as np
@@ -9,7 +9,7 @@ import numpy.matlib
 
 class TPGMMTrainer(TrainerBase.TrainerBase):
 
-    def __init__(self, demo, file_name, n_rf, dt=0.01, reg=1e-3, poly_degree=[15]):
+    def __init__(self, demo, file_name, n_rf, dt=0.01, reg=[1e-5], poly_degree=[15]):
         """
        :param file_names: file to save training too
        :param n_rfs: number of DMPs
@@ -22,13 +22,18 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.b = []
         rescaled = []
         self.dtw_data = []
-        # degree = poly_degree*len(demo)
+
+        if len(reg) == len(demo):
+            my_reg = [1e-8] + reg
+        else:
+            my_reg = reg*(1+ len(demo))
+
         for d, polyD in zip(demo, poly_degree):
             demo_, dtw_data_ = self.resample(d, polyD)
             rescaled.append(demo_)
             self.dtw_data.append(dtw_data_)
 
-        super(TPGMMTrainer, self).__init__(rescaled, file_name, n_rf, dt, reg)
+        super(TPGMMTrainer, self).__init__(rescaled, file_name, n_rf, dt, my_reg)
 
     def train(self, save=True):
         """
@@ -74,7 +79,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors) # set up the GMR trainers
         expData, expSigma, H = gmr.train(sIn, [0], range(1, 1+len(self._demo)), self.reg) # train the model
         #ric1 = solve_riccati(expSigma)
-        ric2 = solve_riccati_mat(expSigma) # get the gains for the system
+        ric2 = solve_riccati_mat(expSigma, 0.01, self.reg) # get the gains for the system
 
         # save all the data to a dictionary
         self.data["BIC"] = BIC

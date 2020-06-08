@@ -1,10 +1,9 @@
-from termcolor import colored
 import numpy as np
 import copy
 import matplotlib
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-from .ModelBase import ModelBase as ModelBase
+from . import ModelBase as ModelBase
 from .ModelBase import gaussPDF
 
 class TPGMM(ModelBase.ModelBase):

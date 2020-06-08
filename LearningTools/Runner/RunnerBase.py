@@ -78,7 +78,7 @@ class RunnerBase(object):
 
     def run(self):
         path = []
-        for i in xrange(self.get_length()):
+        for i in range(self.get_length()):
             path.append(self.step())
         self._index = 0
         self._x = self.get_start()
