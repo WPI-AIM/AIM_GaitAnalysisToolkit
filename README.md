@@ -7,11 +7,12 @@ It provides tool to anaylsis gaiting including seperating the gait cycle
 - [Nathaniel Goldfarb](https://github.com/nag92) (nagoldfarb@wpi.edu)
 
 
-## Dependence
-* python 3.x
+
+* python 3.8
 * numpy
 * scipy
 * matplotlib
+* pandas
 * dtw
 
 
@@ -47,3 +48,4 @@ Follow the convention set. It should extend ```TrainerBase.py```.
 This class sould prepare the data to be trained and save the trained model.
 * The Runner folder holds all the Runners for the trained model. It runs a trained model. 
 It should follow the set naming convetion and extend ```RunnerBase.py```.   
+
