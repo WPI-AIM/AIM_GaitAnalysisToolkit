@@ -40,7 +40,7 @@ class TPGMM(ModelBase.ModelBase):
 
             mat = np.concatenate((mat, mat), axis=1)
             priors[i] = len(idtmp[0])
-            self.sigma[i] = np.cov(mat) + np.eye(self.nb_dim) * self.reg
+            self.sigma[i] = np.cov(mat) + np.diag(self.reg)
 
         self.priors = priors / np.sum(priors)
 
@@ -75,7 +75,7 @@ class TPGMM(ModelBase.ModelBase):
         """
         # Criterion to stop the EM iterative update
         cumdist_threshold = 1e-10
-        maxIter = 200
+        maxIter = 2000
         minIter = 20
 
         # Initialization of the parameters
@@ -94,10 +94,9 @@ class TPGMM(ModelBase.ModelBase):
             # E-step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
             for i in range(0, self.nb_states):
                 # Compute distances
-                thing = np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, self.nbData)
-                temp = np.power(data - thing, 2.0)
-                temp2 = np.sum(temp, 0)
-                distTmpTrans[:, i] = temp2
+                mat = np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, self.nbData)
+                err = np.power(data - mat, 2.0)
+                distTmpTrans[:, i] = np.sum(err, 0)
 
             vTmp = np.min(distTmpTrans, 1)
             cumdist = sum(vTmp)
@@ -126,7 +125,6 @@ class TPGMM(ModelBase.ModelBase):
             if nb_step > maxIter:
                 print ('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
-            print("maxitter ", nb_step)
 
         self.mu = Mu
 
@@ -171,11 +169,16 @@ class TPGMM(ModelBase.ModelBase):
 
             # self.priors = np.mean(GAMMA, axis=1)
 
-            LL[it] = np.sum(np.log(np.sum(L, axis=0))) #/ self.nbData
+            LL[it] = np.sum(np.log(np.sum(L, axis=0))) / self.nbData
             # Check for convergence
-            if it > nb_min_steps:
-                if LL[it] - LL[it - 1] < 0.00001 or it == (maxiter - 1):
+
+            if it >= nb_max_steps:
+                StopIteration
+
+            elif it > nb_min_steps:
+                if abs(LL[it] - LL[it - 1]) < 0.000001 or it == (maxiter - 1):
                     searching = False
+                    print( " number of interations for EM "  + str(it))
 
             it += 1
 
