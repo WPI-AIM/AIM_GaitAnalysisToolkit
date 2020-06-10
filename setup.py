@@ -7,14 +7,5 @@ setuptools.setup(
         "GaitCore @ git+https://github.com/WPI_AIM/AIM_GaitCore.git",
         "Vicon @ git+https://github.com/WPI_AIM/AIM_Vicon.git"
     ],
-    packages=[
-        "EMG",
-        "LearningTools",
-        "LearningTools.Models",
-        "LearningTools.Runner",
-        "LearningTools.Trainer"
-        "Model",
-        "Session",
-        "Trajectories"
-    ]
+    packages=setuptools.find_packages(exclude=["testing", "Examples"])
 )
