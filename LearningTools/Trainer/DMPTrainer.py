@@ -1,7 +1,7 @@
 
 
 
-from Trainer.TrainerBase import TrainerBase
+from ..Trainer import TrainerBase
 
 
 class DMPTrainer(TrainerBase):

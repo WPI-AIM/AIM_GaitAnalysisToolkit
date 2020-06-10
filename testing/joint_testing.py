@@ -1,10 +1,10 @@
 import sys
 import matplotlib.pyplot as plt
-import lib.GaitCore.Core.utilities as utilities
+import Core.utilities as utilities
 from scipy import signal
 import numpy as np
 from Session import ViconGaitingTrial
-from lib.Vicon import Vicon
+import Vicon
 import os
 file = "/home/nathanielgoldfarb/Downloads/Subject01_ver03.csv"
 trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)

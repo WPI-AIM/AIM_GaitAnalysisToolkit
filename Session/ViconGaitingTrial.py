@@ -45,15 +45,15 @@
 
 import math
 import numpy as np
-from ..lib.Vicon import Vicon
+import Vicon
 
 
-from ..lib.GaitCore.Core import Data as Data
-from ..lib.GaitCore.Core import Newton as Newton
-from ..lib.GaitCore.Core import Point as Point
-from ..lib.GaitCore.Bio import Side
-from lib.GaitAnalysisToolkit.lib.Vicon import Markers
-from ..lib.GaitCore.Core import utilities as ult
+from Core import Data as Data
+from Core import Newton as Newton
+from Core import Point as Point
+from Bio import Side
+from Vicon import Markers
+from Core import utilities as ult
 import math
 
 

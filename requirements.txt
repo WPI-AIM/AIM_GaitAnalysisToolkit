@@ -1,0 +1,2 @@
+GaitCore>=1.0
+Vicon>=1.0

@@ -1,5 +1,5 @@
 import numpy as np
-from ModelBase import gaussPDF
+from ..Models.ModelBase import gaussPDF
 
 
 class GMR(object):

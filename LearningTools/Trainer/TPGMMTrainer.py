@@ -1,8 +1,8 @@
 
-import TrainerBase
-from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities as utl
-from lib.GaitAnalysisToolkit.LearningTools.Models import TPGMM, GMR
-from lib.GaitAnalysisToolkit.LearningTools.Models.ModelBase import solve_riccati
+from ..Trainer import TrainerBase
+from Core import utilities as utl
+from ..Models import TPGMM, GMR
+from ..Models.ModelBase import solve_riccati
 import numpy as np
 import numpy.matlib
 
