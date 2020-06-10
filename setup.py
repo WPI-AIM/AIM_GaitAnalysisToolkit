@@ -9,9 +9,10 @@ setuptools.setup(
     ],
     packages=[
         "EMG",
-        "LearningTools/Models",
-        "LearningTools/Runner",
-        "LearningTools/Trainer"
+        "LearningTools",
+        "LearningTools.Models",
+        "LearningTools.Runner",
+        "LearningTools.Trainer"
         "Model",
         "Session",
         "Trajectories"
