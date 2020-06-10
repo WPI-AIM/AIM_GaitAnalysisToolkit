@@ -43,18 +43,19 @@
 # */
 # //==============================================================================
 
-import math
 import numpy as np
-import Vicon
-
-
+from Vicon import Vicon
 from Core import Data as Data
 from Core import Newton as Newton
 from Core import Point as Point
-from Bio import Side
+from Bio import Side as Side
+from Bio import Leg as Leg
+from Bio import Joint
 from Vicon import Markers
 from Core import utilities as ult
 import math
+
+import matplotlib.pyplot as plt
 
 
 class ViconGaitingTrial(object):
@@ -70,9 +71,15 @@ class ViconGaitingTrial(object):
         self._joint_trajs = None
         self._black_list = []
         self._use_black_list = False
-        #self.create_index_seperators()
 
-    def create_index_seperators(self):
+        # Flag for if the data was gathered from the right leg hip angle
+        # Data will only be gathered from the right leg iff handle_nan was set to True
+        # and the data would otherwise have caused an abort
+        self.gait_cycle_left_leg = True
+
+        # self.create_index_seperators()
+
+    def create_index_seperators(self, verbose=False, handle_nan=False, abort_nan=False):
         """
         This function find the index that seperates
         the sensors by the joints angles
@@ -81,33 +88,86 @@ class ViconGaitingTrial(object):
         self.exo_set_points
         :return: None
         """
-        offsets = []
         vicon = []
 
         model = self.vicon.get_model_output()
         hip = model.get_left_leg().hip.angle.x
+
+        # Perform checks on the data according to flags set by user
+        if False not in np.isnan(hip) or (abort_nan and True in np.isnan(hip)):
+            # Make sure that we can use the data with our current configuration
+            if verbose:
+                if abort_nan:
+                    print("The field left_leg.hip.angle.x contains at least one NaN!")
+                else:
+                    print("The field left_leg.hip.angle.x is composed entirely of NaNs!")
+                if handle_nan:
+                    print("Attempting to calculate gait cycles using the right leg...")
+                else:
+                    print("Aborting...")
+            if handle_nan:
+                # if handle_nan is set to True, we'll try to handle this automatically by using the right leg data
+                hip = model.get_right_leg().hip.angle.x
+                self.gait_cycle_left_leg = False
+                if False not in np.isnan(hip) or (abort_nan and True in np.isnan(hip)):
+                    if verbose:
+                        if abort_nan:
+                            print("The field right_leg.hip.angle.x contains at least one NaN!")
+                        else:
+                            print("The field right_leg.hip.angle.x is composed entirely of NaNs!")
+                        print("Aborting...")
+                    self.vicon_set_points = []
+                    return
+            else:
+                self.vicon_set_points = []
+                return
+
+        if abort_nan and True in np.isnan(hip):
+            if verbose:
+                print("NaNs in dataset!")
+                print("Aborting...")
+            self.vicon_set_points = []
+            return
+
         N = 10
         hip = np.convolve(hip, np.ones((N,)) / N, mode='valid')
 
-        max_peakind = np.diff(np.sign(np.diff(hip))).flatten()  # the one liner
-        max_peakind = np.pad(max_peakind, (1, 10), 'constant', constant_values=(0, 0))
-        max_peakind = [index for index, value in enumerate(max_peakind) if value == -2]
+        # plt.plot(hip)
+        # plt.show()
 
-        for start in xrange(0, len(max_peakind) - 1):
-            error = 10000000
-            offset = 0
-            for ii in xrange(0, 20):
-                temp_error = model.get_right_leg().hip.angle.x[max_peakind[start + 1] + ii]
-                if temp_error < error:
-                    error = temp_error
-                    offset = ii
-            offsets.append(offset)
+        peaks = [max(0, value) for index, value in enumerate(hip)]
+        # peaks is the data of hips, just floored at 0
 
-        for ii, start in enumerate(xrange(0, len(max_peakind) - 2)):
-            begin = max_peakind[start]
-            end = max_peakind[start + 1] + offsets[ii]
-            vicon.append((begin, end))
+        flag = False
+        gait_borders = []
+        highest = 0
+        highest_ind = 0
+        for i in range(len(peaks)):
+            if peaks[i] == 0 or np.isnan(peaks[i]):
+                if highest != 0 and flag:
+                    gait_borders.append(highest_ind)
+                    if verbose:
+                        print("Peak detected! Highest point of peak is at index " + str(highest_ind))
+                flag = True
+                highest = 0
+            else:
+                if highest < peaks[i]:
+                    highest = peaks[i]
+                    highest_ind = i
+        # gait_borders is an array of the highest values within each peak,
+        # where a valid peak is defined as a peak which is not cut off by either the beginning or end of the data
 
+        if len(gait_borders) < 2:  # if we have 1 or 0 peaks detected, there are no gait cycles
+            if verbose:
+                print("No gait cycles detected in data")
+            self.vicon_set_points = []
+            return
+
+        for i in range(len(gait_borders) - 1):
+            vicon.append((gait_borders[i], gait_borders[i + 1]))
+
+        if verbose:
+            print("Gait cycles: " + str(vicon))
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
 
     def get_stairs(self, toe_marker, step_frame):
@@ -118,8 +178,8 @@ class ViconGaitingTrial(object):
         distA = []
         distB = []
 
-        for i in xrange(len(toe)):
-            distA.append(Markers.transform_vector( np.linalg.pinv(stairA[i]), toe[i].toarray())[2][0])
+        for i in range(len(toe)):
+            distA.append(Markers.transform_vector(np.linalg.pinv(stairA[i]), toe[i].toarray())[2][0])
 
         error = 1.0
         start = distA[0]
@@ -129,7 +189,7 @@ class ViconGaitingTrial(object):
         distA = np.convolve(distA, np.ones((N,)) / N, mode='valid')
         local = []
         hills = []
-        for ii in xrange(len(distA) - 3):
+        for ii in range(len(distA) - 3):
 
             d = distA[ii] - distA[ii + 3]
 
@@ -138,7 +198,7 @@ class ViconGaitingTrial(object):
             else:
                 searching = False
                 if local:
-                    if local[-1][1]  > 150:
+                    if local[-1][1] > 150:
                         hills.append(local)
                         points[local[0][0]] = local[0][1]
                     local = []
@@ -160,7 +220,6 @@ class ViconGaitingTrial(object):
                 points[current_index] = distA[current_index]
 
         return hills
-
 
     def get_force_plates(self):
         """
@@ -222,18 +281,38 @@ class ViconGaitingTrial(object):
                 for inc in self.vicon_set_points:
                     time = np.linspace(0, 1, (inc[1] - inc[0]))
                     current_joint = fnc.__dict__[joint_name]
-                    angle = Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
-                    power = Data.Data(np.array(current_joint.power.z[inc[0]:inc[1]]), time)
-                    torque = Data.Data(np.array(current_joint.moment.x[inc[0]:inc[1]]), time)
-                    force = Data.Data(np.array(current_joint.force.x[inc[0]:inc[1]]), time)
-                    stamp = Newton.Newton(angle,force,torque,power)
+
+                    angleX = Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
+                    angleY = Data.Data(np.array(current_joint.angle.y[inc[0]:inc[1]]), time)
+                    angleZ = Data.Data(np.array(current_joint.angle.z[inc[0]:inc[1]]), time)
+                    angle = Point.Point(x=angleX, y=angleY, z=angleZ)
+
+                    powerX = Data.Data(np.array(current_joint.power.x[inc[0]:inc[1]]), time)
+                    powerY = Data.Data(np.array(current_joint.power.y[inc[0]:inc[1]]), time)
+                    powerZ = Data.Data(np.array(current_joint.power.z[inc[0]:inc[1]]), time)
+                    power = Point.Point(x=powerX, y=powerY, z=powerZ)
+
+                    torqueX = Data.Data(np.array(current_joint.moment.x[inc[0]:inc[1]]), time)
+                    torqueY = Data.Data(np.array(current_joint.moment.y[inc[0]:inc[1]]), time)
+                    torqueZ = Data.Data(np.array(current_joint.moment.z[inc[0]:inc[1]]), time)
+                    torque = Point.Point(x=torqueX, y=torqueY, z=torqueZ)
+
+                    forceX = Data.Data(np.array(current_joint.force.x[inc[0]:inc[1]]), time)
+                    forceY = Data.Data(np.array(current_joint.force.y[inc[0]:inc[1]]), time)
+                    forceZ = Data.Data(np.array(current_joint.force.z[inc[0]:inc[1]]), time)
+                    force = Point.Point(forceX, forceY, forceZ)
+
+                    stamp = Joint.Joint(angle, force, torque, power)
                     if self._use_black_list:
                         if count in self._black_list:
                             continue
                     joints[name].append(stamp)
                     count += 1
 
-        return joints
+        left_leg = Leg.Leg(joints["Rhip"], joints["Rknee"], joints["Rankle"])
+        right_leg = Leg.Leg(joints["Lhip"], joints["Lknee"], joints["Lankle"])
+        body = Side.Side(left_leg, right_leg)
+        return body
 
     def get_emg(self):
         """
@@ -245,7 +324,7 @@ class ViconGaitingTrial(object):
         count = 0
         emgs = self.vicon.get_all_emgs()
 
-        for key, emg in emgs.iteritems():
+        for key, emg in emgs.items():
             joints[key] = []
             for inc in self.vicon_set_points:
                 start = emg.get_offset_index(inc[0])
@@ -272,7 +351,7 @@ class ViconGaitingTrial(object):
         count = 0
         emgs = self.vicon.get_all_t_emg()
 
-        for key, emg in emgs.iteritems():
+        for key, emg in emgs.items():
             joints[key] = []
             for inc in self.vicon_set_points:
                 start = emg.get_offset_index(inc[0])
@@ -405,7 +484,7 @@ class ViconGaitingTrial(object):
                 else:
                     left.append(stamp_left)
                     right.append(stamp_right)
-            count+=1
+            count += 1
 
         side = Side.Side(left, right)
         return side
@@ -489,9 +568,6 @@ class ViconGaitingTrial(object):
         side = Side.Side(left, right)
         return side
 
-
-
-
     @property
     def dt(self):
         return self._dt
@@ -524,7 +600,6 @@ class ViconGaitingTrial(object):
     def joint_trajs(self, value):
         self._joint_trajs = value
 
-
     def add_to_blacklist(self, black_indexs):
         """
         Add a  blacklist
@@ -543,13 +618,13 @@ class ViconGaitingTrial(object):
         self._use_black_list = False
         self._black_list = []
 
-def calc_kinematics(trajectory, dt = 0.01):
 
+def calc_kinematics(trajectory, dt=0.01):
     # y = trajectory.data
     # time = trajectory.time
     T = []
     y = trajectory
-    #dt = time[1] - time[0]
+    # dt = time[1] - time[0]
     yp = [0.0]
     ypp = [0.0, 0.0]
     yp = np.append(yp, np.divide(np.diff(y, 1), np.power(dt, 1)))
@@ -603,4 +678,3 @@ if __name__ == '__main__':
     joints = trial.seperate_joint_trajectories()
     plate = trial.seperate_force_plates()
     left, right = trial.seperate_CoP()
-

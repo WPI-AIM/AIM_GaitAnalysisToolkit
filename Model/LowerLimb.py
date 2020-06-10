@@ -1,5 +1,5 @@
 import numpy as np
-import Model
+from . import Model
 import matplotlib.pyplot as plt
 
 

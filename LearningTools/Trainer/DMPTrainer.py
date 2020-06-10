@@ -1,7 +1,4 @@
-
-
-
-from ..Trainer import TrainerBase
+from . import TrainerBase
 
 
 class DMPTrainer(TrainerBase):

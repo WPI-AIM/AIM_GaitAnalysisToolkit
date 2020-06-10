@@ -74,22 +74,17 @@ class RunnerBase(object):
         :param dx: feedback velocity
         :return: None
         """
-        if x is not None:
-            self._x = x
-        if dx is not None:
-            self._dx = dx
+        pass
 
     def run(self):
         path = []
-        for i in xrange(self.get_length()):
+        for i in range(self.get_length()):
             path.append(self.step())
         self._index = 0
         self._x = self.get_start()
         self._goal = self._data["goal"]
         self._dx = np.array([[0.0]])
-
-
-        return path
+        return np.array(path)
 
     @property
     def goal(self):

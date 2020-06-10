@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 # //==============================================================================
 # /*
 #     Software License Agreement (BSD License)
@@ -42,15 +43,15 @@
 #     \version   0.1
 # */
 # //==============================================================================
-
-
 import sys
+import os
+
 import matplotlib.pyplot as plt
-from lib.GaitAnalysisToolkit.lib.GaitCore.Core import utilities
+from lib.GaitCore.Core import utilities
 from scipy import signal
 import numpy as np
-from lib.GaitAnalysisToolkit.Session import ViconGaitingTrial
-from lib.GaitAnalysisToolkit.lib.Vicon import Vicon
+from Session import ViconGaitingTrial
+from lib import Vicon
 import os
 
 

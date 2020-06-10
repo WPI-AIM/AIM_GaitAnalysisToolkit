@@ -1,5 +1,5 @@
 import numpy as np
-from ..Models.ModelBase import gaussPDF
+from .ModelBase import gaussPDF
 
 
 class GMR(object):
@@ -75,12 +75,13 @@ class GMR(object):
     def states(self, value):
         self._states = value
 
-    def train(self, DataIn, in_, out_):
+    def train(self, DataIn, in_, out_, reg=1e-8):
         """
         Train the system
         :param DataIn: data to tain on
         :param in_: start location
         :param out_: end location
+        :param reg: regulization
         :return:
         """
         nbData = np.shape(DataIn)[0]
@@ -90,33 +91,30 @@ class GMR(object):
         MuTmp = np.zeros((nbVarOut, self.states))
         expData = np.zeros((nbVarOut, nbData))
         expSigma = []
-        for i in xrange(nbData):
+        for i in range(nbData):
             expSigma.append(np.zeros((nbVarOut, nbVarOut)))
 
         H = np.zeros((self.states, nbData))
 
-        for t in xrange(nbData):
+        for t in range(nbData):
 
-            for i in xrange(self.states):
-                H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]),
-                                                    self.mu[in_][i],
-                                                    self.sigma[i][in_, in_])
+            for i in range(self.states):
+                H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]), self.mu[in_, i], self.sigma[i][in_, in_])
 
             H[:, t] = H[:, t] / np.sum(H[:, t] + np.finfo(float).tiny)
 
-            for i in xrange(self.states):
-                MuTmp[:, i] = self.mu[out_, i] + self.sigma[i][out_, in_] / \
-                              self.sigma[i][in_, in_] * \
-                              (DataIn[t] - self.mu[in_, i])
+            for i in range(self.states):
+                MuTmp[:, i] = self.mu[out_[0]:out_[-1]+1, i] + self.sigma[i][out_[0]:out_[-1]+1, in_] / \
+                              self.sigma[i][in_, in_] * (DataIn[t] - self.mu[in_, i])
 
                 expData[:, t] = expData[:, t] + H[i, t] * MuTmp[:, i]
 
-            for i in xrange(self.states):
-                sigma_tmp = self.sigma[i][out_[0]:(out_[-1] + 1), out_[0]:(out_[-1] + 1)] - \
-                            self.sigma[i][out_, in_] / self.sigma[i][in_, in_] * self.sigma[i][in_, out_]
-
+            for i in range(self.states):
+                sigma_tmp = self.sigma[i][out_[0]:out_[-1]+1, out_[0]:out_[-1]+1] - \
+                            (self.sigma[i][out_[0]:out_[-1]+1, in_] / self.sigma[i][in_, in_]).reshape((-1,1))  * \
+                             self.sigma[i][in_, out_[0]:out_[-1]+1]
                 expSigma[t] = expSigma[t] + H[i, t] * (sigma_tmp + MuTmp[:, i].reshape((-1, 1)) * MuTmp[:, i].T)
 
-            expSigma[t] = expSigma[t] - expData[:, t] * expData[:, t].T + np.eye(nbVarOut) * 1E-8
+            expSigma[t] = expSigma[t] - expData[:, t] * expData[:, t].T + np.eye(nbVarOut) * reg[1:]
 
         return expData, expSigma, H

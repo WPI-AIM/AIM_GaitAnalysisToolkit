@@ -1,4 +1,4 @@
-from termcolor import colored
+# from termcolor import colored
 import numpy as np
 import copy
 import matplotlib
@@ -10,9 +10,8 @@ from matplotlib.collections import PatchCollection
 
 class ModelBase(object):
 
-    def __init__(self, nb_states, nb_dim=2):
+    def __init__(self, nb_states, nb_dim=2, reg=1.0e-8):
 
-        # gmm.GMM.__init__(self, nb_states=nb_states, nb_dim=nb_dim)
         self._nb_dim = nb_dim
         self._nb_states = nb_states
         # flag to indicate that publishing was not init
@@ -22,7 +21,7 @@ class ModelBase(object):
         self._sigma = np.array([np.eye(self.nb_dim) for i in range(self.nb_states)])
         self._priors = np.ones(self.nb_states) / self.nb_states
         # self._nbData = 0
-        self._reg = 1e-8
+        self._reg = reg
         self._nbData = 0
 
     @abc.abstractmethod
@@ -30,7 +29,7 @@ class ModelBase(object):
         pass
 
     @abc.abstractmethod
-    def train(self, data, reg=1e-8, maxiter=2000):
+    def train(self, data, maxiter=2000):
         pass
 
     @abc.abstractmethod
@@ -133,7 +132,7 @@ def plot_activation(sIn, H, ax):
     sIn_.insert(0, 0)
     sIn_.append(0)
 
-    for i in xrange(4):
+    for i in range(4):
         h = H[i].tolist()
         h.insert(0, 0)
         h.append(0)
@@ -184,23 +183,49 @@ def gaussPDF(x, mean, covar):
 
 def solve_riccati(expSigma, dt=0.01, reg =1e-8):
     ric = {}
-    Ad = np.eye(2)
-    Q = np.zeros((2,2))
-    Bd = np.array([[0],[dt]])
-    Ad[0,1] = dt
-    R = np.eye(1)*reg
-    P = [np.zeros((2, 2))] * len(expSigma)
-    P[-1][0, 0] = np.linalg.pinv(expSigma[-1])
+    size = expSigma[0].shape[0]
+    Ad = np.kron([[0, 1],[0, 0]], np.eye(size))*dt + np.eye(2*size)
+    Q = np.zeros((size*2, size*2))
+    Bd = np.kron([[0],[1]], np.eye(size))*dt
+    R = np.eye(size)*reg
+    P = [np.zeros((size*2, size*2))] * len(expSigma)
+    P[-1][:size, :size] = np.linalg.pinv(expSigma[-1])
 
-    for ii in xrange(len(expSigma)-2, -1, -1):
-        Q[0,0] = np.linalg.pinv(expSigma[ii])
-        B = P[ii + 1] * Bd
-        C = np.linalg.pinv(np.dot(Bd.T * P[ii + 1], Bd) + R)
-        D = Bd.T * P[ii + 1]
-        F = np.dot(np.dot(Ad.T, B * C * D - P[ii + 1]), Ad)
+    for ii in range(len(expSigma)-2, -1, -1):
+        Q[:size, :size] = np.linalg.pinv(expSigma[ii])
+        B = P[ii + 1]*Bd
+        C = np.linalg.pinv(np.dot(Bd.T * P[ii + 1] , Bd) + R)
+        D = Bd.T*P[ii + 1]
+        F = np.dot(np.dot(Ad.T, B*C*D - P[ii + 1]), Ad)
         P[ii] = Q - F
 
     ric["Ad"] = Ad
     ric["Bd"] = Bd
     ric["R"] = R
     ric["P"] = P
+    return ric
+
+
+def solve_riccati_mat(expSigma, dt=0.01, reg=1e-5):
+    ric = {}
+    size = expSigma[0].shape[0]
+    Ad = np.kron([[0, 1],[0, 0]], np.eye(size))*dt + np.eye(2*size)
+    Q = np.zeros((size*2, size*2))
+    Bd = np.kron([[0],[1]], np.eye(size))*dt
+    R = np.eye(size)*reg[1:]
+    P = [np.zeros((size*2, size*2))] * len(expSigma)
+    P[-1][:size, :size] = np.linalg.pinv(expSigma[-1])
+
+    for ii in range(len(expSigma)-2, -1, -1):
+        Q[:size, :size] = np.linalg.pinv(expSigma[ii])
+        B = P[ii + 1].dot(Bd)
+        C = np.linalg.pinv(np.dot(Bd.T.dot(P[ii + 1]), Bd) + R)
+        D = Bd.T.dot(P[ii + 1])
+        F = np.dot(np.dot(Ad.T, B.dot(C).dot(D) - P[ii + 1]), Ad)
+        P[ii] = Q - F
+
+    ric["Ad"] = Ad
+    ric["Bd"] = Bd
+    ric["R"] = R
+    ric["P"] = P
+    return ric

@@ -1,4 +1,5 @@
-from ..Runner import RunnerBase
+
+from . import RunnerBase
 import numpy as np
 
 
