@@ -75,16 +75,16 @@ if __name__ == "__main__":
     #                            ["Subject00", "Subject01", "Subject02", 'Subject03', "subject04", "Subject05",
     #                             "Subject06", "Subject07", "Subject08", "Subject10"])
 
-    angles = plot_joint_angles(["/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_00/subject_00 walk_00.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_01/subject_01_walk_00.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_02/subject_02_walk_00.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_03/subject_03_walk_00.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_04/subject_04_walk_00.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_05/subject_05_walk_00.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_06/subject_06 walk_00.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_07/subject_07 walk_01.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_08/subject_08_walking_01.csv",
-                       "/home/nathaniel/AIM_GaitData/Gaiting_stairs/subject_10/subject_10 walk_02.csv",
+    angles = plot_joint_angles(["/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_00/subject_00 walk_00.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_01/subject_01_walk_00.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_02/subject_02_walk_00.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_03/subject_03_walk_00.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_04/subject_04_walk_00.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_05/subject_05_walk_00.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_06/subject_06 walk_00.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_07/subject_07 walk_01.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_08/subject_08_walking_01.csv",
+                       "/home/kamerider/AIM_GaitData/Gaiting_stairs/subject_10/subject_10 walk_02.csv",
                        ],
                       [0, 0, 1, 0, 0, 0, 0, 0, 0, 2],
                       ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
@@ -105,8 +105,8 @@ if __name__ == "__main__":
     #                    "Subject07", "Subject08", "Subject10"])
 
     traj = [angles["hip"],angles["knee"],angles["ankle"]]
-    # trainer = TPGMMTrainer.TPGMMTrainer(demo=traj, file_name="leg", n_rf=12, dt=0.01, reg=[1e-7, 1e-7, 1e-7], poly_degree=[15, 15, 15])
-    # trainer.train()
+    trainer = TPGMMTrainer.TPGMMTrainer(demo=traj, file_name="leg", n_rf=12, dt=0.01, reg=[1e-7, 1e-7, 1e-7], poly_degree=[15, 15, 15])
+    trainer.train()
     runner = TPGMMRunner.TPGMMRunner("leg.pickle")
     path = np.array(runner.run())
 
