@@ -1,7 +1,7 @@
 
 # AIM Gait Anaylsis Toolkit
 This is a tool kit for Gait Analysis to work with the Vicon tool kit.
-It provides tool to anaylsis gaiting including seperating the gait cycle
+It provides tools to analyze gaits, including separating the gait cycle
 
 ## Authors
 - [Nathaniel Goldfarb](https://github.com/nag92) (nagoldfarb@wpi.edu)
@@ -17,7 +17,7 @@ It provides tool to anaylsis gaiting including seperating the gait cycle
 
 
 ## External Dependence 
-All packages are installed in the `lib` folder
+This package requires:
 
 * [AIM_Vicon](https://github.com/WPI-AIM/AIM_Vicon)
 * [AIM_GaitCore](https://github.com/WPI-AIM/AIM_GaitCore.git)
@@ -26,12 +26,10 @@ All packages are installed in the `lib` folder
 
 
 ## Install
-This package as level submodules that need to be installed
+This package and its dependencies can be installed automatically via pip.
 
 ````bash
-cd AIM_GaitAnalysisToolkit
-git submodule update --init --recursive
-git submodule update --recursive
+pip install git+https://github.com/WPI-AIM/AIM_GaitAnalysisToolkit.git
 ````
 
 ## Data
