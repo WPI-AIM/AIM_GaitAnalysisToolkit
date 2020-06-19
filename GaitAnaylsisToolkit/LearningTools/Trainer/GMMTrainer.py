@@ -2,7 +2,7 @@ from . import TrainerBase
 from GaitCore.Core import utilities as utl
 from ..Models import GMM, GMR
 import numpy as np
-
+from numpy import matlib
 
 class GMMTrainer(TrainerBase.TrainerBase):
 

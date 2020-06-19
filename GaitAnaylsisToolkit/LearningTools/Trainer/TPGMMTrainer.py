@@ -3,6 +3,8 @@ from GaitCore.Core import utilities as utl
 from ..Models import TPGMM, GMR
 from ..Models.ModelBase import solve_riccati_mat
 import numpy as np
+from numpy import matlib
+
 
 
 class TPGMMTrainer(TrainerBase.TrainerBase):
