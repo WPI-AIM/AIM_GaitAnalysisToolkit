@@ -2,8 +2,8 @@ import sys
 import matplotlib.pyplot as plt
 from scipy import signal
 import numpy as np
-from lib.GaitAnalysisToolkit.Session import ViconGaitingTrial
-from lib.GaitAnalysisToolkit.lib.Vicon import Vicon
+from ..Session import ViconGaitingTrial
+import Vicon
 
 
 def plot_stair_joint(file):
