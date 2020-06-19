@@ -45,14 +45,14 @@
 
 import numpy as np
 from Vicon import Vicon
-from Core import Data as Data
-from Core import Newton as Newton
-from Core import Point as Point
-from Bio import Side as Side
-from Bio import Leg as Leg
-from Bio import Joint
-from Vicon import Markers
-from Core import utilities as ult
+from GaitCore.Core import Data as Data
+from GaitCore.Core import Newton as Newton
+from GaitCore.Core import Point as Point
+from GaitCore.Bio import Side as Side
+from GaitCore.Bio import Leg as Leg
+from GaitCore.Bio import Joint as Joint
+from Vicon.Markers import Markers
+from GaitCore.Core import utilities as ult
 import math
 
 import matplotlib.pyplot as plt

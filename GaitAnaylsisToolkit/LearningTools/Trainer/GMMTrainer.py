@@ -1,17 +1,8 @@
 from . import TrainerBase
-import numpy as np
-from scipy import signal
-from Core import utilities as utl
+from GaitCore.Core import utilities as utl
 from ..Models import GMM, GMR
 import numpy as np
-import numpy.polynomial.polynomial as poly
-import numpy.matlib
 
-from dtw import dtw
-import math
-from lxml import etree
-import scipy.interpolate
-import pickle
 
 class GMMTrainer(TrainerBase.TrainerBase):
 
