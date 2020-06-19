@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
-from LearningTools.Trainer import TPGMMTrainer, GMMTrainer, TPGMMTrainer_old
-from LearningTools.Runner import GMMRunner, TPGMMRunner, TPGMMRunner_old
+from ..LearningTools.Trainer import TPGMMTrainer, GMMTrainer, TPGMMTrainer_old
+from ..LearningTools.Runner import GMMRunner, TPGMMRunner_old
+from GaitAnaylsisToolkit.LearningTools.Runner import TPGMMRunner
 from scipy import signal
 
 import numpy as np
-from Session import ViconGaitingTrial
+from ..Session import ViconGaitingTrial
 
 
 def plot_joint_angles(files, indecies, sides, lables):

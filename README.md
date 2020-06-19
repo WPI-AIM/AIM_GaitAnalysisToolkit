@@ -1,14 +1,22 @@
 
 # AIM Gait Anaylsis Toolkit
 This is a tool kit for Gait Analysis to work with the Vicon tool kit.
-It provides tool to anaylsis gaiting including seperating the gait cycle
+It provides tools to analyze gaits, including separating the gait cycle
 
 ## Authors
 - [Nathaniel Goldfarb](https://github.com/nag92) (nagoldfarb@wpi.edu)
 
 
 
-* python 3.8
+
+
+
+## Dependencies 
+This package requires:
+
+* Python 3.8
+* [AIM_Vicon](https://github.com/WPI-AIM/AIM_Vicon)
+* [AIM_GaitCore](https://github.com/WPI-AIM/AIM_GaitCore.git)
 * numpy
 * scipy
 * matplotlib
@@ -16,23 +24,15 @@ It provides tool to anaylsis gaiting including seperating the gait cycle
 * dtw
 
 
-## External Dependence 
-All packages are installed in the `lib` folder
-
-* [AIM_Vicon](https://github.com/WPI-AIM/AIM_Vicon)
-* [AIM_GaitCore](https://github.com/WPI-AIM/AIM_GaitCore.git)
-
-
 
 
 ## Install
-This package as level submodules that need to be installed
+This package and its dependencies can be installed automatically via pip.
 
 ````bash
-cd AIM_GaitAnalysisToolkit
-git submodule update --init --recursive
-git submodule update --recursive
+pip install git+https://github.com/WPI-AIM/AIM_GaitAnalysisToolkit.git
 ````
+(If you have both Python 2 and Python 3 installed you'll need to use `pip3` - `pip` defaults to Python 2 if installed.)
 
 ## Data
 Gaiting data can be found here. 

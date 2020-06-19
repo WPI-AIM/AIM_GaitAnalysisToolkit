@@ -44,15 +44,15 @@
 # //==============================================================================
 
 import numpy as np
-from lib.Vicon import Vicon
-from lib.GaitCore.Core import Data as Data
-from lib.GaitCore.Core import Newton as Newton
-from lib.GaitCore.Core import Point as Point
-from lib.GaitCore.Bio import Side as Side
-from lib.GaitCore.Bio import Leg as Leg
-from lib.GaitCore.Bio import Joint
-from lib.Vicon import Markers
-from lib.GaitCore.Core import utilities as ult
+from Vicon import Vicon
+from GaitCore.Core import Data as Data
+from GaitCore.Core import Newton as Newton
+from GaitCore.Core import Point as Point
+from GaitCore.Bio import Side as Side
+from GaitCore.Bio import Leg as Leg
+from GaitCore.Bio import Joint as Joint
+from Vicon.Markers import Markers
+from GaitCore.Core import utilities as ult
 import math
 
 import matplotlib.pyplot as plt

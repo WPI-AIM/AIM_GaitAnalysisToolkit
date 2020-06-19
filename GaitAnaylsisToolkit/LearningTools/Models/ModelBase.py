@@ -4,6 +4,7 @@ import copy
 import matplotlib
 from matplotlib.patches import Polygon
 import abc
+from numpy import matlib
 
 from matplotlib.collections import PatchCollection
 

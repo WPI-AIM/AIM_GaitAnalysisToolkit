@@ -1,10 +1,10 @@
 import sys
 import matplotlib.pyplot as plt
-import lib.GaitCore.Core.utilities as utilities
+import GaitCore.Core.utilities as utilities
 from scipy import signal
 import numpy as np
-from Session import ViconGaitingTrial
-from lib.Vicon import Vicon
+from ..Session import ViconGaitingTrial
+from Vicon import Vicon
 import os
 from scipy import signal
 import numpy.polynomial.polynomial as poly

@@ -6,6 +6,7 @@ from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 from . import ModelBase
 from .ModelBase import gaussPDF
+from numpy import matlib
 
 class GMM(ModelBase.ModelBase):
 
