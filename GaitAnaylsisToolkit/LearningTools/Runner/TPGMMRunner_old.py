@@ -1,6 +1,7 @@
 from . import RunnerBase
 import numpy as np
 from random import uniform
+from numpy import matlib
 
 class TPGMMRunner(RunnerBase.RunnerBase):
 

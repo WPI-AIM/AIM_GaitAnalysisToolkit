@@ -1,6 +1,6 @@
 import numpy as np
 from .ModelBase import gaussPDF
-
+from numpy import matlib
 
 class GMR(object):
 

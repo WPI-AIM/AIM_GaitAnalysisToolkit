@@ -1,9 +1,6 @@
 import numpy as np
-import scipy as sp
-import scipy.io
-import matplotlib.pyplot as plt
-from LearningTools.Trainer import TPGMMTrainer, GMMTrainer, TPGMMTrainer_old
-from LearningTools.Runner import GMMRunner, TPGMMRunner, TPGMMRunner_old
+from ..LearningTools.Trainer import TPGMMTrainer
+from GaitAnaylsisToolkit.LearningTools.Runner import TPGMMRunner
 from random import seed
 from random import gauss
 import numpy as np

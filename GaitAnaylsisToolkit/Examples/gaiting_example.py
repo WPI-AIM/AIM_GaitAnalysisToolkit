@@ -47,13 +47,12 @@ import sys
 import os
 
 import matplotlib.pyplot as plt
-from lib.GaitCore.Core import utilities
+from GaitCore.Core import utilities
 from scipy import signal
 import numpy as np
-from Session import ViconGaitingTrial
-from lib import Vicon
+from ..Session import ViconGaitingTrial
+import Vicon
 import os
-
 
 
 """

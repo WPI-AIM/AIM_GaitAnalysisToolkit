@@ -1,9 +1,10 @@
 from . import TrainerBase
-from Core import utilities as utl
+from GaitCore.Core import utilities as utl
 from ..Models import TPGMM, GMR
-from ..Models.ModelBase import solve_riccati_mat, solve_riccati
+from ..Models.ModelBase import solve_riccati_mat
 import numpy as np
-import numpy.matlib
+from numpy import matlib
+
 
 
 class TPGMMTrainer(TrainerBase.TrainerBase):

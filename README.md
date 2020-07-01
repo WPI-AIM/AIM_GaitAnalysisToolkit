@@ -5,7 +5,7 @@ It provides tools to analyze gaits, including separating the gait cycle
 
 ## Authors
 - [Nathaniel Goldfarb](https://github.com/nag92) (nagoldfarb@wpi.edu)
-
+- [Alek Lewis](https://github.com/ajlewis02) (ajlewis@wpi.edu)
 
 
 
@@ -33,6 +33,21 @@ This package and its dependencies can be installed automatically via pip.
 pip install git+https://github.com/WPI-AIM/AIM_GaitAnalysisToolkit.git
 ````
 (If you have both Python 2 and Python 3 installed you'll need to use `pip3` - `pip` defaults to Python 2 if installed.)
+
+## Upgrading
+This package can be upgraded via pip:
+
+```bash
+pip install --upgrade git+https://github.com/WPI-AIM/AIM_GaitAnalysisToolkit.git
+```
+
+If necessary, Vicon and GaitCore can also be upgraded via pip:
+```bash
+pip install --upgrade git+https://github.com/WPI-AIM/AIM_Vicon.git
+```
+```bash
+pip install --upgrade git+https://github.com/WPI-AIM/AIM_GaitCore.git
+```
 
 ## Data
 Gaiting data can be found here. 

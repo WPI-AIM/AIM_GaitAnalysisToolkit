@@ -1,13 +1,10 @@
-
 from . import TrainerBase
-from lib.GaitCore.Core import utilities as utl
-from LearningTools.Models import TPGMM_old, GMR
-from LearningTools.Models.ModelBase import solve_riccati
+from GaitCore.Core import utilities as utl
+from ..Models import GMM, GMR
 import numpy as np
-import numpy.matlib
+from numpy import matlib
 
-
-class TPGMMTrainer(TrainerBase.TrainerBase):
+class GMMTrainer(TrainerBase.TrainerBase):
 
     def __init__(self, demo, file_name, n_rf, dt=0.01):
         """
@@ -18,26 +15,22 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
            """
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
-        self.A = []
-        self.b = []
         demos2, self.dtw_data = self.resample(demo)
-        super(TPGMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
+        super(GMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
 
 
     def train(self, save=True):
         """
-        train a model to reproduction
+
         """
         nb_dim = len(self._demo)
-        self.gmm = TPGMM_old.TPGMM(nb_states=self._n_rfs, nb_dim=nb_dim)
+        self.gmm = GMM.GMM(nb_states=self._n_rfs, nb_dim=nb_dim)
         tau, motion, sIn = self.gen_path(self._demo)
         gammam, BIC = self.gmm.train(tau)
-        self.gmm.relocateGaussian(self.A, self.b)
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
         expData, expSigma, H = gmr.train(sIn, [0], [1])
-        ric = solve_riccati(expSigma)
-
+        self.solve_riccati(expSigma)
 
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)
@@ -53,12 +46,10 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.data["start"] = self._demo[0][0]
         self.data["goal"] = self._demo[0][-1]
         self.data["dtw"] = self.dtw_data
-        self.data.update(ric)
 
         if save:
             self.save()
         return self.data
-
 
     def gen_path(self, demos):
         """
@@ -79,34 +70,18 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         for t in xrange(1, self.nbData):
             sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
 
+        goal = demos[0][-1]
+
         for n in xrange(self.samples):
             demo = demos[n]
             size = demo.shape[0]
-
-            A = np.eye(demo.shape[1])
-            goal = np.array([demos[n][-1]])
             x = utl.spline(np.arange(1, size + 1), demo, np.linspace(1, size, self.nbData))
-            sol = np.zeros(x.shape)
-            dx_temp = np.zeros(x.shape)
-            ddx_temp = np.zeros(x.shape)
-
             dx = np.divide(np.diff(x, 1), np.power(self._dt, 1))
-            dx_temp[:x.shape[0],1:x.shape[1]+1] = dx
-            dx = dx_temp
-
+            dx = np.append([0.0], dx[0])
             ddx = np.divide(np.diff(x, 2), np.power(self._dt, 2))
-            ddx_temp[:x.shape[0], 2:x.shape[1] + 2] = ddx
-            ddx = dx_temp
-
-            goals = np.matlib.repmat(goal, 1, self.nbData)
-            x_hat = x + (self._kv/self._kp)*dx + (1.0/self._kp)*ddx
-            goals = x_hat - goals
-
-            for i in xrange(self.nbData):
-                sol[:, i] = np.linalg.solve(A, goals[:, i].reshape((-1, 1))).ravel()
-
-            self.A.append(np.eye(2))
-            self.b.append(np.array([[0.0], [demos[n][-1]]]))
+            ddx = np.append([0.0, 0.0], ddx[0])
+            goals = np.matlib.repmat(goal, self.nbData, 1)
+            tau_ = ddx - (self._kp * (goals.transpose() - x)) / sIn + (self._kv * dx) / sIn
 
             if x_ is not None:
                 x_ = x_ + x.tolist()
@@ -117,13 +92,35 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
                 dx_ = dx.tolist()
                 ddx_ = ddx.tolist()
 
-            taux = taux + sol[0].tolist()
+            taux = taux + tau_[0].tolist()
 
         t = sIn * self.samples
         tau = np.vstack((t, taux))
         motion = np.vstack((x_, dx_, ddx_))
 
         return tau, motion, sIn
+
+    def solve_riccati(self, expSigma):
+        Ad = np.eye(2)
+        Q = np.zeros((2, 2))
+        Bd = np.array([[0], [self._dt]])
+        Ad[0, 1] = self._dt
+        R = np.eye(1) * self.gmm.reg
+        P = [np.zeros((2, 2))] * len(expSigma)
+        P[-1][0, 0] = np.linalg.pinv(expSigma[-1])
+
+        for ii in xrange(len(expSigma) - 2, -1, -1):
+            Q[0, 0] = np.linalg.pinv(expSigma[ii])
+            B = P[ii + 1] * Bd
+            C = np.linalg.pinv(np.dot(Bd.T * P[ii + 1], Bd) + R)
+            D = Bd.T * P[ii + 1]
+            F = np.dot(np.dot(Ad.T, B * C * D - P[ii + 1]), Ad)
+            P[ii] = Q - F
+
+        self.data["Ad"] = Ad
+        self.data["Bd"] = Bd
+        self.data["R"] = R
+        self.data["P"] = P
 
 
 

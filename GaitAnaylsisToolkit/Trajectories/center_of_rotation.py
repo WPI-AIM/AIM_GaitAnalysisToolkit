@@ -47,7 +47,7 @@
 import numpy as np
 from Vicon import Markers
 from Utilities import Mean_filter
-from lib.Exoskeleton.Robot import core
+from ..Exoskeleton.Robot import core
 
 hip_marker = [core.Point(0.0, 0.0, 0.0),
               core.Point(70.0, 0, 0.0),
