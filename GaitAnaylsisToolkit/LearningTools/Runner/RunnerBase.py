@@ -126,6 +126,9 @@ class RunnerBase(object):
     def get_length(self):
         return self._data["len"]
 
+    def get_demos(self):
+        return self._data["demos"]
+
     @property
     def start(self):
         return self._x
