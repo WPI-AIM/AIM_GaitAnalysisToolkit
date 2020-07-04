@@ -18,6 +18,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
             my_reg = [1e-8] + reg
         else:
             my_reg = reg * (1 + len(demo))
+
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
         rescaled = []
@@ -38,8 +39,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         gammam, BIC = self.gmm.train(tau)
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
-        expData, expSigma, H = gmr.train(sIn, [0], [1])
-        self.solve_riccati(expSigma)
+        expData, expSigma, H = gmr.train(sIn, [0], [1], self.reg) # train the model
 
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)
@@ -52,6 +52,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         self.data["mu"] = mu
         self.data["sigma"] = sigma
         self.data["dt"] = self._dt
+        self.data["demos"] = self._demo
         self.data["start"] = self._demo[0][0]
         self.data["goal"] = self._demo[0][-1]
         self.data["dtw"] = self.dtw_data
@@ -76,12 +77,12 @@ class GMMTrainer(TrainerBase.TrainerBase):
         taux = []
 
         sIn.append(1.0)  # Initialization of decay term
-        for t in xrange(1, self.nbData):
+        for t in range(1, self.nbData):
             sIn.append(sIn[t - 1] - alpha * sIn[t - 1] * self._dt)  # Update of decay term (ds/dt=-alpha s) )
 
         goal = demos[0][-1]
 
-        for n in xrange(self.samples):
+        for n in range(self.samples):
             demo = demos[n]
             size = demo.shape[0]
             x = utl.spline(np.arange(1, size + 1), demo, np.linspace(1, size, self.nbData))
@@ -130,6 +131,3 @@ class GMMTrainer(TrainerBase.TrainerBase):
         self.data["Bd"] = Bd
         self.data["R"] = R
         self.data["P"] = P
-
-
-
