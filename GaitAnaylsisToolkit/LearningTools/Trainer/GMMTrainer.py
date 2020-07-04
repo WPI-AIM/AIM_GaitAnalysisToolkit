@@ -4,20 +4,29 @@ from ..Models import GMM, GMR
 import numpy as np
 from numpy import matlib
 
+
 class GMMTrainer(TrainerBase.TrainerBase):
 
-    def __init__(self, demo, file_name, n_rf, dt=0.01):
+    def __init__(self, demo, file_name, n_rf, dt=0.01, reg=[1e-5], poly_degree=[15]):
         """
            :param file_names: file to save training too
            :param n_rfs: number of DMPs
            :param dt: time step
            :return: None
            """
+        if len(reg) == len(demo):
+            my_reg = [1e-8] + reg
+        else:
+            my_reg = reg * (1 + len(demo))
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
-        demos2, self.dtw_data = self.resample(demo)
-        super(GMMTrainer, self).__init__(demos2, file_name, n_rf, dt)
+        rescaled = []
+        self.dtw_data = []
 
+        demo_, dtw_data_ = self.resample(demo, 20)
+        rescaled = demo_
+        self.dtw_data.append(dtw_data_)
+        super(GMMTrainer, self).__init__(rescaled, file_name, n_rf, dt, my_reg)
 
     def train(self, save=True):
         """
