@@ -66,7 +66,7 @@ class ViconGaitingTrial(object):
         self.names = ["HipAngles", "KneeAngles", "AbsAnkleAngle"]
         self._dt = dt
 
-        self._vicon = Vicon.Vicon(vicon_file)
+        self._vicon = Vicon(vicon_file)
         self.vicon_set_points = {}
         self._joint_trajs = None
         self._black_list = []
