@@ -71,6 +71,11 @@ class ViconGaitingTrial(object):
         self._joint_trajs = None
         self._black_list = []
         self._use_black_list = False
+        self._T_EMGs = {}
+        self._EMGs = {}
+        self._force_plates = {}
+        self._IMUs = {}
+        self._accels = {}
 
         # Flag for if the data was gathered from the right leg hip angle
         # Data will only be gathered from the right leg iff handle_nan was set to True
@@ -168,7 +173,14 @@ class ViconGaitingTrial(object):
 
         if verbose:
             print("Gait cycles: " + str(vicon))
+
         self.vicon_set_points = vicon  # varible that holds the setpoints for the vicon
+        self._T_EMGs = self._make_T_emgs()
+        self._EMGs = self._make_emgs()
+        self._force_plates = self._make_force_plates()
+        self._joint_trajs = self._make_joint_trajectories()
+        self._IMUs = {}
+        self._accels = {}
 
     def get_stairs(self, toe_marker, step_frame):
 
@@ -221,7 +233,7 @@ class ViconGaitingTrial(object):
 
         return hills
 
-    def make_force_plates(self):
+    def _make_force_plates(self):
         """
         Seperates then force plate data
         :return: Force plate data
@@ -247,7 +259,7 @@ class ViconGaitingTrial(object):
                 cz = np.array(item.CoP.z)[start:end]
                 f = Point.Point(Fx, Fy, Fz)
                 m = Point.Point(Mx, My, Mz)
-                c = Point.Point(Mx, My, Mz)
+                c = Point.Point(cx, cy, cz)
                 data = Newton.Newton(c, f, m, None)
                 # time = (len(Fx) / float(self.vicon.length)) * self.dt
                 stamp = Data.Data(data, np.linspace(0, 1.0, len(Fx)))
@@ -358,16 +370,49 @@ class ViconGaitingTrial(object):
         return joints
 
     def get_force_plate(self, key):
-        pass
+        """
+        Return the force plate at the key
+        """
+        if key in self._force_plates.keys():
+            return self._force_plates[key]
+        else:
+            print("Key not in list")
+            print("Possible key are:")
+            print(self._force_plates.keys())
 
     def get_emg(self, key):
-        pass
+        """
+        Return the force plate at the key
+        """
+        if key in self._EMGs.keys():
+            return self._EMGs[key]
+        else:
+            print("Key not in list")
+            print("Possible key are:")
+            print(self._EMGs.keys())
+
 
     def get_T_emg(self, key):
-        pass
+        """
+         Return the force plate at the key
+         """
+        if key in self._T_EMGs.keys():
+            return self._T_EMGs[key]
+        else:
+            print("Key not in list")
+            print("Possible key are:")
+            print(self._T_EMGs.keys())
 
     def get_joint_trajectories(self, key):
-        pass
+        """
+         Return the force plate at the key
+         """
+        if key in self._joint_trajs.keys():
+            return self._joint_trajs[key]
+        else:
+            print("Key not in list")
+            print("Possible key are:")
+            print(self._joint_trajs.keys())
 
     @property
     def dt(self):
@@ -378,25 +423,15 @@ class ViconGaitingTrial(object):
     def vicon(self):
         return self._vicon
 
-    @property
-    def joint_trajs(self):
-        return self._joint_trajs
 
     @dt.setter
     def dt(self, value):
         self._dt = value
 
-    @exoskeleton.setter
-    def exoskeleton(self, value):
-        self._exoskeleton = value
-
     @vicon.setter
     def vicon(self, value):
         self._vicon = value
 
-    @joint_trajs.setter
-    def joint_trajs(self, value):
-        self._joint_trajs = value
 
     def add_to_blacklist(self, black_indexs):
         """
