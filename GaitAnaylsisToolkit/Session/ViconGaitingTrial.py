@@ -221,7 +221,7 @@ class ViconGaitingTrial(object):
 
         return hills
 
-    def get_force_plates(self):
+    def make_force_plates(self):
         """
         Seperates then force plate data
         :return: Force plate data
@@ -255,7 +255,7 @@ class ViconGaitingTrial(object):
 
         return joints
 
-    def get_joint_trajectories(self):
+    def _make_joint_trajectories(self):
         """
         Seperates then joint trajs data
         :return: joint trajectory data
@@ -304,7 +304,7 @@ class ViconGaitingTrial(object):
         body = Side.Side(left_leg, right_leg)
         return body
 
-    def get_emg(self):
+    def _make_emgs(self):
         """
        Seperates then EMGs data
        :return: EMGs data
@@ -331,7 +331,7 @@ class ViconGaitingTrial(object):
 
         return joints
 
-    def get_T_emgs(self):
+    def _make_T_emgs(self):
         """
        Seperates then EMGs data
        :return: EMGs data
@@ -357,50 +357,22 @@ class ViconGaitingTrial(object):
 
         return joints
 
-    def get_CoPs(self):
-        """
-       Seperates then CoP data
-       :return: CoP data
-       :rtype: Dict
-        """
+    def get_force_plate(self, key):
+        pass
 
-        left = []
-        right = []
-        count = 0
-        left_cop = self.exoskeleton.left_leg.calc_CoP()
-        right_cop = self.exoskeleton.right_leg.calc_CoP()
+    def get_emg(self, key):
+        pass
 
-        left = []
-        right = []
+    def get_T_emg(self, key):
+        pass
 
-        for inc in self.exo_set_points:
-            left_data = left_cop[inc[0]:inc[1]]
-            right_data = right_cop[inc[0]:inc[1]]
-
-            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = Data.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = Data.Data(right_data, np.linspace(0, time, len(right_data)))
-
-            if self._use_black_list:
-                if count in self._black_list:
-                    continue
-                else:
-                    left.append(stamp_left)
-                    right.append(stamp_right)
-
-            count += 1
-
-        side = Side.Side(left, right)
-
-        return side
+    def get_joint_trajectories(self, key):
+        pass
 
     @property
     def dt(self):
         return self._dt
 
-    @property
-    def exoskeleton(self):
-        return self._exoskeleton
 
     @property
     def vicon(self):
