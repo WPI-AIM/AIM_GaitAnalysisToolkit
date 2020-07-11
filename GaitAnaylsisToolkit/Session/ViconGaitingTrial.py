@@ -228,39 +228,29 @@ class ViconGaitingTrial(object):
         :rtype: Dict
         """
         joints = {}
-        plate1 = self.vicon.get_force_plate(1)
-        plate2 = self.vicon.get_force_plate(2)
-        plate1_forces = plate1.get_forces()
-        plate2_forces = plate2.get_forces()
-        plate1_moments = plate1.get_moments()
-        plate2_moments = plate2.get_moments()
 
-        p1 = (1, plate1_forces, plate1_moments)
-        p2 = (2, plate2_forces, plate2_moments)
-        joints[1] = []
-        joints[2] = []
+        plates = self.vicon.get_all_force_plate()
 
-        for p in (p1, p2):
-            key = p[0]
-            if self._use_black_list:
-                if key in self._black_list:
-                    continue
-            plateF = p[1]
-            plateM = p[2]
+        for key, item in plates.items():
+            joints[key] = []
             for inc in self.vicon_set_points:
-                start = plate1.get_offset_index(inc[0])
-                end = plate1.get_offset_index(inc[1])
-                Fx = np.array(plateF.x)[start:end]
-                Fy = np.array(plateF.y)[start:end]
-                Fz = np.array(plateF.z)[start:end]
-                Mx = np.array(plateM.x)[start:end]
-                My = np.array(plateM.y)[start:end]
-                Mz = np.array(plateM.z)[start:end]
+                start = item.get_offset_index(inc[0])
+                end = item.get_offset_index(inc[1])
+                Fx = np.array(item.force.x)[start:end]
+                Fy = np.array(item.force.y)[start:end]
+                Fz = np.array(item.force.z)[start:end]
+                Mx = np.array(item.moment.x)[start:end]
+                My = np.array(item.moment.y)[start:end]
+                Mz = np.array(item.moment.z)[start:end]
+                cx = np.array(item.CoP.x)[start:end]
+                cy = np.array(item.CoP.y)[start:end]
+                cz = np.array(item.CoP.z)[start:end]
                 f = Point.Point(Fx, Fy, Fz)
                 m = Point.Point(Mx, My, Mz)
-                data = Newton.Newton(None, f, m, None)
-                time = (len(Fx) / float(self.vicon.length)) * self.dt
-                stamp = Data.Data(data, np.linspace(0, time, len(data)))
+                c = Point.Point(Mx, My, Mz)
+                data = Newton.Newton(c, f, m, None)
+                # time = (len(Fx) / float(self.vicon.length)) * self.dt
+                stamp = Data.Data(data, np.linspace(0, 1.0, len(Fx)))
                 joints[key].append(stamp)
 
         return joints
@@ -402,170 +392,6 @@ class ViconGaitingTrial(object):
 
         side = Side.Side(left, right)
 
-        return side
-
-    def get_FSRs(self):
-        """
-               Seperates FSR data
-               :return: FSR data
-               :rtype: Dict
-        """
-
-        left_fsr = self.exoskeleton.left_leg.ankle.FSRs
-        right_fsr = self.exoskeleton.right_leg.ankle.FSRs
-
-        left = []
-        right = []
-
-        for inc in self.exo_set_points:
-            left_data = np.array(
-                [[left_fsr[0].get_values()[inc[0]:inc[1]]],
-                 [left_fsr[1].get_values()[inc[0]:inc[1]]],
-                 [left_fsr[2].get_values()[inc[0]:inc[1]]]])
-
-            right_data = np.array(
-                [[right_fsr[0].get_values()[inc[0]:inc[1]]],
-                 [right_fsr[1].get_values()[inc[0]:inc[1]]],
-                 [right_fsr[2].get_values()[inc[0]:inc[1]]]])
-
-            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = Data.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = Data.Data(right_data, np.linspace(0, time, len(right_data)))
-
-            # if self._use_black_list:
-            #     if count in self._black_list:
-            #         continue
-            #     else:
-            #         left.append(stamp_left)
-            #         right.append(stamp_right)
-            #
-            # count += 1
-
-        side = Side.Side(left, right)
-
-        return side
-
-    def get_pots(self):
-        """
-       Seperates Pot data
-       :return: Pot data
-       :rtype: Dict
-        """
-        left_leg = self.exoskeleton.left_leg
-        right_leg = self.exoskeleton.right_leg
-
-        left = []
-        right = []
-        count = 0
-
-        for inc in self.exo_set_points:
-            left_data = np.array(
-                [[left_leg.hip.pot.get_values()[inc[0]:inc[1]]],
-                 [left_leg.knee.pot.get_values()[inc[0]:inc[1]]],
-                 [left_leg.ankle.pot.get_values()[inc[0]:inc[1]]]])
-
-            right_data = np.array(
-                [[right_leg.hip.pot.get_values()[inc[0]:inc[1]]],
-                 [right_leg.knee.pot.get_values()[inc[0]:inc[1]]],
-                 [right_leg.ankle.pot.get_values()[inc[0]:inc[1]]]])
-
-            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-
-            stamp_left = Data.Data()
-            stamp_right = Data.Data()
-            stamp_right.data = right_data
-            stamp_left.data = left_data
-            stamp_left.time = np.linspace(0, time, len(left_data))
-            stamp_right.time = np.linspace(0, time, len(right_data))
-
-            if self._use_black_list:
-                if count in self._black_list:
-                    continue
-                else:
-                    left.append(stamp_left)
-                    right.append(stamp_right)
-            count += 1
-
-        side = Side.Side(left, right)
-        return side
-
-    def get_accels(self):
-        """
-                Seperates then force plate data
-                :return: Force plate data
-                :rtype: Dict
-                """
-        left_leg = self.exoskeleton.left_leg
-        right_leg = self.exoskeleton.right_leg
-
-        left = []
-        right = []
-        count = 0
-        for inc in self.exo_set_points:
-            left_data = np.array(
-                [[left_leg.hip.IMU.accel.get_values()[inc[0]:inc[1]]],
-                 [left_leg.knee.IMU.accel.get_values()[inc[0]:inc[1]]],
-                 [left_leg.ankle.IMU.accel.get_values()[inc[0]:inc[1]]]])
-
-            right_data = np.array(
-                [[right_leg.hip.IMU.accel.get_values()[inc[0]:inc[1]]],
-                 [right_leg.knee.IMU.accel.get_values()[inc[0]:inc[1]]],
-                 [right_leg.ankle.IMU.accel.get_values()[inc[0]:inc[1]]]])
-
-            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-
-            stamp_left = Data.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = Data.Data(right_data, np.linspace(0, time, len(right_data)))
-
-            if self._use_black_list:
-                if count in self._black_list:
-                    continue
-                else:
-                    left.append(stamp_left)
-                    right.append(stamp_right)
-            count += 1
-
-        side = Side.Side(left, right)
-
-        return side
-
-    def get_gyros(self):
-        """
-                Seperates then force plate data
-                :return: Force plate data
-                :rtype: Dict
-                """
-        left_leg = self.exoskeleton.left_leg
-        right_leg = self.exoskeleton.right_leg
-
-        left = []
-        right = []
-        count = 0
-
-        for inc in self.exo_set_points:
-            left_data = np.array(
-                [[left_leg.hip.IMU.gyro.get_values()[inc[0]:inc[1]]],
-                 [left_leg.knee.IMU.gyro.get_values()[inc[0]:inc[1]]],
-                 [left_leg.ankle.IMU.gyro.get_values()[inc[0]:inc[1]]]])
-
-            right_data = np.array(
-                [[right_leg.hip.IMU.gyro.get_values()[inc[0]:inc[1]]],
-                 [right_leg.knee.IMU.gyro.get_values()[inc[0]:inc[1]]],
-                 [right_leg.ankle.IMU.gyro.get_values()[inc[0]:inc[1]]]])
-
-            time = (len(left_data) / float(self.exoskeleton.length)) * self.dt
-            stamp_left = Data.Data(left_data, np.linspace(0, time, len(left_data)))
-            stamp_right = Data.Data(right_data, np.linspace(0, time, len(right_data)))
-
-            if self._use_black_list:
-                if count in self._black_list:
-                    continue
-                else:
-                    left.append(stamp_left)
-                    right.append(stamp_right)
-            count += 1
-
-        side = Side.Side(left, right)
         return side
 
     @property
