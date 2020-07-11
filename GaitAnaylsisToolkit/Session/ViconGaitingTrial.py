@@ -414,6 +414,31 @@ class ViconGaitingTrial(object):
             print("Possible key are:")
             print(self._joint_trajs.keys())
 
+
+    def get_force_plate_names(self):
+        """
+        Returns a list of key names
+        """
+        return self._force_plates.keys()
+
+    def get_EMG_names(self):
+        """
+        Returns a list of key names
+        """
+        return self._EMGs.keys()
+
+    def get_T_EMG_names(self):
+        """
+        Returns a list of key names
+        """
+        return self._T_EMGs.keys()
+
+    def get_joint_trajectories_name(self):
+        """
+        Returns a list of key names
+        """
+        return self._force_plates.keys()
+
     @property
     def dt(self):
         return self._dt
