@@ -5,7 +5,12 @@ class RunnerBase(object):
 
     def __init__(self, file):
 
-        self._file = file
+
+        if ".pickle" in file:
+            self._file = file
+        else:
+            self._file = file + ".pickle"
+
         self._goal = None
         self._kp = 50.0
         self._kc = 10.0
@@ -15,6 +20,7 @@ class RunnerBase(object):
         self._index = 0
         self._path = []
         self._K = None
+
         with open(self._file, 'rb') as handle:
             self._data = pickle.load(handle)
 
