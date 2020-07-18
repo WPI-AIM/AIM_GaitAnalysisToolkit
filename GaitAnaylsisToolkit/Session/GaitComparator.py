@@ -142,7 +142,7 @@ class Comparator:
         if ind == -1:
             self.cal_markers.play(joints=joints)
         else:
-            self.dat_markers[ind].play(joints=joints)
+            self.dat_markers[ind].play(joints=joints, center=True)
 
     def calc_gait_cycles(self):
         for g in self.dat_gait:
