@@ -43,9 +43,9 @@
 # */
 # //==============================================================================
 
-import Session.ViconGaitingTrial as vg
-import Core
-import Markers
+import GaitAnaylsisToolkit.Session.ViconGaitingTrial as vg
+import GaitCore.Core as Core
+import Vicon.Markers.Markers as Markers
 
 
 class Comparator:
@@ -116,9 +116,9 @@ class Comparator:
 
         if verbose:
             print("Mapping joints from calibration to data...")
-        # self.set_data_joints()
-        for m in self.dat_markers:
-            m.calc_joints()
+        self.set_data_joints()
+        # for m in self.dat_markers:
+        #     m.calc_joints()
         if verbose:
             print("Joint locations mapped!")
 

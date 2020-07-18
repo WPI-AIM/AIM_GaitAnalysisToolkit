@@ -44,7 +44,7 @@
 # //==============================================================================
 
 import numpy as np
-from Vicon import Vicon
+from Vicon.Vicon import Vicon
 from GaitCore.Core import Data as Data
 from GaitCore.Core import Newton as Newton
 from GaitCore.Core import Point as Point
