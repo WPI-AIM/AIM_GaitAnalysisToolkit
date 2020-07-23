@@ -170,9 +170,9 @@ class Comparator:
                     "R_Ankle": ("R_Tibia", "R_Foot"),
                     "R_Knee": ("R_Femur", "R_Tibia"),
                     "R_Hip": ("Root", "R_Femur"),
-                    "L_Ankle": ("Root", "L_Femur"),
+                    "L_Hip": ("Root", "L_Femur"),
                     "L_Knee": ("L_Femur", "L_Tibia"),
-                    "L_Hip": ("L_Tibia", "L_Foot")
+                    "L_Ankle": ("L_Tibia", "L_Foot")
                 }
                 for j in mapping_error:
                     err = mapping_error[j]
@@ -227,7 +227,7 @@ class Comparator:
 
             self.dat_markers[i].set_joints(joints)
             if verbose:
-                print("I Exist")  # TODO: use flags for warnings
+                pass  # TODO: use flags for warnings
 
     def play(self, ind, joints=True):
         if ind == -1:
