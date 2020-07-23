@@ -215,13 +215,13 @@ class Comparator:
                         # 4. Ambiguous joint_by_child
                         # 5. Definitely misaligned joint_by_parent
                     if adj[0] == 1:  # Parent frame is aligned!
-                        joints[j].append(joints_by_parent[f])
+                        joints[j].append(joints_by_parent[j][f])
                     elif adj[1] == 1:  # Child frame is aligned!
-                        joints[j].append(joints_by_child[f])
+                        joints[j].append(joints_by_child[j][f])
                     elif adj[0] == 0:  # Parent frame is ambiguous
-                        joints[j].append(joints_by_parent[f])
+                        joints[j].append(joints_by_parent[j][f])
                     elif adj[1] == 0:  # Child frame is ambiguous
-                        joints[j].append(joints_by_child[f])
+                        joints[j].append(joints_by_child[j][f])
                     else:  # Parent frame is definitely misaligned, but so is the child frame
                         joints[j].append(joints_by_parent)
 
