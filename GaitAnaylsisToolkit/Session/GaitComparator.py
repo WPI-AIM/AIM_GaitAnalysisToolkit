@@ -123,13 +123,13 @@ class Comparator:
 
         if verbose:
             print("Mapping joints from calibration to data...")
-        self.set_data_joints(verbose=verbose)
+        self._set_data_joints(verbose=verbose)
         # for m in self.dat_markers:
         #     m.calc_joints()
         if verbose:
             print("Joint locations mapped!")
 
-    def set_data_joints(self, verbose=False):
+    def _set_data_joints(self, verbose=False):
         for i in range(len(self.dat)):
             j_rel_parent = self.cal_markers.get_joints_rel()
             j_rel_child = self.cal_markers.get_joints_rel_child()
