@@ -331,9 +331,10 @@ class ViconGaitingTrial(object):
             for inc in self.vicon_set_points:
                 start = emg.get_offset_index(inc[0])
                 end = emg.get_offset_index(inc[1])
-                data = np.array(emg.get_values())[start:end]
-                time = (len(data) / float(self.vicon.length)) * self.dt
-                stamp = Data.Data(data, np.linspace(0, time, len(data)))
+                data = emg.get_values()[start:end]
+                data = np.array(data.z)
+                #time = (len(data) / float(self.vicon.length)) * self.dt
+                stamp = Data.Data(data, np.linspace(0, 1.0, len(data)))
                 if self._use_black_list:
                     if count in self._black_list:
                         continue
@@ -358,9 +359,10 @@ class ViconGaitingTrial(object):
             for inc in self.vicon_set_points:
                 start = emg.get_offset_index(inc[0])
                 end = emg.get_offset_index(inc[1])
-                data = np.array(emg.get_values())[start:end]
-                time = (len(data) / float(self.vicon.length)) * self.dt
-                stamp = Data.Data(data, np.linspace(0, time, len(data)))
+                data = emg.get_values()[start:end]
+                data = np.array(data.z)
+                #time = (len(data) / float(self.vicon.length)) * self.dt
+                stamp = Data.Data(data, np.linspace(0, 1.0, len(data)))
                 if self._use_black_list:
                     if count in self._black_list:
                         continue
@@ -407,12 +409,7 @@ class ViconGaitingTrial(object):
         """
          Return the force plate at the key
          """
-        if key in self._joint_trajs.keys():
-            return self._joint_trajs[key]
-        else:
-            print("Key not in list")
-            print("Possible key are:")
-            print(self._joint_trajs.keys())
+        return self._joint_trajs
 
 
     def get_force_plate_names(self):
