@@ -44,10 +44,11 @@
 # //==============================================================================
 
 import numpy as np
-from Vicon import Vicon
+from Vicon.Vicon import Vicon
 from GaitCore.Core import Data as Data
 from GaitCore.Core import Newton as Newton
 from GaitCore.Core import Point as Point
+from GaitCore.Core import PointArray as PointArray
 from GaitCore.Bio import Side as Side
 from GaitCore.Bio import Leg as Leg
 from GaitCore.Bio import Joint as Joint
@@ -257,9 +258,9 @@ class ViconGaitingTrial(object):
                 cx = np.array(item.CoP.x)[start:end]
                 cy = np.array(item.CoP.y)[start:end]
                 cz = np.array(item.CoP.z)[start:end]
-                f = Point.Point(Fx, Fy, Fz)
-                m = Point.Point(Mx, My, Mz)
-                c = Point.Point(cx, cy, cz)
+                f = PointArray.PointArray(Fx, Fy, Fz)
+                m = PointArray.PointArray(Mx, My, Mz)
+                c = PointArray.PointArray(cx, cy, cz)
                 data = Newton.Newton(c, f, m, None)
                 # time = (len(Fx) / float(self.vicon.length)) * self.dt
                 stamp = Data.Data(data, np.linspace(0, 1.0, len(Fx)))
@@ -287,22 +288,22 @@ class ViconGaitingTrial(object):
                     angleX = Data.Data(np.array(current_joint.angle.x[inc[0]:inc[1]]), time)
                     angleY = Data.Data(np.array(current_joint.angle.y[inc[0]:inc[1]]), time)
                     angleZ = Data.Data(np.array(current_joint.angle.z[inc[0]:inc[1]]), time)
-                    angle = Point.Point(x=angleX, y=angleY, z=angleZ)
+                    angle = PointArray.PointArray(x=angleX, y=angleY, z=angleZ)
 
                     powerX = Data.Data(np.array(current_joint.power.x[inc[0]:inc[1]]), time)
                     powerY = Data.Data(np.array(current_joint.power.y[inc[0]:inc[1]]), time)
                     powerZ = Data.Data(np.array(current_joint.power.z[inc[0]:inc[1]]), time)
-                    power = Point.Point(x=powerX, y=powerY, z=powerZ)
+                    power = PointArray.PointArray(x=powerX, y=powerY, z=powerZ)
 
                     torqueX = Data.Data(np.array(current_joint.moment.x[inc[0]:inc[1]]), time)
                     torqueY = Data.Data(np.array(current_joint.moment.y[inc[0]:inc[1]]), time)
                     torqueZ = Data.Data(np.array(current_joint.moment.z[inc[0]:inc[1]]), time)
-                    torque = Point.Point(x=torqueX, y=torqueY, z=torqueZ)
+                    torque = PointArray.PointArray(x=torqueX, y=torqueY, z=torqueZ)
 
                     forceX = Data.Data(np.array(current_joint.force.x[inc[0]:inc[1]]), time)
                     forceY = Data.Data(np.array(current_joint.force.y[inc[0]:inc[1]]), time)
                     forceZ = Data.Data(np.array(current_joint.force.z[inc[0]:inc[1]]), time)
-                    force = Point.Point(forceX, forceY, forceZ)
+                    force = PointArray.PointArray(forceX, forceY, forceZ)
 
                     stamp = Joint.Joint(angle, force, torque, power)
                     if self._use_black_list:

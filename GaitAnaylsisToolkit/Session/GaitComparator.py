@@ -43,9 +43,13 @@
 # */
 # //==============================================================================
 
-import Session.ViconGaitingTrial as vg
-import Core
-import Markers
+import GaitAnaylsisToolkit.Session.ViconGaitingTrial as vg
+import GaitCore.Core as Core
+import Vicon.Markers.Markers as Markers
+
+
+def dist(A, B):
+    return ((A[0] - B[0]) ** 2 + (A[1] - B[1]) ** 2 + (A[2] - B[2]) ** 2) ** 0.5
 
 
 class Comparator:
@@ -97,6 +101,9 @@ class Comparator:
         self.joint_to_parent_frame = {"L_Hip": "Root", "R_Hip": "Root",
                                       "L_Knee": "L_Femur", "R_Knee": "R_Femur",
                                       "L_Ankle": "L_Tibia", "R_Ankle": "R_Tibia"}
+        self.joint_to_child_frame = {"L_Hip": "L_Femur", "R_Hip": "R_Femur",
+                                     "L_Knee": "L_Tibia", "R_Knee": "R_Tibia",
+                                     "L_Ankle": "L_Foot", "R_Ankle": "R_Foot"}
 
         self.cal_markers = self.cal.get_markers()
         self.cal_markers.smart_sort()
@@ -116,33 +123,117 @@ class Comparator:
 
         if verbose:
             print("Mapping joints from calibration to data...")
-        # self.set_data_joints()
-        for m in self.dat_markers:
-            m.calc_joints()
+        self._set_data_joints(verbose=verbose)
+        # for m in self.dat_markers:
+        #     m.calc_joints()
         if verbose:
             print("Joint locations mapped!")
 
-    def set_data_joints(self):
+    def _set_data_joints(self, verbose=False):
         for i in range(len(self.dat)):
-            j_rel = self.cal_markers.get_joints_rel()
-            joints = {}
+            j_rel_parent = self.cal_markers.get_joints_rel()
+            j_rel_child = self.cal_markers.get_joints_rel_child()
+            joints_by_parent = {}  # The joint centers, mapped from the calibration data through the parent body
+            joints_by_child = {}  # The joint centers, mapped from the calibration data through the child body
+            mapping_error = {}  # The mapping error for each joint
 
-            for joint in j_rel:
-                joints[joint] = []
-                nf = len(self.dat_markers[i].get_frame(self.joint_to_parent_frame[joint]))
-                for f in range(nf):
-                    p = Core.Point.Point(j_rel[joint][0][0], j_rel[joint][1][0], j_rel[joint][2][0])
-                    frame = self.dat_markers[i].get_frame(self.joint_to_parent_frame[joint])[f]
+            for j in j_rel_parent:
+                joints_by_parent[j] = []
+                joints_by_child[j] = []
+                mapping_error[j] = []
+                nf = len(self.dat_markers[i].get_frame(self.joint_to_parent_frame[j]))
+                for f in range(nf):  # Populate joints_by_parent, joints_by_child, and mapping_error
+                    p = Core.Point.Point(j_rel_parent[j][0][0], j_rel_parent[j][1][0], j_rel_parent[j][2][0])
+                    frame = self.dat_markers[i].get_frame(self.joint_to_parent_frame[j])[f]
                     p2 = Markers.local_point_to_global(frame, p)
-                    joints[joint].append([p2.x, p2.y, p2.z])
+                    joints_by_parent[j].append([p2.x, p2.y, p2.z])
+
+                    p = Core.Point.Point(j_rel_child[j][0][0], j_rel_child[j][1][0], j_rel_child[j][2][0])
+                    frame = self.dat_markers[i].get_frame(self.joint_to_child_frame[j])[f]
+                    p3 = Markers.local_point_to_global(frame, p)
+                    joints_by_child[j].append([p3.x, p3.y, p3.z])
+
+                    mapping_error[j].append(dist([p2.x, p2.y, p2.z], [p3.x, p3.y, p3.z]))
+
+            joints = {}
+            for j in mapping_error:
+                joints[j] = []
+            has_misaligned = False  # Have we met any misaligned bodies?
+            has_aligned = False
+            has_ambiguous = False  # Are any bodies not conclusively aligned or misaligned?
+            has_unsure = False  # Are any joints not adjacent to any definitely aligned bodies?
+            has_forced_misalignment = False  # Are any joints surrounded by misaligned bodies?
+            for f in range(nf):  # Using the mapping error, determine whether to use joints_by_parent or joints_by_child
+                bodies = {"Root": 0, "R_Femur": 0, "L_Femur": 0, "R_Tibia": 0, "L_Tibia": 0, "R_Foot": 0,
+                          "L_Foot": 0}  # Keep track of our body status
+                adjacent = {
+                    "R_Ankle": ("R_Tibia", "R_Foot"),
+                    "R_Knee": ("R_Femur", "R_Tibia"),
+                    "R_Hip": ("Root", "R_Femur"),
+                    "L_Hip": ("Root", "L_Femur"),
+                    "L_Knee": ("L_Femur", "L_Tibia"),
+                    "L_Ankle": ("L_Tibia", "L_Foot")
+                }
+                for j in mapping_error:
+                    err = mapping_error[j]
+                    if -50 <= err[f] <= 50:  # TODO: Make this configurable
+                        bodies[adjacent[j][0]] = 1
+                        bodies[adjacent[j][1]] = 1
+
+                has_aligned = False
+                for b in bodies:
+                    if bodies[b] == 1:
+                        has_aligned = True
+
+                if has_aligned:
+                    for j in mapping_error:
+                        err = mapping_error[j]
+                        if not (-50 <= err[f] <= 50):  # If a joint is misaligned...
+                            if bodies[adjacent[j][0]] == 1 and bodies[adjacent[j][1]] == 0:
+                                # And one of the adjacent bodies is definitely aligned...
+                                bodies[adjacent[j][1]] = -1  # The other body must be misaligned
+                            if bodies[adjacent[j][1]] == 1 and bodies[adjacent[j][0]] == 0:
+                                bodies[adjacent[j][0]] = -1
+
+                for b in bodies:
+                    if bodies[b] == 0:
+                        has_ambiguous = True  # We weren't able to tell if some bodies were aligned or not!
+                    if bodies[b] == -1:
+                        has_misaligned = True  # At least one body is definitely misaligned!
+
+                for j in mapping_error:
+                    adj = (bodies[adjacent[j][0]], bodies[adjacent[j][1]])
+                    if 0 in adj and 1 not in adj:
+                        has_unsure = True  # At least one joint doesn't have any definitely aligned bodies!
+                    elif -1 in adj and 0 not in adj and 1 not in adj:
+                        has_forced_misalignment = True  # At least one joint is totally surrounded by misaligned bodies!
+
+                    # Order of preference for final joints:
+                        # 1. Aligned joint_by_parent
+                        # 2. Aligned joint_by_child
+                        # 3. Ambiguous joint_by_parent
+                        # 4. Ambiguous joint_by_child
+                        # 5. Definitely misaligned joint_by_parent
+                    if adj[0] == 1:  # Parent frame is aligned!
+                        joints[j].append(joints_by_parent[j][f])
+                    elif adj[1] == 1:  # Child frame is aligned!
+                        joints[j].append(joints_by_child[j][f])
+                    elif adj[0] == 0:  # Parent frame is ambiguous
+                        joints[j].append(joints_by_parent[j][f])
+                    elif adj[1] == 0:  # Child frame is ambiguous
+                        joints[j].append(joints_by_child[j][f])
+                    else:  # Parent frame is definitely misaligned, but so is the child frame
+                        joints[j].append(joints_by_parent)
 
             self.dat_markers[i].set_joints(joints)
+            if verbose:
+                pass  # TODO: use flags for warnings
 
     def play(self, ind, joints=True):
         if ind == -1:
             self.cal_markers.play(joints=joints)
         else:
-            self.dat_markers[ind].play(joints=joints)
+            self.dat_markers[ind].play(joints=joints, center=True)
 
     def calc_gait_cycles(self):
         for g in self.dat_gait:
@@ -161,7 +252,8 @@ class Comparator:
                 avg += (c[1] - c[0])
         avg /= total
 
-        print("Across all data sources, there are a total of " + str(total) + " gait cycles, which have an average length of " + str(avg) + " frames.")
+        print("Across all data sources, there are a total of " + str(
+            total) + " gait cycles, which have an average length of " + str(avg) + " frames.")
         print("Breakdown by individual data source:")
         for g in self.dat_gait:
             print(g._vicon._file_path + ":")
