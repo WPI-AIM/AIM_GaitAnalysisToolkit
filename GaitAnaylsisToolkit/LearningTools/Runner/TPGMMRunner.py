@@ -17,6 +17,7 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         self._v0 = np.zeros(len(self._x)).reshape((-1, 1)) # vector of zeros for velocity
         self._path = []
         self._index = 0
+        self._K = []
 
     def step(self, x=None, dx=None):
         """
@@ -60,3 +61,6 @@ class TPGMMRunner(RunnerBase.RunnerBase):
 
     def get_R(self):
         return self._data["R"]
+
+    def get_K(self):
+        return self._data["K"]

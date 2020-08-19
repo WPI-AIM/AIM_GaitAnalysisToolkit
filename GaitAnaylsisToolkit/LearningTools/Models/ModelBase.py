@@ -216,6 +216,7 @@ def solve_riccati_mat(expSigma, dt=0.01, reg=1e-5):
     R = np.eye(size)*reg[1:]
     P = [np.zeros((size*2, size*2))] * len(expSigma)
     P[-1][:size, :size] = np.linalg.pinv(expSigma[-1])
+    K = [np.zeros((size*2, size*2))] * len(expSigma)
 
     for ii in range(len(expSigma)-2, -1, -1):
         Q[:size, :size] = np.linalg.pinv(expSigma[ii])
@@ -225,8 +226,15 @@ def solve_riccati_mat(expSigma, dt=0.01, reg=1e-5):
         F = np.dot(np.dot(Ad.T, B.dot(C).dot(D) - P[ii + 1]), Ad)
         P[ii] = Q - F
 
+
+    for i in range(len(expSigma)):
+        v = np.linalg.inv(np.dot(np.dot(Bd.T, P[i]), Bd) + R)
+        K[i] = np.dot(np.dot(v.dot(Bd.T), P[i]), Ad)
+
     ric["Ad"] = Ad
     ric["Bd"] = Bd
     ric["R"] = R
     ric["P"] = P
+    ric["K"] = K
+
     return ric
