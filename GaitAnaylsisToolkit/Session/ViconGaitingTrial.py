@@ -406,7 +406,7 @@ class ViconGaitingTrial(object):
             print("Possible key are:")
             print(self._T_EMGs.keys())
 
-    def get_joint_trajectories(self, key):
+    def get_joint_trajectories(self):
         """
          Return the force plate at the key
          """
