@@ -92,6 +92,14 @@ class RunnerBase(object):
         self._dx = np.array([[0.0]])
         return np.array(path)
 
+    def reset(self):
+        self._index = 0
+        self._x = self.get_start()
+        self._goal = self._data["goal"]
+        self._dx = np.zeros(len(self._x)).reshape((-1, 1))
+        self._v0 = np.zeros(len(self._x)).reshape((-1, 1))  # vector of zeros for velocity
+
+
     @property
     def goal(self):
         return self._goal
