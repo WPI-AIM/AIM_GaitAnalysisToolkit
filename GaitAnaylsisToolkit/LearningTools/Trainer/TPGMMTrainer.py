@@ -9,7 +9,7 @@ from numpy import matlib
 
 class TPGMMTrainer(TrainerBase.TrainerBase):
 
-    def __init__(self, demo, file_name, n_rf, dt=0.01, reg=[1e-5], poly_degree=[15]):
+    def __init__(self, demo, file_name, n_rf, dt=0.01, reg=[1e-5], poly_degree=[15],A=[],b=[]):
         """
        :param file_names: file to save training too
        :param n_rfs: number of DMPs
@@ -18,8 +18,18 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         """
         self._kp = 50.0
         self._kv = (2.0 * self._kp) ** 0.5
-        self.A = []
-        self.b = []
+        if not A and not b:
+            try:
+                assert len(A) == len(b), "transformations matrix not the same size"
+                self.A = A
+                self.b = b
+            except AssertionError as msg:
+                print(msg)
+        else:
+            self.A = A
+            self.b = b
+
+
         rescaled = []
         self.dtw_data = []
 
@@ -64,13 +74,14 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             tau = np.vstack((tau, tau_))
 
         # Make all the transformations
-        for i in range(len(goals[0])):
-            b = [0.0]
-            for j in range(len(goals)):
-                b.append(goals[j][i].tolist()[0])
-            b = np.asarray(b).reshape((-1, 1))
-            self.b.append(b)
-            self.A.append(np.eye(len(goals)+1))
+        if not self.A:
+            for i in range(len(goals[0])):
+                b = [0.0]
+                for j in range(len(goals)):
+                    b.append(goals[j][i].tolist()[0])
+                b = np.asarray(b).reshape((-1, 1))
+                self.b.append(b)
+                self.A.append(np.eye(len(goals)+1))
 
         # Do all the transformations
         gammam, BIC = self.gmm.train(tau) # get the goodness of fit
