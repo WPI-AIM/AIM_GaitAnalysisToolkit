@@ -67,13 +67,14 @@ class TrainerBase(object):
             dtw_data["cost_matrix"] = cost_matrix
             dtw_data["acc_cost_matrix"] = acc_cost_matrix
             dtw_data["path"] = path
+
             data.append(dtw_data)
             #data_warp = [y[path[1]][:x_fit.shape[0]]]
             data_warp = [y[path[1]]]
             data_warp_rsp = signal.resample(data_warp[0], x_fit.shape[0])  # resample dtw output 188 points to 118 points
             #data_warp = [y[:][:x_fit.shape[0]]]
             #coefs = poly.polyfit(t, data_warp[0], 20)
-            coefs = poly.polyfit(t, data_warp_rsp, 20)
+            coefs = poly.polyfit(t, data_warp_rsp, poly_degree)
             ffit = poly.Polynomial(coefs)  # instead of np.poly1d
             y_fit = ffit(t)
             # y_fit = data_warp[0]
@@ -81,6 +82,7 @@ class TrainerBase(object):
             temp = [[np.array(ele)] for ele in y_fit.tolist()]
             temp = np.array(temp)
             demos.append(temp)
+            dtw_data["smooth_path"] = temp
         return demos, data
 
     @abc.abstractmethod
