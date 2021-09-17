@@ -9,7 +9,7 @@ from numpy import matlib
 
 class TPGMMTrainer(TrainerBase.TrainerBase):
 
-    def __init__(self, demo, file_name, n_rf, dt=0.01, reg=[1e-5], poly_degree=[15],A=[],b=[]):
+    def __init__(self, demo, file_name, n_rf, dt=0.01, reg=[1e-5], poly_degree=[15], resample=[False], A=[],b=[]):
         """
        :param file_names: file to save training too
        :param n_rfs: number of DMPs
@@ -38,8 +38,13 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         else:
             my_reg = reg*(1+ len(demo))
 
-        for d, polyD in zip(demo, poly_degree):
-            demo_, dtw_data_ = self.resample(d, polyD)
+        if len(resample) == len(demo):
+            my_resample = [1e-8] + reg
+        else:
+            my_resample = resample*(1+ len(demo))
+
+        for d, polyD, resamp in zip(demo, poly_degree, my_resample):
+            demo_, dtw_data_ = self.resample(d, polyD, resamp)
             rescaled.append(demo_)
             self.dtw_data.append(dtw_data_)
 
