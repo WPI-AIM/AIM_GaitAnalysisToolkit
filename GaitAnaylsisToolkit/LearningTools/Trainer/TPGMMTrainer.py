@@ -95,7 +95,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors) # set up the GMR trainers
         expData, expSigma, H = gmr.train(sIn, [0], range(1, 1+len(self._demo)), self.reg) # train the model
         #ric1 = solve_riccati(expSigma)
-        ric2 = solve_riccati_mat(expSigma, 0.01, self.reg) # get the gains for the system
+        ric2 = solve_riccati_mat(expSigma, self._dt, self.reg) # get the gains for the system
 
         # save all the data to a dictionary
         self.data["BIC"] = BIC
@@ -111,6 +111,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
         self.data["dt"] = self._dt
         self.data["start"] = [self._demo[i][0][0] for i in range(len(self._demo))]
         self.data["goal"] = [self._demo[i][0][-1] for i in range(len(self._demo))]
+        self.data["goals"] = goals
         self.data["dtw"] = self.dtw_data
         self.data.update(ric2)
 

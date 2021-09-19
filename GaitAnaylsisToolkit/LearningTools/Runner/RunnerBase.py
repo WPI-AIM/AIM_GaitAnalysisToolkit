@@ -36,6 +36,11 @@ class RunnerBase(object):
     def dx(self):
         return self._dx
 
+    @property
+    def goals(self):
+        return self._goals
+
+
     @dx.setter
     def dx(self, value):
         self._dx = value
@@ -107,6 +112,9 @@ class RunnerBase(object):
     def get_H(self):
         return self._data["H"]
 
+    def get_goals(self):
+        return self._data["goals"]
+
     def get_expData(self):
         return self._data["expData"]
 
@@ -149,3 +157,13 @@ class RunnerBase(object):
 
     def update_start(self, value):
         self._x = value
+
+def calculate_imitation_metric_spatially(demos, imitation):
+    M = len(demos)
+    T = len(imitation)
+    metric = 0.0
+
+    for d in demos:
+        metric += np.sum(np.sqrt(np.power( imitation.flatten() - d.flatten(),2)))
+
+    return metric
