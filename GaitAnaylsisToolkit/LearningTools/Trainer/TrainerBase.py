@@ -30,7 +30,7 @@ class TrainerBase(object):
     def reg(self, value):
         self._reg = value
 
-    def resample(self, trajs, poly_degree):
+    def resample(self, trajs, poly_degree, resample):
         """
 
         :param trajs: list of demos
@@ -62,26 +62,22 @@ class TrainerBase(object):
         for ii, y in enumerate(trajs):
             dtw_data = {}
             d, cost_matrix, acc_cost_matrix, path = dtw(trajs[idx], y, dist=manhattan_distance)
-            # d, cost_matrix, acc_cost_matrix, path = dtw(x_fit, y, dist=manhattan_distance)
             dtw_data["cost"] = d
             dtw_data["cost_matrix"] = cost_matrix
             dtw_data["acc_cost_matrix"] = acc_cost_matrix
             dtw_data["path"] = path
-
             data.append(dtw_data)
-            #data_warp = [y[path[1]][:x_fit.shape[0]]]
             data_warp = [y[path[1]]]
-            data_warp_rsp = signal.resample(data_warp[0], x_fit.shape[0])  # resample dtw output 188 points to 118 points
-            #data_warp = [y[:][:x_fit.shape[0]]]
-            #coefs = poly.polyfit(t, data_warp[0], 20)
+            data_warp_rsp = y[path[1]][:x_fit.shape[0]]
+            if resample:
+                data_warp_rsp = signal.resample(data_warp[0], x_fit.shape[0])  # resample dtw output 188 points to 118 points
             coefs = poly.polyfit(t, data_warp_rsp, poly_degree)
             ffit = poly.Polynomial(coefs)  # instead of np.poly1d
             y_fit = ffit(t)
-            # y_fit = data_warp[0]
-            y_fit = data_warp_rsp
             temp = [[np.array(ele)] for ele in y_fit.tolist()]
             temp = np.array(temp)
             demos.append(temp)
+            dtw_data["unsmooth_path"] =y[path[1]][:x_fit.shape[0]]
             dtw_data["smooth_path"] = temp
         return demos, data
 
