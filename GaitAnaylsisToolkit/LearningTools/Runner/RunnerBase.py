@@ -142,6 +142,9 @@ class RunnerBase(object):
     def get_motion(self):
         return self._data["motion"]
 
+    def get_motion(self):
+        return self._data["BIC"]
+
     def get_dwt(self):
         return self._data["dtw"]
 

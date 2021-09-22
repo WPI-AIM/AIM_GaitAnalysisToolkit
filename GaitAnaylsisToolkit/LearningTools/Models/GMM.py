@@ -184,7 +184,7 @@ class GMM(ModelBase.ModelBase):
 
             it += 1
 
-        self.BIC = self.BIC_score(LL[it-1])
+        self.BIC = self.BIC_score(LL[it-1] * self.nbData)
         return GAMMA, self.BIC
 
 

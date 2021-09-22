@@ -43,7 +43,7 @@ class TrainerBase(object):
         demos = []
 
         # DWT distance function
-        manhattan_distance = lambda x, y: np.abs(x - y)
+
 
         idx = np.argmax([l.shape[0] for l in trajs])
         # get the decay term
@@ -61,7 +61,7 @@ class TrainerBase(object):
         # scale all the data using DTW
         for ii, y in enumerate(trajs):
             dtw_data = {}
-            d, cost_matrix, acc_cost_matrix, path = dtw(trajs[idx], y, dist=manhattan_distance)
+            d, cost_matrix, acc_cost_matrix, path = dtw(trajs[idx], y, dist=self.dtw_distance_fnc)
             dtw_data["cost"] = d
             dtw_data["cost_matrix"] = cost_matrix
             dtw_data["acc_cost_matrix"] = acc_cost_matrix

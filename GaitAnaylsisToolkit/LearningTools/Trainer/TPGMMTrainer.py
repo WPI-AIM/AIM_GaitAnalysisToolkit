@@ -4,10 +4,10 @@ from ..Models import TPGMM, GMR
 from ..Models.ModelBase import solve_riccati_mat
 import numpy as np
 from numpy import matlib
+from . import GMMTrainer as GMMTrainer
 
 
-
-class TPGMMTrainer(TrainerBase.TrainerBase):
+class TPGMMTrainer(GMMTrainer.GMMTrainer):
 
     def __init__(self, demo, file_name, n_rf, dt=0.01, reg=[1e-5], poly_degree=[15], resample=[False], A=[],b=[]):
         """
@@ -16,8 +16,7 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
        :param dt: time step
        :return: None
         """
-        self._kp = 50.0
-        self._kv = (2.0 * self._kp) ** 0.5
+
         if not A and not b:
             try:
                 assert len(A) == len(b), "transformations matrix not the same size"
@@ -29,24 +28,24 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
             self.A = A
             self.b = b
 
-
-        rescaled = []
-        self.dtw_data = []
-
-        if len(reg) == len(demo):
-            my_reg = [1e-8] + reg
-        else:
-            my_reg = reg*(1+ len(demo))
-
-        if len(resample) == len(demo):
-            my_resample = [1e-8] + reg
-        else:
-            my_resample = resample*(1+ len(demo))
-
-        for d, polyD, resamp in zip(demo, poly_degree, my_resample):
-            demo_, dtw_data_ = self.resample(d, polyD, resamp)
-            rescaled.append(demo_)
-            self.dtw_data.append(dtw_data_)
+        #
+        # rescaled = []
+        # self.dtw_data = []
+        #
+        # if len(reg) == len(demo):
+        #     my_reg = [1e-8] + reg
+        # else:
+        #     my_reg = reg*(1+ len(demo))
+        #
+        # if len(resample) == len(demo):
+        #     my_resample = [1e-8] + reg
+        # else:
+        #     my_resample = resample*(1+ len(demo))
+        #
+        # for d, polyD, resamp in zip(demo, poly_degree, my_resample):
+        #     demo_, dtw_data_ = self.resample(d, polyD, resamp)
+        #     rescaled.append(demo_)
+        #     self.dtw_data.append(dtw_data_)
 
         super(TPGMMTrainer, self).__init__(rescaled, file_name, n_rf, dt, my_reg)
 
