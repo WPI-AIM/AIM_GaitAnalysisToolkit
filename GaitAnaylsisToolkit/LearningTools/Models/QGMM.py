@@ -31,10 +31,21 @@ class QGMM(GMM.GMM):
         return pyq.Quaternion.distance(p1, p2.conjugate())
 
 
+    def displacement_intergration(self, q1, q2, q3):
+        """
+        computes the resultant state \nu when displaced
+        by delta
+        :param q1: Quaternion 1
+        :param q2: Quaternion 3
+        :param q3: Quaternion 3
+        :return:
+        """
+
+        delta = self.displacement(q1,q2)
+        return pyq.Quaternion.exp(delta)*q3
 
     def average(self, data, id):
         return  averageQuaternions(data[:, id])
-
 
 
     @staticmethod
