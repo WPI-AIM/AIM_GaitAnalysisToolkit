@@ -73,16 +73,23 @@ def averageQuaternions(q_list, w=[]):
     return Quaternion(numpy.real(eigenVectors[:,0].A1))
 
 
+def my_dist(x1,x2):
+    return x1+x2
+
+def my_test(x1,x2,displacement=lambda x, y: x -y):
+    return displacement(x1,x2)
 
 if __name__ == '__main__':
+    #
+    # Q = []
+    # w = []
+    # for i in range(10):
+    #     myq =  Quaternion.random()
+    #     Q.append(myq)
+    #     w.append(1)
+    # Q = np.array(Q)
+    #
+    #
+    # print(averageQuaternions(Q,w))
 
-    Q = []
-    w = []
-    for i in range(10):
-        myq =  Quaternion.random()
-        Q.append(myq)
-        w.append(1)
-    Q = np.array(Q)
-
-
-    print(averageQuaternions(Q,w))
+    print(my_test(2,1,my_dist))

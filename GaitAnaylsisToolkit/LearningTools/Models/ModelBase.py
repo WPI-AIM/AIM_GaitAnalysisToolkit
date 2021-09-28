@@ -137,43 +137,43 @@ class ModelBase(object):
     def average(self, data, id):
         return np.mean(data[:, id], 2).reshape((1, -1))
 
-    def gaussPDF(self, x, mean, covar):
-        '''Multi-variate normal distribution
+def gaussPDF(self, x, mean, covar, displacement=lambda x, y: x -y):
+    '''Multi-variate normal distribution
 
-        x: [n_data x n_vars] matrix of data_points for which to evaluate
-        mean: [n_vars] vector representing the mean of the distribution
-        covar: [n_vars x n_vars] matrix representing the covariance of the distribution
+    x: [n_data x n_vars] matrix of data_points for which to evaluate
+    mean: [n_vars] vector representing the mean of the distribution
+    covar: [n_vars x n_vars] matrix representing the covariance of the distribution
 
-        '''
+    '''
 
-        # Check dimensions of covariance matrix:
-        if type(covar) is np.ndarray:
-            n_vars = covar.shape[0]
-        else:
-            n_vars = 1
+    # Check dimensions of covariance matrix:
+    if type(covar) is np.ndarray:
+        n_vars = covar.shape[0]
+    else:
+        n_vars = 1
 
-        # Check dimensions of data:
-        if x.ndim > 1 and n_vars == len(x):
-            nbData = x.shape[1]
-        else:
-            nbData = x.shape[0]
+    # Check dimensions of data:
+    if x.ndim > 1 and n_vars == len(x):
+        nbData = x.shape[1]
+    else:
+        nbData = x.shape[0]
 
-        # nbData = x.shape[1]
-        mu = np.matlib.repmat(mean.reshape((-1, 1)), 1, nbData)
-        diff = self.displacment(x, mu)
+    # nbData = x.shape[1]
+    mu = np.matlib.repmat(mean.reshape((-1, 1)), 1, nbData)
+    diff = displacement(x, mu)
 
-        # Distinguish between multi and single variate distribution:
-        if n_vars > 1:
-            lambdadiff = np.linalg.pinv(covar).dot(diff) * diff
-            scale = np.sqrt(np.power((2 * np.pi), n_vars) * (abs(np.linalg.det(covar)) + 2.2251e-308))
-            p = np.sum(lambdadiff, 0)
-        else:
-            lambdadiff = diff / covar
-            scale = np.sqrt(np.power((2 * np.pi), n_vars) * covar + 2.2251e-308)
-            p = diff * lambdadiff
+    # Distinguish between multi and single variate distribution:
+    if n_vars > 1:
+        lambdadiff = np.linalg.pinv(covar).dot(diff) * diff
+        scale = np.sqrt(np.power((2 * np.pi), n_vars) * (abs(np.linalg.det(covar)) + 2.2251e-308))
+        p = np.sum(lambdadiff, 0)
+    else:
+        lambdadiff = diff / covar
+        scale = np.sqrt(np.power((2 * np.pi), n_vars) * covar + 2.2251e-308)
+        p = diff * lambdadiff
 
-        prop = np.exp(-0.5 * p) / scale
-        return prop.T
+    prop = np.exp(-0.5 * p) / scale
+    return prop.T
 
 
 def plot_activation(sIn, H, ax):
